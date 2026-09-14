@@ -65,7 +65,10 @@ tudo **sem servidor, add-in, instalação ou integração externa**
 Para apresentar os números à diretoria de forma visual — KPIs, gráficos e
 alertas coloridos, em vez de uma tabela de Excel — use o arquivo
 [`dashboard/index.html`](dashboard/index.html). **Não precisa saber Excel,
-fórmula ou programação**: é só preencher um formulário na tela.
+fórmula ou programação, nem instalar nada**: é um único arquivo HTML — dá
+duplo clique e abre no navegador, é só preencher um formulário na tela.
+Pode copiar esse único arquivo para o Desktop, enviar por e-mail/WhatsApp ou
+guardar num pen drive; ele funciona sozinho, sem depender de mais nada.
 
 **Rotina diária (leva menos de 1 minuto, sem Excel):**
 
