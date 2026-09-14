@@ -64,38 +64,50 @@ tudo **sem servidor, add-in, instalação ou integração externa**
 
 Para apresentar os números à diretoria de forma visual — KPIs, gráficos e
 alertas coloridos, em vez de uma tabela de Excel — use o arquivo
-[`dashboard/index.html`](dashboard/index.html).
+[`dashboard/index.html`](dashboard/index.html). **Não precisa saber Excel,
+fórmula ou programação**: é só preencher um formulário na tela.
 
-**Rotina diária (leva menos de 1 minuto):**
+**Rotina diária (leva menos de 1 minuto, sem Excel):**
 
-1. Preencha o dia na aba **Lançamentos** da planilha, como já faz hoje.
-2. Salve/exporte essa aba como **.csv** (`Arquivo > Salvar Como > CSV`) —
-   ou simplesmente use o próprio arquivo `.xlsx` da planilha, os dois
-   funcionam.
-3. Abra o arquivo `dashboard/index.html` **dando duplo clique nele** (abre no
-   seu navegador — Chrome, Edge, etc.). Não precisa instalar nada.
-4. Arraste o arquivo do passo 2 para a área indicada (ou clique para
-   selecionar).
-5. Pronto: o painel calcula tudo sozinho — totais do mês, Atingimento %,
-   alertas por Divisão/Turno, maiores desvios, resumo da semana e projeção de
-   fechamento do mês — igual à aba Painel da planilha, só que em formato de
-   apresentação.
+1. Abra o arquivo `dashboard/index.html` **dando duplo clique nele** (ele
+   abre no seu navegador — Chrome, Edge, etc.). Não precisa instalar nada.
+2. No topo, preencha o formulário **"Lançamento do dia"**: Data, Turno,
+   Divisão, Volume Planejado e Volume Realizado.
+3. Clique em **"+ Adicionar lançamento"**.
+4. Pronto — o painel inteiro (KPIs, gráficos, alertas, maiores desvios,
+   resumo da semana, projeção de fechamento) é recalculado na hora, igual à
+   aba Painel da planilha, só que em formato de apresentação.
+
+Repita o passo 2–3 para cada turno/divisão lançado no dia. Os lançamentos já
+adicionados ficam listados numa tabela logo abaixo do formulário, onde dá
+para **editar** (ícone ✏️) ou **excluir** (ícone 🗑️) qualquer um deles a
+qualquer momento — por exemplo, para completar o "Volume Realizado" mais
+tarde, depois que o turno planejado de manhã já tiver sido lançado.
 
 **Outros recursos do painel:**
 
-- **Filtros (chips) de Divisão e Turno** no topo funcionam como os "filtros"
-  do Power BI: clique para incluir/excluir e todo o painel (KPIs, gráficos,
-  tabelas) recalcula na hora.
+- **Filtros de Mês, Divisão e Turno** no topo funcionam como os "filtros" do
+  Power BI: escolha o mês ou clique para incluir/excluir uma Divisão/Turno,
+  e todo o painel (KPIs, gráficos, tabelas) recalcula na hora.
 - **"Exportar apresentação (PDF)"** abre a tela de impressão do navegador —
   escolha "Salvar como PDF" para gerar o arquivo pronto para enviar/
   apresentar.
-- O painel **lembra o último arquivo carregado** (fica salvo só no seu
-  navegador): se fechar e abrir de novo, os dados do dia continuam lá até
-  você carregar um arquivo novo em "Trocar arquivo".
+- O painel **salva tudo automaticamente no seu navegador** a cada
+  lançamento — pode fechar a aba e abrir de novo (ou reiniciar o
+  computador) que os dados continuam lá, sem precisar salvar nada
+  manualmente.
+- **"Importar arquivo"** (opcional, no canto superior) é só para quem já tem
+  uma planilha `.xlsx`/`.csv` pronta (por exemplo, a planilha Excel deste
+  repositório) e quer trazer esses lançamentos de uma vez para o painel, em
+  vez de digitar um por um. Pode importar quantas vezes quiser: lançamentos
+  repetidos (mesma Data + Turno + Divisão) são atualizados, não duplicados.
 - Os limites de alerta (`Meta mínima de Atingimento` e `Limite de Saldo
   Semanal`) são editáveis diretamente no painel.
 - **Nenhum dado sai do seu computador**: todo o processamento acontece no
-  navegador (não há upload para nenhum servidor/nuvem).
+  navegador (não há upload para nenhum servidor/nuvem). Os dados ficam
+  salvos só naquele navegador/computador — se for usar em outro computador,
+  use o botão "Importar arquivo" com uma exportação da planilha para levar
+  os dados junto.
 
 ## Limitações assumidas (mantendo a solução simples)
 

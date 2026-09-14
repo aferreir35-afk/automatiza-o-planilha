@@ -78,39 +78,58 @@
   button:hover{ filter:brightness(0.97); }
   @media (prefers-color-scheme: dark){ button:hover{ filter:brightness(1.15); } }
   button.primary{ background:var(--series-1); color:#fff; border-color:transparent; }
+  button.ghost{ background:transparent; }
+  button.danger{ color:var(--critical); }
+  button:disabled{ opacity:.45; cursor:default; }
 
   .card{
     background:var(--surface-1); border:1px solid var(--border); border-radius:12px;
     padding:16px 18px;
   }
+  .card h2, .card h3{ margin:0 0 4px; font-size:15px; }
+  .card .hint{ font-size:12.5px; color:var(--text-muted); margin:0 0 12px; }
 
-  #dropzone{
-    border:2px dashed var(--border); border-radius:14px; padding:36px 20px; text-align:center;
-    color:var(--text-secondary); background:var(--surface-1); margin-bottom:20px; cursor:pointer;
+  #entryForm{ display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end; }
+  #entryForm .field{ display:flex; flex-direction:column; gap:5px; }
+  #entryForm .field.wide{ min-width:150px; }
+  #entryForm label{ font-size:11.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.03em; }
+  #entryForm input{
+    font:inherit; font-size:14px; padding:8px 10px; border-radius:8px; border:1px solid var(--border);
+    background:var(--page); color:var(--text-primary); width:150px;
   }
-  #dropzone.drag{ border-color: var(--series-1); color:var(--text-primary); }
-  #dropzone h2{ margin:0 0 6px; font-size:17px; color:var(--text-primary); }
-  #dropzone p{ margin:4px 0; font-size:13.5px; }
-  #dropzone small{ color:var(--text-muted); }
-  #fileInput{ display:none; }
+  #entryForm input[type=date]{ width:150px; }
+  #entryForm input[type=number]{ width:130px; }
+  #entryForm .form-actions{ display:flex; gap:8px; }
+  #editingNotice{ display:none; font-size:12.5px; color:var(--series-1); font-weight:600; margin-bottom:10px; }
 
-  .file-bar{ display:none; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;
-    background:var(--surface-1); border:1px solid var(--border); border-radius:10px; padding:10px 14px; margin-bottom:18px; font-size:13px; color:var(--text-secondary);}
-  .file-bar b{ color:var(--text-primary); }
+  .table-scroll{ max-height:340px; overflow-y:auto; border:1px solid var(--grid); border-radius:8px; }
+  table{ width:100%; border-collapse:collapse; font-size:13px; }
+  th, td{ text-align:left; padding:8px 10px; border-bottom:1px solid var(--grid); }
+  th{ position:sticky; top:0; background:var(--surface-1); color:var(--text-muted); font-weight:700; font-size:11.5px; text-transform:uppercase; letter-spacing:.03em; }
+  td.num{ text-align:right; font-variant-numeric: tabular-nums; }
+  tr.alert-row{ background: color-mix(in srgb, var(--critical) 10%, transparent); }
+  .status-pill{ display:inline-flex; align-items:center; gap:6px; font-weight:700; font-size:12.5px; }
+  .status-pill.ok{ color: var(--good); }
+  .status-pill.bad{ color: var(--critical); }
+  .status-pill.muted{ color: var(--text-muted); }
+  .row-actions{ display:flex; gap:4px; }
+  .icon-btn{ border:none; background:transparent; cursor:pointer; font-size:14px; padding:4px 6px; border-radius:6px; }
+  .icon-btn:hover{ background:var(--track); }
+  #emptyRows td{ color:var(--text-muted); text-align:center; padding:20px; }
 
   #alertBanner{ display:none; border-radius:10px; padding:12px 16px; margin-bottom:18px; font-size:14px; font-weight:600; align-items:center; gap:10px; }
   #alertBanner.ok{ background: color-mix(in srgb, var(--good) 14%, var(--surface-1)); color: var(--text-primary); border:1px solid color-mix(in srgb, var(--good) 40%, transparent); }
   #alertBanner.bad{ background: color-mix(in srgb, var(--critical) 14%, var(--surface-1)); color: var(--text-primary); border:1px solid color-mix(in srgb, var(--critical) 40%, transparent); }
 
-  .filters{ display:flex; flex-wrap:wrap; gap:18px; margin-bottom:18px; }
+  .filters{ display:flex; flex-wrap:wrap; gap:18px; margin-bottom:18px; align-items:flex-start; }
   .filter-group{ display:flex; flex-direction:column; gap:6px; }
   .filter-group .label{ font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:var(--text-muted); font-weight:700; }
+  .filter-group select{ font:inherit; font-size:13px; padding:7px 9px; border-radius:8px; border:1px solid var(--border); background:var(--surface-1); color:var(--text-primary); }
   .chips{ display:flex; flex-wrap:wrap; gap:6px; }
   .chip{ font-size:12.5px; font-weight:600; padding:5px 11px; border-radius:999px; border:1px solid var(--border); background:var(--surface-1); color:var(--text-secondary); cursor:pointer; }
   .chip.active{ background:var(--series-1); color:#fff; border-color:transparent; }
 
   .kpi-row{ display:grid; grid-template-columns:repeat(auto-fit, minmax(210px,1fr)); gap:14px; margin-bottom:20px; }
-  .kpi{ position:relative; overflow:hidden; }
   .kpi .label{ font-size:12px; color:var(--text-muted); font-weight:700; text-transform:uppercase; letter-spacing:.03em; margin-bottom:6px; }
   .kpi .value{ font-size:28px; font-weight:700; font-variant-numeric: proportional-nums; }
   .kpi .sub{ font-size:12.5px; color:var(--text-secondary); margin-top:4px; }
@@ -119,23 +138,12 @@
 
   .section-title{ font-size:15px; font-weight:700; margin:28px 0 12px; }
   .grid-2{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-  @media (max-width: 760px){ .grid-2{ grid-template-columns:1fr; } }
+  @media (max-width: 760px){ .grid-2{ grid-template-columns:1fr; } #entryForm input{ width:100%; } #entryForm .field{ width:100%; } }
 
-  .chart-card h3{ margin:0 0 2px; font-size:14px; }
   .chart-card .chart-sub{ font-size:12px; color:var(--text-muted); margin-bottom:8px; }
   .legend{ display:flex; gap:14px; font-size:12px; color:var(--text-secondary); margin-bottom:6px; }
   .legend span{ display:inline-flex; align-items:center; gap:6px; }
   .swatch{ width:10px; height:10px; border-radius:3px; display:inline-block; }
-
-  table{ width:100%; border-collapse:collapse; font-size:13px; }
-  th, td{ text-align:left; padding:8px 10px; border-bottom:1px solid var(--grid); }
-  th{ color:var(--text-muted); font-weight:700; font-size:11.5px; text-transform:uppercase; letter-spacing:.03em; }
-  td.num{ text-align:right; font-variant-numeric: tabular-nums; }
-  tr.alert-row{ background: color-mix(in srgb, var(--critical) 10%, transparent); }
-  .status-pill{ display:inline-flex; align-items:center; gap:6px; font-weight:700; font-size:12.5px; }
-  .status-pill.ok{ color: var(--good); }
-  .status-pill.bad{ color: var(--critical); }
-  .status-pill.muted{ color: var(--text-muted); }
 
   .stat-list{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; }
   .stat-list .mini{ background:var(--track); border-radius:8px; padding:10px 12px; }
@@ -149,10 +157,14 @@
   .tooltip{ position:fixed; pointer-events:none; background:var(--text-primary); color:var(--surface-1); font-size:12px; padding:6px 9px; border-radius:6px; opacity:0; transform:translate(-50%,-130%); transition:opacity .08s; z-index:50; white-space:nowrap; }
   .tooltip.show{ opacity:1; }
 
-  footer{ margin-top:40px; padding-top:16px; border-top:1px solid var(--border); font-size:12px; color:var(--text-muted); }
+  #dashboardSections{ display:none; }
+  #emptyState{ font-size:13.5px; color:var(--text-muted); padding:24px 0; text-align:center; }
 
-  #app{ display:none; }
-  #empty-note{ font-size:13px; color:var(--text-muted); }
+  #fileInput{ display:none; }
+  .toast{ position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:var(--text-primary); color:var(--surface-1); padding:10px 18px; border-radius:8px; font-size:13px; opacity:0; transition:opacity .2s; pointer-events:none; z-index:60; }
+  .toast.show{ opacity:1; }
+
+  footer{ margin-top:40px; padding-top:16px; border-top:1px solid var(--border); font-size:12px; color:var(--text-muted); }
 
   @media print{
     .no-print{ display:none !important; }
@@ -168,32 +180,66 @@
   <header class="top">
     <div>
       <h1>Painel Executivo — Volume por Turno</h1>
-      <p class="subtitle" id="periodLabel">Carregue um arquivo para começar.</p>
+      <p class="subtitle" id="periodLabel">Adicione o primeiro lançamento abaixo para começar.</p>
     </div>
     <div class="actions no-print">
-      <button id="btnNewFile">📂 Trocar arquivo</button>
+      <button id="btnImport" class="ghost" title="Importar de um arquivo .csv ou .xlsx já existente">📂 Importar arquivo</button>
       <button id="btnPrint" class="primary">🖨️ Exportar apresentação (PDF)</button>
     </div>
+    <input type="file" id="fileInput" accept=".csv,.xlsx,.xlsm">
   </header>
 
-  <div id="dropzone" class="no-print">
-    <h2>Arraste aqui o arquivo do dia ou clique para selecionar</h2>
-    <p>Aceita o <b>.csv</b> ou <b>.xlsx</b> exportado da aba <b>Lançamentos</b> da planilha
-      (colunas: Data, Dia, Turno, Divisão, Volume Planejado, Volume Realizado).</p>
-    <p><small>Tudo é calculado automaticamente aqui no navegador — nenhum dado sai do seu computador.</small></p>
-    <input type="file" id="fileInput" accept=".csv,.xlsx,.xlsm">
+  <div id="alertBanner"></div>
+
+  <div class="card no-print" style="margin-bottom:18px;">
+    <h2>Lançamento do dia</h2>
+    <p class="hint">Preencha os campos abaixo com os dados do turno e clique em Adicionar. É só isso — o painel inteiro é recalculado automaticamente.</p>
+    <div id="editingNotice">✏️ Editando um lançamento existente. <a href="#" id="cancelEdit" style="color:inherit;">Cancelar edição</a></div>
+    <form id="entryForm">
+      <div class="field">
+        <label for="fData">Data</label>
+        <input type="date" id="fData" required>
+      </div>
+      <div class="field">
+        <label for="fTurno">Turno</label>
+        <input type="text" id="fTurno" list="turnoList" required placeholder="A">
+        <datalist id="turnoList">
+          <option value="A"><option value="B"><option value="C"><option value="D">
+        </datalist>
+      </div>
+      <div class="field wide">
+        <label for="fDivisao">Divisão</label>
+        <input type="text" id="fDivisao" list="divisaoList" required placeholder="Ex: SUL">
+        <datalist id="divisaoList"></datalist>
+      </div>
+      <div class="field">
+        <label for="fPlanejado">Planejado (t)</label>
+        <input type="number" id="fPlanejado" min="0" step="any" required placeholder="0">
+      </div>
+      <div class="field">
+        <label for="fRealizado">Realizado (t)</label>
+        <input type="number" id="fRealizado" min="0" step="any" placeholder="0">
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="primary" id="btnSubmit">+ Adicionar lançamento</button>
+      </div>
+    </form>
   </div>
 
-  <div class="file-bar no-print" id="fileBar">
-    <span>Arquivo atual: <b id="fileName">—</b> · <span id="fileMeta"></span></span>
-    <span id="rowCount"></span>
+  <div class="card no-print" style="margin-bottom:22px;">
+    <h2>Lançamentos registrados <span id="rowCount" style="color:var(--text-muted); font-weight:400; font-size:13px;"></span></h2>
+    <div class="table-scroll">
+      <table id="tableLancamentos"></table>
+    </div>
   </div>
 
-  <div id="app">
-
-    <div id="alertBanner"></div>
+  <div id="dashboardSections">
 
     <div class="filters no-print">
+      <div class="filter-group">
+        <div class="label">Mês</div>
+        <select id="filterMes"></select>
+      </div>
       <div class="filter-group">
         <div class="label">Divisão</div>
         <div class="chips" id="chipsDivisao"></div>
@@ -263,34 +309,34 @@
     <div class="section-title">Alertas</div>
     <div class="grid-2">
       <div class="card">
-        <h3 style="margin-top:0;font-size:14px;">Por Divisão</h3>
+        <h3>Por Divisão</h3>
         <table id="tableAlertaDivisao"></table>
       </div>
       <div class="card">
-        <h3 style="margin-top:0;font-size:14px;">Por Turno</h3>
+        <h3>Por Turno</h3>
         <table id="tableAlertaTurno"></table>
       </div>
     </div>
 
     <div class="card" style="margin-top:16px;">
-      <h3 style="margin-top:0;font-size:14px;">Maiores desvios (Top 3 Divisões)</h3>
+      <h3>Maiores desvios (Top 3 Divisões)</h3>
       <table id="tableTopDesvios"></table>
       <p class="chart-sub" style="margin-top:8px;">Saldo positivo = ficou abaixo do planejado.</p>
     </div>
 
     <div class="grid-2" style="margin-top:16px;">
       <div class="card">
-        <h3 style="margin-top:0;font-size:14px;">Resumo da Semana Atual</h3>
+        <h3>Resumo da Semana Atual</h3>
         <div class="stat-list" id="statSemana"></div>
       </div>
       <div class="card">
-        <h3 style="margin-top:0;font-size:14px;">Projeção de Fechamento do Mês</h3>
+        <h3>Projeção de Fechamento do Mês</h3>
         <div class="stat-list" id="statProjecao"></div>
       </div>
     </div>
 
     <div class="card no-print" style="margin-top:16px;">
-      <h3 style="margin-top:0;font-size:14px;">Configurações de Alerta</h3>
+      <h3>Configurações de Alerta</h3>
       <div class="config-row">
         <label>Meta mínima de Atingimento (%)
           <input type="number" id="cfgMeta" min="0" max="200" step="1" value="90">
@@ -302,14 +348,21 @@
     </div>
 
     <footer>
-      Painel gerado automaticamente a partir do arquivo carregado. Metodologia idêntica à aba
+      Painel gerado automaticamente a partir dos lançamentos preenchidos acima. Metodologia idêntica à aba
       <b>Painel</b> da planilha Excel (mesmas fórmulas de Atingimento, Saldo e Alertas).
       <span id="updatedAt"></span>
     </footer>
   </div>
+
+  <div id="emptyState" class="card" style="display:none;">
+    Nenhum lançamento ainda. Preencha o formulário <b>Lançamento do dia</b> acima (ou clique em
+    <b>Importar arquivo</b> se já tiver uma planilha pronta) para ver o painel completo.
+  </div>
+
 </div>
 
 <div class="tooltip" id="tooltip"></div>
+<div class="toast" id="toast"></div>
 
 <script src="xlsx.full.min.js"></script>
 <script>
@@ -319,12 +372,17 @@
   var MESES = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
   var MESES_ABREV = {jan:0,fev:1,mar:2,abr:3,mai:4,jun:5,jul:6,ago:7,set:8,out:9,nov:10,dez:11};
   var DIAS_SEMANA = ["DOMINGO","SEGUNDA","TERÇA","QUARTA","QUINTA","SEXTA","SÁBADO"];
+  var STORAGE_KEY = "vpt-lancamentos-v1";
+  var DIVISOES_PADRAO = ["SMART LOG","RJ","SUL","SP","MG","NORDESTE"];
 
   var state = {
-    rows: [],
-    fileName: "",
+    rows: [],           // {id, date(Date), turno, divisao, planejado, realizado}
+    editingId: null,
     activeDivisoes: new Set(),
     activeTurnos: new Set(),
+    knownDivisoes: new Set(),
+    knownTurnos: new Set(),
+    selectedMonth: undefined, // "YYYY-MM" or "all"; undefined = not yet defaulted
     meta: 0.90,
     limiteSemanal: 5000
   };
@@ -333,6 +391,7 @@
   function norm(s){
     return String(s==null?"":s).normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/[^a-z0-9]/g,"");
   }
+  function uid(){ return "r"+Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
   function parseNumBR(v){
     if(typeof v === "number") return v;
     if(v == null) return 0;
@@ -359,6 +418,8 @@
           return new Date(year, mon, parseInt(m[1],10));
         }
       }
+      m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if(m) return new Date(parseInt(m[1],10), parseInt(m[2],10)-1, parseInt(m[3],10));
       m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
       if(m){
         var year2 = parseInt(m[3],10); if(year2 < 100) year2 += 2000;
@@ -366,6 +427,18 @@
       }
     }
     return null;
+  }
+  function toInputDate(d){
+    if(!d) return "";
+    var mm = String(d.getMonth()+1).padStart(2,"0");
+    var dd = String(d.getDate()).padStart(2,"0");
+    return d.getFullYear()+"-"+mm+"-"+dd;
+  }
+  function monthKey(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0"); }
+  function monthLabel(key){
+    var parts = key.split("-");
+    var name = MESES[parseInt(parts[1],10)-1];
+    return name.charAt(0).toUpperCase()+name.slice(1)+" "+parts[0];
   }
   function fmtT(n){
     return (n==null? 0 : n).toLocaleString("pt-BR", {maximumFractionDigits:0}) + " t";
@@ -378,17 +451,69 @@
     if(!d) return "—";
     return d.toLocaleDateString("pt-BR");
   }
-  function statusColor(atingimento){
-    if(atingimento == null) return "muted";
-    return atingimento >= state.meta ? "ok" : "bad";
-  }
   function svgEl(tag, attrs){
     var el = document.createElementNS("http://www.w3.org/2000/svg", tag);
     for(var k in attrs) el.setAttribute(k, attrs[k]);
     return el;
   }
+  function showToast(msg){
+    var t = document.getElementById("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(function(){ t.classList.remove("show"); }, 2600);
+  }
 
-  // ---------- parsing ----------
+  // ---------- persistence ----------
+  function persist(){
+    try{
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.rows.map(function(r){
+        return { id:r.id, d: r.date ? toInputDate(r.date) : null, t:r.turno, v:r.divisao, p:r.planejado, r:r.realizado };
+      })));
+    }catch(e){}
+  }
+  function loadPersisted(){
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return [];
+      var data = JSON.parse(raw);
+      return data.map(function(r){
+        return { id:r.id||uid(), date: r.d ? parseDateBR(r.d) : null, turno:r.t, divisao:r.v, planejado:r.p, realizado:r.r };
+      });
+    }catch(e){ return []; }
+  }
+
+  // ---------- row CRUD ----------
+  function upsertRow(row){
+    if(row.id){
+      var idx = state.rows.findIndex(function(r){ return r.id === row.id; });
+      if(idx !== -1){ state.rows[idx] = row; return; }
+    }
+    row.id = row.id || uid();
+    state.rows.push(row);
+  }
+  function keyOf(r){
+    return (r.date?toInputDate(r.date):"") + "|" + String(r.turno).trim().toUpperCase() + "|" + String(r.divisao).trim();
+  }
+  function mergeImportedRows(rows){
+    var added = 0, updated = 0;
+    rows.forEach(function(nr){
+      var k = keyOf(nr);
+      var existing = state.rows.find(function(r){ return keyOf(r) === k; });
+      if(existing){
+        existing.planejado = nr.planejado;
+        existing.realizado = nr.realizado;
+        updated++;
+      }else{
+        nr.id = uid();
+        state.rows.push(nr);
+        added++;
+      }
+    });
+    return {added:added, updated:updated};
+  }
+
+  // ---------- parsing (import) ----------
   function rowsFromAOA(aoa){
     var headerIdx = -1, colMap = {};
     for(var i=0;i<aoa.length;i++){
@@ -419,7 +544,6 @@
       if(!date && planejado === 0 && realizado === 0) continue;
       out.push({
         date: date,
-        weekday: date ? DIAS_SEMANA[date.getDay()] : "",
         turno: String(turno||"").trim().toUpperCase(),
         divisao: String(divisao).trim(),
         planejado: planejado,
@@ -428,14 +552,12 @@
     }
     return out;
   }
-
   function parseCSV(text){
     var lines = text.split(/\r?\n/).filter(function(l){ return l.trim() !== ""; });
     var delim = lines[0] && lines[0].indexOf(";") !== -1 ? ";" : ",";
     var aoa = lines.map(function(l){ return l.split(delim); });
     return rowsFromAOA(aoa);
   }
-
   function parseXLSX(arrayBuffer){
     var wb = XLSX.read(arrayBuffer, {type:"array", cellDates:true});
     var sheetName = wb.SheetNames.find(function(n){ return norm(n).indexOf("lanc") !== -1; }) || wb.SheetNames[0];
@@ -443,8 +565,7 @@
     var aoa = XLSX.utils.sheet_to_json(ws, {header:1, raw:true, defval:""});
     return rowsFromAOA(aoa);
   }
-
-  function handleFile(file){
+  function handleImportFile(file){
     var ext = file.name.split(".").pop().toLowerCase();
     var reader = new FileReader();
     reader.onload = function(e){
@@ -456,47 +577,25 @@
         alert("Não foi possível ler o arquivo. Verifique se é a exportação da aba Lançamentos.\n" + err.message);
         return;
       }
-      if(rows.length === 0){
-        alert("Nenhuma linha de dados foi encontrada nesse arquivo.");
-        return;
-      }
-      state.rows = rows;
-      state.fileName = file.name;
-      state.activeDivisoes = new Set(rows.map(function(r){ return r.divisao; }));
-      state.activeTurnos = new Set(rows.map(function(r){ return r.turno; }));
-      try{
-        localStorage.setItem("vpt-dashboard-data", JSON.stringify({
-          fileName: file.name,
-          savedAt: new Date().toISOString(),
-          rows: rows.map(function(r){ return {d:r.date?r.date.toISOString():null, t:r.turno, v:r.divisao, p:r.planejado, r:r.realizado}; })
-        }));
-      }catch(e){}
+      if(rows.length === 0){ alert("Nenhuma linha de dados foi encontrada nesse arquivo."); return; }
+      var result = mergeImportedRows(rows);
+      persist();
       renderAll();
+      showToast(result.added + " novo(s) e " + result.updated + " atualizado(s) importado(s).");
     };
     if(ext === "csv") reader.readAsText(file, "utf-8");
     else reader.readAsArrayBuffer(file);
   }
 
-  function loadSaved(){
-    try{
-      var raw = localStorage.getItem("vpt-dashboard-data");
-      if(!raw) return false;
-      var data = JSON.parse(raw);
-      state.rows = data.rows.map(function(r){
-        var d = r.d ? new Date(r.d) : null;
-        return { date:d, weekday: d?DIAS_SEMANA[d.getDay()]:"", turno:r.t, divisao:r.v, planejado:r.p, realizado:r.r };
-      });
-      state.fileName = data.fileName + " (salvo em " + new Date(data.savedAt).toLocaleString("pt-BR") + ")";
-      state.activeDivisoes = new Set(state.rows.map(function(r){ return r.divisao; }));
-      state.activeTurnos = new Set(state.rows.map(function(r){ return r.turno; }));
-      return true;
-    }catch(e){ return false; }
-  }
-
   // ---------- aggregation ----------
   function filteredRows(){
     return state.rows.filter(function(r){
-      return state.activeDivisoes.has(r.divisao) && state.activeTurnos.has(r.turno);
+      if(!state.activeDivisoes.has(r.divisao)) return false;
+      if(!state.activeTurnos.has(r.turno)) return false;
+      if(state.selectedMonth && state.selectedMonth !== "all"){
+        if(!r.date || monthKey(r.date) !== state.selectedMonth) return false;
+      }
+      return true;
     });
   }
   function groupSum(rows, keyFn){
@@ -514,24 +613,31 @@
 
   // ---------- rendering ----------
   function renderAll(){
-    document.getElementById("dropzone").style.display = "none";
-    document.getElementById("app").style.display = "block";
-    var fb = document.getElementById("fileBar");
-    fb.style.display = "flex";
-    document.getElementById("fileName").textContent = state.fileName;
-    document.getElementById("rowCount").textContent = state.rows.length + " lançamentos carregados";
+    renderEntryTable();
+    buildDivisaoDatalist();
 
+    document.getElementById("rowCount").textContent = state.rows.length ? "(" + state.rows.length + ")" : "";
+
+    if(state.rows.length === 0){
+      document.getElementById("dashboardSections").style.display = "none";
+      document.getElementById("emptyState").style.display = "block";
+      document.getElementById("periodLabel").textContent = "Adicione o primeiro lançamento abaixo para começar.";
+      document.getElementById("alertBanner").style.display = "none";
+      return;
+    }
+    document.getElementById("dashboardSections").style.display = "block";
+    document.getElementById("emptyState").style.display = "none";
+
+    buildMonthFilter();
     buildChips();
     var rows = filteredRows();
 
     var dates = rows.map(function(r){ return r.date; }).filter(Boolean).sort(function(a,b){ return a-b; });
     if(dates.length){
       var min = dates[0], max = dates[dates.length-1];
-      var label = fmtDate(min) + " a " + fmtDate(max);
-      if(min.getMonth() === max.getMonth() && min.getFullYear() === max.getFullYear()){
-        label += " · " + MESES[max.getMonth()].replace(/^./,function(c){return c.toUpperCase();}) + " " + max.getFullYear();
-      }
-      document.getElementById("periodLabel").textContent = label;
+      document.getElementById("periodLabel").textContent = fmtDate(min) + " a " + fmtDate(max);
+    }else{
+      document.getElementById("periodLabel").textContent = "Sem lançamentos para os filtros atuais.";
     }
 
     var totalP = rows.reduce(function(a,r){return a+r.planejado;},0);
@@ -570,9 +676,70 @@
     document.getElementById("updatedAt").textContent = "· Atualizado em " + new Date().toLocaleString("pt-BR");
   }
 
+  function renderEntryTable(){
+    var table = document.getElementById("tableLancamentos");
+    var sorted = state.rows.slice().sort(function(a,b){
+      var da = a.date ? a.date.getTime() : 0, db = b.date ? b.date.getTime() : 0;
+      return db - da;
+    });
+    if(sorted.length === 0){
+      table.innerHTML = "<tbody><tr id='emptyRows'><td>Nenhum lançamento cadastrado ainda.</td></tr></tbody>";
+      return;
+    }
+    var html = "<thead><tr><th>Data</th><th>Turno</th><th>Divisão</th><th class='num'>Planejado (t)</th>" +
+      "<th class='num'>Realizado (t)</th><th class='num'>Atingimento</th><th></th></tr></thead><tbody>";
+    sorted.forEach(function(r){
+      var at = r.planejado > 0 ? r.realizado/r.planejado : null;
+      html += "<tr data-id='"+r.id+"'>" +
+        "<td>"+fmtDate(r.date)+"</td>" +
+        "<td>"+r.turno+"</td>" +
+        "<td>"+r.divisao+"</td>" +
+        "<td class='num'>"+fmtT(r.planejado)+"</td>" +
+        "<td class='num'>"+fmtT(r.realizado)+"</td>" +
+        "<td class='num'>"+fmtPct(at)+"</td>" +
+        "<td class='row-actions no-print'>" +
+          "<button class='icon-btn' data-action='edit' title='Editar'>✏️</button>" +
+          "<button class='icon-btn' data-action='delete' title='Excluir'>🗑️</button>" +
+        "</td></tr>";
+    });
+    table.innerHTML = html + "</tbody>";
+  }
+
+  function buildDivisaoDatalist(){
+    var used = Array.from(new Set(state.rows.map(function(r){return r.divisao;})));
+    var all = Array.from(new Set(DIVISOES_PADRAO.concat(used))).sort();
+    document.getElementById("divisaoList").innerHTML = all.map(function(d){ return "<option value='"+d.replace(/'/g,"&#39;")+"'>"; }).join("");
+  }
+
+  function buildMonthFilter(){
+    var months = Array.from(new Set(state.rows.filter(function(r){return r.date;}).map(function(r){ return monthKey(r.date); }))).sort();
+    if(state.selectedMonth === undefined){
+      state.selectedMonth = months.length ? months[months.length-1] : "all";
+    }
+    if(state.selectedMonth !== "all" && months.indexOf(state.selectedMonth) === -1 && months.length){
+      state.selectedMonth = months[months.length-1];
+    }
+    var sel = document.getElementById("filterMes");
+    var html = "<option value='all'>Todos os meses</option>";
+    months.forEach(function(m){
+      html += "<option value='"+m+"'"+(state.selectedMonth===m?" selected":"")+">"+monthLabel(m)+"</option>";
+    });
+    sel.innerHTML = html;
+    sel.value = state.selectedMonth;
+  }
+
   function buildChips(){
     var divisoes = Array.from(new Set(state.rows.map(function(r){return r.divisao;}))).sort();
     var turnos = Array.from(new Set(state.rows.map(function(r){return r.turno;}))).sort();
+    // any divisao/turno seen for the first time (e.g. just added or just imported)
+    // starts active; one the user explicitly turned off stays off.
+    divisoes.forEach(function(d){
+      if(!state.knownDivisoes.has(d)){ state.knownDivisoes.add(d); state.activeDivisoes.add(d); }
+    });
+    turnos.forEach(function(t){
+      if(!state.knownTurnos.has(t)){ state.knownTurnos.add(t); state.activeTurnos.add(t); }
+    });
+
     var cd = document.getElementById("chipsDivisao"); cd.innerHTML = "";
     divisoes.forEach(function(d){
       var chip = document.createElement("div");
@@ -644,7 +811,6 @@
 
     var svg = svgEl("svg", {viewBox:"0 0 "+W+" "+H, width:"100%", height:"260", "font-family":"inherit"});
 
-    // gridlines
     var gridN = 4;
     for(var g=0; g<=gridN; g++){
       var gv = maxVal/gridN*g;
@@ -721,7 +887,6 @@
     svg.appendChild(svgEl("path", {d: pathFor("planejado"), fill:"none", stroke:"var(--series-1)", "stroke-width":2}));
     svg.appendChild(svgEl("path", {d: pathFor("realizado"), fill:"none", stroke:"var(--series-2)", "stroke-width":2}));
 
-    // x labels (sparse)
     var labelEvery = Math.max(1, Math.ceil(n/10));
     byDate.forEach(function(o,i){
       if(i % labelEvery !== 0 && i !== n-1) return;
@@ -732,7 +897,6 @@
       svg.appendChild(lbl);
     });
 
-    // hover targets
     byDate.forEach(function(o,i){
       var x = padL + i*stepX;
       var hit = svgEl("rect", {x:x-Math.max(6,stepX/2), y:padT, width:Math.max(12,stepX), height:plotH, fill:"transparent", style:"cursor:pointer"});
@@ -798,7 +962,7 @@
     var el = document.getElementById("statSemana");
     if(!dates.length){ el.innerHTML = "<p class='chart-sub'>Sem dados.</p>"; return; }
     var last = new Date(Math.max.apply(null, dates));
-    var dow = last.getDay(); // 0=domingo
+    var dow = last.getDay();
     var diffToMonday = (dow === 0) ? 6 : dow-1;
     var monday = new Date(last); monday.setDate(last.getDate()-diffToMonday);
     var sunday = new Date(monday); sunday.setDate(monday.getDate()+6);
@@ -846,23 +1010,87 @@
     return "<div class='mini'><div class='k'>"+k+"</div><div class='v'>"+v+"</div></div>";
   }
 
-  // ---------- wiring ----------
-  var dropzone = document.getElementById("dropzone");
+  // ---------- form wiring ----------
+  var form = document.getElementById("entryForm");
+  var fData = document.getElementById("fData");
+  var fTurno = document.getElementById("fTurno");
+  var fDivisao = document.getElementById("fDivisao");
+  var fPlanejado = document.getElementById("fPlanejado");
+  var fRealizado = document.getElementById("fRealizado");
+
+  fData.value = toInputDate(new Date());
+
+  function resetForm(){
+    form.reset();
+    fData.value = toInputDate(new Date());
+    state.editingId = null;
+    document.getElementById("editingNotice").style.display = "none";
+    document.getElementById("btnSubmit").textContent = "+ Adicionar lançamento";
+  }
+
+  form.addEventListener("submit", function(e){
+    e.preventDefault();
+    var date = parseDateBR(fData.value);
+    var row = {
+      id: state.editingId,
+      date: date,
+      turno: fTurno.value.trim().toUpperCase(),
+      divisao: fDivisao.value.trim(),
+      planejado: parseFloat(fPlanejado.value) || 0,
+      realizado: fRealizado.value === "" ? 0 : (parseFloat(fRealizado.value) || 0)
+    };
+    upsertRow(row);
+    persist();
+    var wasEditing = !!state.editingId;
+    resetForm();
+    renderAll();
+    showToast(wasEditing ? "Lançamento atualizado." : "Lançamento adicionado.");
+  });
+
+  document.getElementById("cancelEdit").addEventListener("click", function(e){
+    e.preventDefault();
+    resetForm();
+  });
+
+  document.getElementById("tableLancamentos").addEventListener("click", function(e){
+    var btn = e.target.closest("button[data-action]");
+    if(!btn) return;
+    var tr = e.target.closest("tr[data-id]");
+    var id = tr.getAttribute("data-id");
+    var row = state.rows.find(function(r){ return r.id === id; });
+    if(!row) return;
+    if(btn.dataset.action === "delete"){
+      if(!confirm("Excluir este lançamento ("+row.divisao+" · "+row.turno+" · "+fmtDate(row.date)+")?")) return;
+      state.rows = state.rows.filter(function(r){ return r.id !== id; });
+      persist();
+      renderAll();
+      showToast("Lançamento excluído.");
+    }else if(btn.dataset.action === "edit"){
+      state.editingId = row.id;
+      fData.value = toInputDate(row.date);
+      fTurno.value = row.turno;
+      fDivisao.value = row.divisao;
+      fPlanejado.value = row.planejado;
+      fRealizado.value = row.realizado;
+      document.getElementById("editingNotice").style.display = "block";
+      document.getElementById("btnSubmit").textContent = "Salvar alteração";
+      form.scrollIntoView({behavior:"smooth", block:"center"});
+    }
+  });
+
+  // ---------- import (optional) ----------
   var fileInput = document.getElementById("fileInput");
-  dropzone.addEventListener("click", function(){ fileInput.click(); });
-  fileInput.addEventListener("change", function(e){ if(e.target.files[0]) handleFile(e.target.files[0]); });
-  dropzone.addEventListener("dragover", function(e){ e.preventDefault(); dropzone.classList.add("drag"); });
-  dropzone.addEventListener("dragleave", function(){ dropzone.classList.remove("drag"); });
-  dropzone.addEventListener("drop", function(e){
-    e.preventDefault(); dropzone.classList.remove("drag");
-    if(e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+  document.getElementById("btnImport").addEventListener("click", function(){ fileInput.click(); });
+  fileInput.addEventListener("change", function(e){
+    if(e.target.files[0]) handleImportFile(e.target.files[0]);
+    fileInput.value = "";
   });
-  document.getElementById("btnNewFile").addEventListener("click", function(){
-    document.getElementById("app").style.display = "none";
-    document.getElementById("fileBar").style.display = "none";
-    dropzone.style.display = "block";
-  });
+
   document.getElementById("btnPrint").addEventListener("click", function(){ window.print(); });
+  document.getElementById("filterMes").addEventListener("change", function(e){
+    state.selectedMonth = e.target.value;
+    renderAll();
+  });
   document.getElementById("cfgMeta").addEventListener("input", function(e){
     var v = parseFloat(e.target.value); if(!isNaN(v)) { state.meta = v/100; renderAll(); }
   });
@@ -870,7 +1098,8 @@
     var v = parseFloat(e.target.value); if(!isNaN(v)) { state.limiteSemanal = v; renderAll(); }
   });
 
-  if(loadSaved()) renderAll();
+  state.rows = loadPersisted();
+  renderAll();
 })();
 </script>
 </body>
