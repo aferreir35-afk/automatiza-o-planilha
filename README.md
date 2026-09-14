@@ -2,10 +2,13 @@
 
 Planilha de controle de volume de carga por turno/divisão, com o **Painel**
 ("dashboard") ampliado para monitorar variância entre Planejado x Realizado
-usando apenas fórmulas e formatação condicional do próprio Excel — **sem
-servidor, add-in ou integração externa (e-mail/Slack/WhatsApp)**.
+usando apenas fórmulas e formatação condicional do próprio Excel, **mais um
+Painel Executivo visual (estilo Power BI)** para apresentar à diretoria —
+tudo **sem servidor, add-in, instalação ou integração externa**
+(e-mail/Slack/WhatsApp).
 
-Arquivo: [`planilhas/Volume_por_Turno_Setembro_2026.xlsx`](planilhas/Volume_por_Turno_Setembro_2026.xlsx)
+- Planilha: [`planilhas/Volume_por_Turno_Setembro_2026.xlsx`](planilhas/Volume_por_Turno_Setembro_2026.xlsx)
+- Painel Executivo (visual): [`dashboard/index.html`](dashboard/index.html)
 
 ## O que já existia
 
@@ -56,6 +59,43 @@ Arquivo: [`planilhas/Volume_por_Turno_Setembro_2026.xlsx`](planilhas/Volume_por_
   `Limite de Saldo Semanal (t)` na aba Painel.
 - Abra a planilha no Excel/Google Sheets normalmente — não é necessário
   macro, script ou qualquer serviço externo.
+
+## Painel Executivo (dashboard visual estilo Power BI)
+
+Para apresentar os números à diretoria de forma visual — KPIs, gráficos e
+alertas coloridos, em vez de uma tabela de Excel — use o arquivo
+[`dashboard/index.html`](dashboard/index.html).
+
+**Rotina diária (leva menos de 1 minuto):**
+
+1. Preencha o dia na aba **Lançamentos** da planilha, como já faz hoje.
+2. Salve/exporte essa aba como **.csv** (`Arquivo > Salvar Como > CSV`) —
+   ou simplesmente use o próprio arquivo `.xlsx` da planilha, os dois
+   funcionam.
+3. Abra o arquivo `dashboard/index.html` **dando duplo clique nele** (abre no
+   seu navegador — Chrome, Edge, etc.). Não precisa instalar nada.
+4. Arraste o arquivo do passo 2 para a área indicada (ou clique para
+   selecionar).
+5. Pronto: o painel calcula tudo sozinho — totais do mês, Atingimento %,
+   alertas por Divisão/Turno, maiores desvios, resumo da semana e projeção de
+   fechamento do mês — igual à aba Painel da planilha, só que em formato de
+   apresentação.
+
+**Outros recursos do painel:**
+
+- **Filtros (chips) de Divisão e Turno** no topo funcionam como os "filtros"
+  do Power BI: clique para incluir/excluir e todo o painel (KPIs, gráficos,
+  tabelas) recalcula na hora.
+- **"Exportar apresentação (PDF)"** abre a tela de impressão do navegador —
+  escolha "Salvar como PDF" para gerar o arquivo pronto para enviar/
+  apresentar.
+- O painel **lembra o último arquivo carregado** (fica salvo só no seu
+  navegador): se fechar e abrir de novo, os dados do dia continuam lá até
+  você carregar um arquivo novo em "Trocar arquivo".
+- Os limites de alerta (`Meta mínima de Atingimento` e `Limite de Saldo
+  Semanal`) são editáveis diretamente no painel.
+- **Nenhum dado sai do seu computador**: todo o processamento acontece no
+  navegador (não há upload para nenhum servidor/nuvem).
 
 ## Limitações assumidas (mantendo a solução simples)
 
