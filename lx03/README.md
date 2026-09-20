@@ -77,12 +77,25 @@ python lx03/scripts/atualizar_dashboard.py --usar-sap   # busca direto do SAP, s
 ## Versão web (HTML)
 
 `lx03/dashboard/Painel_LX03.html` é gerado automaticamente a cada atualização —
-duplo clique e abre em qualquer navegador, com os mesmos filtros (Tipo de
-Depósito/Centro/Alerta), indicadores, gráficos, Pontos de Atenção e Top 10 do
-Painel do Excel. É uma fotografia estática da última carga (os filtros
-recalculam na hora, no navegador, mas os dados só atualizam na próxima
-rodada do script) — para compartilhar, é só enviar o arquivo `.html` (não
-precisa de servidor).
+duplo clique e abre em qualquer navegador. É uma fotografia estática da
+última carga (os filtros recalculam na hora, no navegador, mas os dados só
+atualizam na próxima rodada do script) — para compartilhar, é só enviar o
+arquivo `.html` (não precisa de servidor).
+
+Os três filtros do topo (**Tipo de Depósito**, **Centro**, **Alerta**) são de
+**seleção múltipla** — clique no campo pra abrir a lista de caixinhas,
+marque quantos itens quiser (ou "Selecionar todos"/"Limpar"). Tudo na
+página se ajusta na hora conforme o que estiver marcado:
+- **Indicadores gerais** e as tabelas de **Top 10** — sempre pelos 3 filtros.
+- **Pontos que carecem de monitoramento** — mostra só as categorias
+  marcadas no filtro Alerta (Tipo/Centro também se aplicam); se uma
+  categoria como "PARADO/SEM GIRO" for desmarcada, a linha dela some da
+  lista e a tabela de Top 10 correspondente avisa que foi excluída pelo
+  filtro.
+- **Gráfico "Estoque por Tipo de Depósito"** — se você marcar tipos
+  específicos, o gráfico mostra só esses (em vez do Top 12 padrão) —
+  funciona como uma forma visual de comparar só os tipos que importam.
+- **Gráfico "Posições por Alerta"** — mostra só as categorias marcadas.
 
 Dois botões no topo da página (ao lado dos filtros):
 - **Exportar dados filtrados (CSV)** — baixa as posições que estão sendo

@@ -86,6 +86,31 @@
   .filterbar .spacer{ flex:1 1 auto; }
   .filterbar .active-note{ font-size:.8rem; color:var(--ink-muted); margin-top:8px; }
 
+  .msel{ position:relative; font-size:.78rem; }
+  .msel-toggle{
+    font:inherit; font-size:.9rem; padding:8px 10px; border-radius:8px; text-align:left;
+    border:1px solid var(--border-strong); background:var(--surface-card); color:var(--ink-primary);
+    min-width:190px; cursor:pointer; display:flex; align-items:center; justify-content:space-between; gap:8px;
+  }
+  .msel-toggle .lbl{ font-size:.72rem; color:var(--ink-muted); font-weight:700; display:block; }
+  .msel-toggle .val{ display:block; margin-top:2px; }
+  .msel-toggle .car{ color:var(--ink-muted); font-size:.7rem; }
+  .msel[data-open="true"] .msel-toggle{ border-color:var(--brand); }
+  .msel-panel{
+    position:absolute; top:calc(100% + 6px); left:0; z-index:30; min-width:230px; max-height:280px;
+    overflow-y:auto; background:var(--surface-card); border:1px solid var(--border-strong); border-radius:10px;
+    box-shadow:var(--shadow); padding:8px;
+  }
+  .msel-actions{ display:flex; gap:8px; padding:2px 4px 8px; border-bottom:1px solid var(--border); margin-bottom:6px; }
+  .msel-actions button{
+    font:inherit; font-size:.74rem; color:var(--brand); background:none; border:none; cursor:pointer; padding:2px 4px; font-weight:600;
+  }
+  .msel-actions button:hover{ text-decoration:underline; }
+  .msel-opt{ display:flex; align-items:center; gap:8px; padding:5px 4px; border-radius:6px; cursor:pointer; font-size:.85rem; }
+  .msel-opt:hover{ background:var(--surface-sunken); }
+  .msel-opt input{ accent-color:var(--brand); width:15px; height:15px; flex:none; }
+  .msel-opt span{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
   @media print{
     .filterbar{ position:static; }
     .no-print{ display:none !important; }
@@ -177,15 +202,9 @@
 
   <div class="filterbar">
     <div class="row">
-      <label>Tipo de Depósito
-        <select id="f-tipo"></select>
-      </label>
-      <label>Centro
-        <select id="f-centro"></select>
-      </label>
-      <label>Alerta
-        <select id="f-alerta"></select>
-      </label>
+      <div class="msel" id="msel-tipo" data-label="Tipo de Depósito"></div>
+      <div class="msel" id="msel-centro" data-label="Centro"></div>
+      <div class="msel" id="msel-alerta" data-label="Alerta"></div>
       <button class="reset" id="f-reset" type="button">Limpar filtros</button>
       <span class="spacer no-print"></span>
       <button class="btn no-print" id="f-export-csv" type="button">⬇ Exportar dados filtrados (CSV)</button>
@@ -202,7 +221,7 @@
 
   <section>
     <h2>Pontos que carecem de monitoramento</h2>
-    <p class="section-sub">Sempre todo o armazém, sem filtro — pensado para leitura de diretoria.</p>
+    <p class="section-sub">Conforme os filtros selecionados acima.</p>
     <div class="table-scroll">
       <table class="poa">
         <thead>
@@ -219,12 +238,12 @@
     <div class="chart-grid">
       <div class="chart-card">
         <h3>Estoque (kg) por Tipo de Depósito</h3>
-        <p class="chart-sub">Top 12 tipos — filtrado por Centro e Alerta</p>
+        <p class="chart-sub" id="chart-tipo-sub">Top 12 tipos</p>
         <div id="chart-tipo"></div>
       </div>
       <div class="chart-card">
         <h3>Posições por Alerta</h3>
-        <p class="chart-sub">Filtrado por Tipo de Depósito e Centro</p>
+        <p class="chart-sub">Categorias selecionadas no filtro Alerta</p>
         <div id="chart-alerta"></div>
       </div>
       <div class="chart-card">
@@ -242,7 +261,7 @@
 
   <section>
     <h2>Top 10 — maiores posições</h2>
-    <p class="section-sub">Filtrado por Tipo de Depósito e Centro (kg)</p>
+    <p class="section-sub">Conforme os filtros selecionados acima (kg)</p>
     <div class="top10-grid">
       <div class="chart-card">
         <h3>Maior estoque parado/sem giro</h3>
@@ -315,28 +334,86 @@
   const ORDINAL = ["var(--ord-1)","var(--ord-2)","var(--ord-3)","var(--ord-4)","var(--ord-5)","var(--ord-6)"];
   const STATUS_COLOR = {good:"var(--good)",warning:"var(--warning)",serious:"var(--serious)",critical:"var(--critical)",neutral:"var(--ink-muted)"};
 
-  // ---- filter state -------------------------------------------------
-  const els = {
-    tipo: document.getElementById("f-tipo"),
-    centro: document.getElementById("f-centro"),
-    alerta: document.getElementById("f-alerta"),
-    reset: document.getElementById("f-reset"),
-    note: document.getElementById("active-note"),
-  };
-  function fillSelect(sel, values){
-    sel.innerHTML = "";
-    const optTodos = document.createElement("option");
-    optTodos.value=""; optTodos.textContent="(Todos)";
-    sel.appendChild(optTodos);
-    values.forEach(v=>{ const o=document.createElement("option"); o.value=v; o.textContent=v; sel.appendChild(o); });
-  }
-  fillSelect(els.tipo, DADOS.tipos);
-  fillSelect(els.centro, DADOS.centros);
-  fillSelect(els.alerta, ALERTAS_ORDEM);
-  [els.tipo, els.centro, els.alerta].forEach(s=> s.addEventListener("change", renderAll));
-  els.reset.addEventListener("click", ()=>{ els.tipo.value=""; els.centro.value=""; els.alerta.value=""; renderAll(); });
+  // ---- filtros de seleção múltipla ---------------------------------------
+  // Cada filtro guarda um Set com os valores marcados. Todos marcados =
+  // equivalente a "(Todos)". Desmarcar tudo mostra zero linhas (avisa na tela).
+  const todosFechar = [];
+  function criarMultiSelect(container, opcoes, onChange){
+    const rotulo = container.dataset.label;
+    const selecionados = new Set(opcoes);
+    let aberto = false;
 
-  function currentFilter(){ return { tipo: els.tipo.value, centro: els.centro.value, alerta: els.alerta.value }; }
+    container.innerHTML = `
+      <button type="button" class="msel-toggle">
+        <span><span class="lbl">${rotulo}</span><span class="val">(Todos)</span></span>
+        <span class="car">▾</span>
+      </button>
+      <div class="msel-panel" hidden>
+        <div class="msel-actions">
+          <button type="button" data-all>Selecionar todos</button>
+          <button type="button" data-none>Limpar</button>
+        </div>
+        <div class="msel-options"></div>
+      </div>`;
+    const toggle = container.querySelector(".msel-toggle");
+    const panel = container.querySelector(".msel-panel");
+    const optsEl = container.querySelector(".msel-options");
+    const valEl = container.querySelector(".val");
+
+    opcoes.forEach(op=>{
+      const id = `${container.id}-${op}`.replace(/[^a-zA-Z0-9_-]/g,"_");
+      const row = document.createElement("label");
+      row.className = "msel-opt";
+      row.innerHTML = `<input type="checkbox" id="${id}" checked><span title="${op}">${op}</span>`;
+      row.querySelector("input").addEventListener("change", (e)=>{
+        if(e.target.checked) selecionados.add(op); else selecionados.delete(op);
+        atualizarRotulo();
+        onChange();
+      });
+      optsEl.appendChild(row);
+    });
+
+    function atualizarRotulo(){
+      if(selecionados.size === opcoes.length) valEl.textContent = "(Todos)";
+      else if(selecionados.size === 0) valEl.textContent = "Nenhum";
+      else if(selecionados.size <= 2) valEl.textContent = [...selecionados].join(", ");
+      else valEl.textContent = `${selecionados.size} de ${opcoes.length} selecionados`;
+    }
+    function fechar(){ aberto=false; panel.hidden=true; container.removeAttribute("data-open"); }
+    function abrir(){ todosFechar.forEach(fn=>fn!==fechar && fn()); aberto=true; panel.hidden=false; container.setAttribute("data-open","true"); }
+    todosFechar.push(fechar);
+
+    toggle.addEventListener("click", (e)=>{ e.stopPropagation(); aberto ? fechar() : abrir(); });
+    container.querySelector("[data-all]").addEventListener("click", ()=>{
+      opcoes.forEach(op=>selecionados.add(op));
+      optsEl.querySelectorAll("input").forEach(i=>i.checked=true);
+      atualizarRotulo(); onChange();
+    });
+    container.querySelector("[data-none]").addEventListener("click", ()=>{
+      selecionados.clear();
+      optsEl.querySelectorAll("input").forEach(i=>i.checked=false);
+      atualizarRotulo(); onChange();
+    });
+    document.addEventListener("click", (e)=>{ if(aberto && !container.contains(e.target)) fechar(); });
+
+    return {
+      selecionados,
+      reset(){ opcoes.forEach(op=>selecionados.add(op)); optsEl.querySelectorAll("input").forEach(i=>i.checked=true); atualizarRotulo(); },
+    };
+  }
+
+  const msTipo = criarMultiSelect(document.getElementById("msel-tipo"), DADOS.tipos, renderAll);
+  const msCentro = criarMultiSelect(document.getElementById("msel-centro"), DADOS.centros, renderAll);
+  const msAlerta = criarMultiSelect(document.getElementById("msel-alerta"), ALERTAS_ORDEM, renderAll);
+  const els = { reset: document.getElementById("f-reset"), note: document.getElementById("active-note") };
+  els.reset.addEventListener("click", ()=>{ msTipo.reset(); msCentro.reset(); msAlerta.reset(); renderAll(); });
+
+  function resumoFiltro(nome, sel, total){
+    if(sel.size === total) return null;
+    if(sel.size === 0) return `${nome}: nenhum selecionado`;
+    return `${nome}: ${[...sel].join(", ")}`;
+  }
+  function currentFilter(){ return { tipo: msTipo.selecionados, centro: msCentro.selecionados, alerta: msAlerta.selecionados }; }
 
   // ---- exportar CSV / imprimir ------------------------------------------
   const CSV_CABECALHO = ["Tipo de Depósito","Centro","Alerta","UM","Peso","Duração (dias)","Dias até vencer","Material","Lote","Posição"];
@@ -357,7 +434,7 @@
   document.getElementById("f-export-csv").addEventListener("click", ()=>{
     const f = currentFilter();
     const linhas = DADOS.linhas.filter(r=>
-      (!f.tipo || r[COLS.tipo]===f.tipo) && (!f.centro || r[COLS.centro]===f.centro) && (!f.alerta || r[COLS.alerta]===f.alerta)
+      f.tipo.has(r[COLS.tipo]) && f.centro.has(r[COLS.centro]) && f.alerta.has(r[COLS.alerta])
     );
     const corpo = linhas.map(r => CSV_CABECALHO.map((_,i)=>csvCampo(r[i])).join(";")).join("\r\n");
     const csv = "﻿" + CSV_CABECALHO.join(";") + "\r\n" + corpo;
@@ -399,13 +476,16 @@
   // ---- main render ------------------------------------------------------
   function renderAll(){
     const f = currentFilter();
-    const matchTC = (r)=> (!f.tipo || r[COLS.tipo]===f.tipo) && (!f.centro || r[COLS.centro]===f.centro);
-    const matchTCA = (r)=> matchTC(r) && (!f.alerta || r[COLS.alerta]===f.alerta);
+    // linhas de posição vazia não têm Tipo/Centro reais (campo em branco no
+    // SAP) — não devem ser excluídas por uma seleção específica nesses filtros
+    const matchTC = (r)=> (r[COLS.tipo]==="" || f.tipo.has(r[COLS.tipo])) && (r[COLS.centro]==="" || f.centro.has(r[COLS.centro]));
+    const matchTCA = (r)=> matchTC(r) && f.alerta.has(r[COLS.alerta]);
 
-    const parts = [];
-    if(f.tipo) parts.push(`Tipo: ${f.tipo}`);
-    if(f.centro) parts.push(`Centro: ${f.centro}`);
-    if(f.alerta) parts.push(`Alerta: ${f.alerta}`);
+    const parts = [
+      resumoFiltro("Tipo", f.tipo, DADOS.tipos.length),
+      resumoFiltro("Centro", f.centro, DADOS.centros.length),
+      resumoFiltro("Alerta", f.alerta, ALERTAS_ORDEM.length),
+    ].filter(Boolean);
     els.note.textContent = parts.length ? "Filtro ativo — " + parts.join(" · ") : "Nenhum filtro ativo — mostrando todo o armazém.";
 
     // KPIs (respect all 3 filters)
@@ -417,7 +497,7 @@
       else if(r[COLS.um]==="UN") totalUn += r[COLS.peso];
     });
     const taxaOcup = (ocupadas+vazias)>0 ? ocupadas/(ocupadas+vazias) : 0;
-    const materiaisUnicos = new Set(DADOS.linhas.filter(r=>r[COLS.material]!=="<< vazio >>").map(r=>r[COLS.material])).size;
+    const materiaisUnicos = new Set(filtered.filter(r=>r[COLS.material]!=="<< vazio >>").map(r=>r[COLS.material])).size;
 
     const kpis = [
       ["Total em KG", fmtInt.format(Math.round(totalKg))],
@@ -425,23 +505,25 @@
       ["Posições ocupadas", fmtInt.format(ocupadas)],
       ["Posições vazias", fmtInt.format(vazias)],
       ["Taxa de ocupação", fmtPct(taxaOcup)],
-      ["Materiais únicos", fmtInt.format(materiaisUnicos), "todo o armazém"],
+      ["Materiais únicos", fmtInt.format(materiaisUnicos)],
     ];
     document.getElementById("kpi-grid").innerHTML = kpis.map(([lbl,val,note])=>`
       <div class="kpi"><div class="label">${lbl}</div><div class="value num">${val}${note?` <small>(${note})</small>`:""}</div></div>
     `).join("");
 
-    // Pontos de Atenção — sempre sem filtro (todo o armazém)
-    const totalKgGeral = DADOS.linhas.filter(r=>r[COLS.um]==="KG").reduce((s,r)=>s+r[COLS.peso],0);
-    const poaRows = ALERTAS_RISCO.map(cat=>{
-      const rowsCat = DADOS.linhas.filter(r=>r[COLS.alerta]===cat);
+    // Pontos de Atenção — conforme os filtros (Tipo/Centro sempre; Alerta decide quais categorias aparecem)
+    const rowsTC = DADOS.linhas.filter(matchTC);
+    const totalKgTC = rowsTC.filter(r=>r[COLS.um]==="KG").reduce((s,r)=>s+r[COLS.peso],0);
+    const categoriasVisiveis = ALERTAS_RISCO.filter(cat=>f.alerta.has(cat));
+    const poaRows = categoriasVisiveis.map(cat=>{
+      const rowsCat = rowsTC.filter(r=>r[COLS.alerta]===cat);
       const qtd = rowsCat.length;
       const kg = rowsCat.filter(r=>r[COLS.um]==="KG").reduce((s,r)=>s+r[COLS.peso],0);
-      const pct = totalKgGeral>0 ? kg/totalKgGeral : 0;
+      const pct = totalKgTC>0 ? kg/totalKgTC : 0;
       const status = statusOf(cat);
       return {cat, qtd, kg, pct, status};
     });
-    document.getElementById("poa-body").innerHTML = poaRows.map(r=>`
+    document.getElementById("poa-body").innerHTML = poaRows.length ? poaRows.map(r=>`
       <tr>
         <td><b>${r.cat}</b></td>
         <td class="desc">${DESCRICAO[r.cat]}</td>
@@ -451,21 +533,27 @@
         <td><span class="chip ${r.qtd>0?r.status:'good'}"><span class="dot"></span>${r.qtd>0?STATUS_LABEL[r.status]:'OK'}</span></td>
         <td class="acao">${ACAO[r.cat]}</td>
       </tr>
-    `).join("");
+    `).join("") : `<tr><td colspan="7" class="desc">Nenhuma categoria de risco selecionada no filtro Alerta.</td></tr>`;
 
-    // Chart: kg por Tipo de Depósito (filtro: centro + alerta, tipo é o eixo)
+    // Chart: kg por Tipo de Depósito (filtro: centro + alerta; se o filtro de
+    // Tipo tiver uma seleção específica, o gráfico mostra só os tipos escolhidos)
     const porTipo = {};
-    DADOS.linhas.filter(r=> (!f.centro || r[COLS.centro]===f.centro) && (!f.alerta || r[COLS.alerta]===f.alerta) && r[COLS.um]==="KG")
+    DADOS.linhas.filter(r=> f.centro.has(r[COLS.centro]) && f.alerta.has(r[COLS.alerta]) && r[COLS.um]==="KG")
       .forEach(r=>{ porTipo[r[COLS.tipo]] = (porTipo[r[COLS.tipo]]||0) + r[COLS.peso]; });
-    const tipoItems = Object.entries(porTipo).sort((a,b)=>b[1]-a[1]).slice(0,12)
-      .map(([tipo,kg])=>({label:tipo, value:Math.round(kg), color:"var(--brand)"}));
+    const tipoTodos = f.tipo.size === DADOS.tipos.length;
+    let tipoEntradas = Object.entries(porTipo).filter(([tipo])=>f.tipo.has(tipo)).sort((a,b)=>b[1]-a[1]);
+    document.getElementById("chart-tipo-sub").textContent = tipoTodos
+      ? `Top 12 de ${DADOS.tipos.length} tipos` : `${Math.min(tipoEntradas.length, f.tipo.size)} tipo(s) selecionado(s)`;
+    if(tipoTodos) tipoEntradas = tipoEntradas.slice(0,12);
+    const tipoItems = tipoEntradas.map(([tipo,kg])=>({label:tipo, value:Math.round(kg), color:"var(--brand)"}));
     renderBars(document.getElementById("chart-tipo"), tipoItems);
 
-    // Chart: posições por Alerta (filtro: tipo + centro)
+    // Chart: posições por Alerta (filtro: tipo + centro; só mostra as
+    // categorias marcadas no filtro de Alerta)
     const porAlerta = {};
     ALERTAS_ORDEM.forEach(a=>porAlerta[a]=0);
     DADOS.linhas.filter(matchTC).forEach(r=>{ porAlerta[r[COLS.alerta]] = (porAlerta[r[COLS.alerta]]||0)+1; });
-    const alertaItems = ALERTAS_ORDEM.map(a=>({label:a, value:porAlerta[a], color:STATUS_COLOR[statusOf(a)]}));
+    const alertaItems = ALERTAS_ORDEM.filter(a=>f.alerta.has(a)).map(a=>({label:a, value:porAlerta[a], color:STATUS_COLOR[statusOf(a)]}));
     renderBars(document.getElementById("chart-alerta"), alertaItems);
 
     // Chart: dias sem giro (faixas) — filtro tipo+centro+alerta
@@ -487,8 +575,10 @@
     vencItems.push({label:"Sem data", value: semData, color:"var(--ink-muted)"});
     renderBars(document.getElementById("chart-venc"), vencItems);
 
-    // Top 10 tables — filtro tipo+centro
+    // Top 10 tables — filtro tipo+centro; some se a categoria não estiver
+    // marcada no filtro de Alerta
     function top10(alertaAlvo, diasCol, diasSign){
+      if(!f.alerta.has(alertaAlvo)) return null;
       return DADOS.linhas.filter(r=> matchTC(r) && r[COLS.alerta]===alertaAlvo && r[COLS.um]==="KG")
         .sort((a,b)=>b[COLS.peso]-a[COLS.peso]).slice(0,10)
         .map(r=>({ material:r[COLS.material], lote:r[COLS.lote]||"—", posicao:r[COLS.posicao], tipo:r[COLS.tipo],
@@ -496,10 +586,14 @@
     }
     function fillTop(tableId, rows){
       const tbody = document.querySelector(`#${tableId} tbody`);
-      tbody.innerHTML = rows.length ? rows.map(r=>`
-        <tr><td>${r.material}</td><td>${r.lote}</td><td>${r.posicao}</td><td>${r.tipo}</td>
-            <td class="num">${fmtInt.format(r.kg)}</td><td class="num">${r.dias}</td></tr>
-      `).join("") : `<tr><td colspan="6" class="desc">Nenhuma posição para os filtros selecionados.</td></tr>`;
+      if(rows === null){
+        tbody.innerHTML = `<tr><td colspan="6" class="desc">Categoria excluída pelo filtro de Alerta selecionado.</td></tr>`;
+      } else {
+        tbody.innerHTML = rows.length ? rows.map(r=>`
+          <tr><td>${r.material}</td><td>${r.lote}</td><td>${r.posicao}</td><td>${r.tipo}</td>
+              <td class="num">${fmtInt.format(r.kg)}</td><td class="num">${r.dias}</td></tr>
+        `).join("") : `<tr><td colspan="6" class="desc">Nenhuma posição para os filtros selecionados.</td></tr>`;
+      }
     }
     fillTop("top-parado", top10("PARADO/SEM GIRO", COLS.duracao, 1));
     fillTop("top-vencido", top10("VENCIDO", COLS.dias_venc, -1));
