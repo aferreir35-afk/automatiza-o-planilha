@@ -17,13 +17,16 @@ lx03/
 │   ├── notificacoes.py          # alertas por e-mail/Teams
 │   ├── conector_sap.py          # conexão direta ao SAP (OData/RFC), alternativa ao arquivo manual
 │   ├── publicar_nuvem.py        # publicação no Google Sheets / Power BI
+│   ├── gerar_pagina_web.py      # gera a versão web (HTML) do painel
+│   ├── templates/painel.html    # modelo da página web (design/estrutura)
 │   └── config.py                # carregador de config/config.ini
 ├── config/
 │   ├── config.exemplo.ini       # modelo com todas as opções (comentado)
 │   └── config.ini               # SEU arquivo real com credenciais (não vai pro Git)
 ├── entrada/                     # coloque aqui o export do dia (LX03 → Excel)
 ├── dashboard/
-│   └── Dashboard_Estoque_LX03.xlsx   # o arquivo "vivo" — sempre a última carga
+│   ├── Dashboard_Estoque_LX03.xlsx   # o arquivo "vivo" — sempre a última carga
+│   └── Painel_LX03.html         # versão web do painel — abre só clicando, sem Excel
 ├── historico/                   # cópia do export + do dashboard de cada rodada, e tendencia.db
 ├── relatorios_pdf/              # PDF gerado a cada atualização (Painel + Pontos de Atenção)
 ├── GUIA_POWER_BI.md             # passo a passo para publicar no Power BI sem código
@@ -50,6 +53,9 @@ lx03/
      `lx03/historico/` (rastreabilidade — "o que a diretoria viu no dia X
      veio de qual arquivo do SAP?");
    - gera um PDF do Painel + Pontos de Atenção em `lx03/relatorios_pdf/`;
+   - gera uma versão web em `lx03/dashboard/Painel_LX03.html` — mesmos
+     filtros, indicadores, gráficos e Top 10 do Painel do Excel, mas abre
+     direto no navegador (duplo clique), sem precisar do Excel instalado;
    - imprime um resumo em texto no terminal com os principais alertas, para
      quem só precisa da visão rápida sem abrir o Excel.
 
@@ -64,7 +70,22 @@ python lx03/scripts/atualizar_dashboard.py lx03/entrada/arquivo.xlsx --sem-histo
 python lx03/scripts/atualizar_dashboard.py lx03/entrada/arquivo.xlsx --sem-tendencia
 python lx03/scripts/atualizar_dashboard.py lx03/entrada/arquivo.xlsx --sem-notificacoes
 python lx03/scripts/atualizar_dashboard.py lx03/entrada/arquivo.xlsx --sem-nuvem
+python lx03/scripts/atualizar_dashboard.py lx03/entrada/arquivo.xlsx --sem-html
 python lx03/scripts/atualizar_dashboard.py --usar-sap   # busca direto do SAP, sem arquivo (ver abaixo)
+```
+
+## Versão web (HTML)
+
+`lx03/dashboard/Painel_LX03.html` é gerado automaticamente a cada atualização —
+duplo clique e abre em qualquer navegador, com os mesmos filtros (Tipo de
+Depósito/Centro/Alerta), indicadores, gráficos, Pontos de Atenção e Top 10 do
+Painel do Excel. É uma fotografia estática da última carga (os filtros
+recalculam na hora, no navegador, mas os dados só atualizam na próxima
+rodada do script) — para compartilhar, é só enviar o arquivo `.html` (não
+precisa de servidor). Para gerar avulso, sem rodar a atualização inteira:
+
+```bash
+python lx03/scripts/gerar_pagina_web.py lx03/dashboard/Dashboard_Estoque_LX03.xlsx
 ```
 
 ## As 5 automações adicionais

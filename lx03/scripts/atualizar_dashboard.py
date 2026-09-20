@@ -989,6 +989,7 @@ def main():
     ap.add_argument("--sem-tendencia", action="store_true", help="Não gravar/gerar a aba e o histórico de Tendência")
     ap.add_argument("--sem-notificacoes", action="store_true", help="Não enviar e-mail/Teams mesmo se configurado")
     ap.add_argument("--sem-nuvem", action="store_true", help="Não publicar no Google Sheets/Power BI mesmo se configurado")
+    ap.add_argument("--sem-html", action="store_true", help="Não gerar a versão web (HTML) do painel")
     ap.add_argument("--usar-sap", action="store_true", help="Buscar os dados direto do SAP (OData/RFC) em vez de um arquivo — requer config/config.ini")
     args = ap.parse_args()
 
@@ -1068,6 +1069,13 @@ def main():
 
     if not args.sem_pdf:
         exportar_pdf(caminho_saida, PDF_DIR, carimbo)
+
+    if not args.sem_html:
+        import gerar_pagina_web
+        caminho_html = caminho_saida.parent / "Painel_LX03.html"
+        tendencia_db = HISTORICO_DIR / "tendencia.db"
+        gerar_pagina_web.gerar(caminho_saida, tendencia_db, caminho_html)
+        print(f"Página web gerada em: {caminho_html}")
 
     imprimir_resumo(contagem, kg)
 

@@ -1,0 +1,476 @@
+<title>Painel LX03</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    color-scheme:light;
+    --surface:#faf7f2; --surface-card:#ffffff; --surface-sunken:#f1ece3;
+    --ink-primary:#2a1810; --ink-secondary:#5c4a3d; --ink-muted:#948676;
+    --brand:#6e1423; --brand-strong:#4a0d18; --gold:#8f6a2c;
+    --border:rgba(42,24,16,.12); --border-strong:rgba(42,24,16,.22);
+    --good:#0ca30c; --warning:#c98500; --serious:#c15a34; --critical:#d03b3b;
+    --ord-1:#d99aa7; --ord-2:#c77c8c; --ord-3:#ac5468; --ord-4:#8a2f45; --ord-5:#651226; --ord-6:#450a19;
+    --shadow: 0 1px 2px rgba(42,24,16,.06), 0 8px 24px -12px rgba(42,24,16,.18);
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      color-scheme:dark;
+      --surface:#1a1613; --surface-card:#242019; --surface-sunken:#161310;
+      --ink-primary:#f5efe8; --ink-secondary:#cbb9ab; --ink-muted:#8f8072;
+      --brand:#e2a3b1; --brand-strong:#f0c8d0; --gold:#d9a75c;
+      --border:rgba(245,239,232,.14); --border-strong:rgba(245,239,232,.24);
+      --good:#0ca30c; --warning:#fab219; --serious:#ec835a; --critical:#e66767;
+      --ord-1:#f0c8d0; --ord-2:#e2a3b1; --ord-3:#cf7d8f; --ord-4:#b25569; --ord-5:#984262; --ord-6:#823348;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.5);
+    }
+  }
+  :root[data-theme="dark"]{
+    color-scheme:dark;
+    --surface:#1a1613; --surface-card:#242019; --surface-sunken:#161310;
+    --ink-primary:#f5efe8; --ink-secondary:#cbb9ab; --ink-muted:#8f8072;
+    --brand:#e2a3b1; --brand-strong:#f0c8d0; --gold:#d9a75c;
+    --border:rgba(245,239,232,.14); --border-strong:rgba(245,239,232,.24);
+    --good:#0ca30c; --warning:#fab219; --serious:#ec835a; --critical:#e66767;
+    --ord-1:#f0c8d0; --ord-2:#e2a3b1; --ord-3:#cf7d8f; --ord-4:#b25569; --ord-5:#984262; --ord-6:#823348;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.5);
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    background:var(--surface); color:var(--ink-primary);
+    font-family:"Source Sans 3",system-ui,-apple-system,"Segoe UI",sans-serif;
+    margin:0; padding-inline:16px; -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.display{ font-family:"Fraunces",Georgia,serif; text-wrap:balance; }
+  .wrap{ max-width:1180px; margin:0 auto; }
+  .num{ font-variant-numeric:tabular-nums; }
+
+  header.top{ padding-block:28px 20px; border-bottom:1px solid var(--border); }
+  header.top .eyebrow{
+    font-size:.72rem; letter-spacing:.14em; text-transform:uppercase; color:var(--gold);
+    font-weight:700; margin:0 0 6px;
+  }
+  header.top h1{ margin:0; font-size:clamp(1.6rem,3.4vw,2.4rem); font-weight:600; color:var(--brand-strong); }
+  header.top p.sub{ margin:8px 0 0; color:var(--ink-secondary); max-width:62ch; line-height:1.5; }
+  header.top .meta{ margin-top:14px; font-size:.82rem; color:var(--ink-muted); display:flex; gap:18px; flex-wrap:wrap; }
+  header.top .meta b{ color:var(--ink-secondary); font-weight:600; }
+
+  .filterbar{
+    position:sticky; top:env(safe-area-inset-top,0px); z-index:20;
+    background:var(--surface); border-bottom:1px solid var(--border);
+    padding-block:12px; margin-bottom:24px;
+  }
+  .filterbar .row{ display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+  .filterbar label{ font-size:.78rem; color:var(--ink-muted); display:flex; flex-direction:column; gap:4px; font-weight:600; }
+  .filterbar select{
+    font:inherit; font-size:.9rem; padding:8px 10px; border-radius:8px;
+    border:1px solid var(--border-strong); background:var(--surface-card); color:var(--ink-primary);
+    min-width:170px;
+  }
+  .filterbar .reset{
+    font-size:.82rem; color:var(--brand); background:none; border:1px solid var(--border-strong);
+    border-radius:8px; padding:8px 12px; cursor:pointer; font-weight:600; align-self:flex-end;
+  }
+  .filterbar .reset:hover{ background:var(--surface-sunken); }
+  .filterbar .active-note{ font-size:.8rem; color:var(--ink-muted); margin-top:8px; }
+
+  section{ margin-bottom:38px; }
+  section > h2{ font-size:1.15rem; font-weight:600; color:var(--brand-strong); margin:0 0 4px; }
+  section > .section-sub{ font-size:.85rem; color:var(--ink-muted); margin:0 0 16px; }
+
+  .kpi-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; }
+  .kpi{
+    background:var(--surface-card); border:1px solid var(--border); border-radius:12px;
+    padding:14px 16px; box-shadow:var(--shadow);
+  }
+  .kpi .label{ font-size:.72rem; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-muted); font-weight:700; }
+  .kpi .value{ font-family:"Fraunces",serif; font-size:1.7rem; font-weight:600; color:var(--brand-strong); margin-top:4px; }
+  .kpi .value small{ font-size:.95rem; font-weight:500; color:var(--ink-secondary); }
+
+  table.poa{ width:100%; border-collapse:collapse; background:var(--surface-card); border-radius:12px; overflow:hidden; box-shadow:var(--shadow); }
+  .table-scroll{ overflow-x:auto; border-radius:12px; }
+  table.poa th, table.poa td{ padding:11px 12px; text-align:left; border-bottom:1px solid var(--border); font-size:.88rem; vertical-align:top; }
+  table.poa th{ font-size:.72rem; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-muted); background:var(--surface-sunken); white-space:nowrap; }
+  table.poa tr:last-child td{ border-bottom:none; }
+  table.poa td.num{ text-align:right; white-space:nowrap; }
+  table.poa td.desc{ color:var(--ink-secondary); min-width:180px; }
+  table.poa td.acao{ color:var(--ink-secondary); min-width:220px; font-size:.83rem; }
+
+  .chip{ display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:999px; font-size:.78rem; font-weight:700; white-space:nowrap; }
+  .chip .dot{ width:8px; height:8px; border-radius:50%; flex:none; }
+  .chip.good{ color:var(--good); background:color-mix(in srgb, var(--good) 14%, transparent); }
+  .chip.good .dot{ background:var(--good); }
+  .chip.warning{ color:var(--warning); background:color-mix(in srgb, var(--warning) 16%, transparent); }
+  .chip.warning .dot{ background:var(--warning); }
+  .chip.serious{ color:var(--serious); background:color-mix(in srgb, var(--serious) 16%, transparent); }
+  .chip.serious .dot{ background:var(--serious); }
+  .chip.critical{ color:var(--critical); background:color-mix(in srgb, var(--critical) 16%, transparent); }
+  .chip.critical .dot{ background:var(--critical); }
+
+  .chart-grid{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  @media (max-width:820px){ .chart-grid{ grid-template-columns:1fr; } }
+  .chart-card{ background:var(--surface-card); border:1px solid var(--border); border-radius:12px; padding:18px 20px; box-shadow:var(--shadow); }
+  .chart-card h3{ margin:0 0 2px; font-size:1rem; font-weight:600; }
+  .chart-card .chart-sub{ font-size:.78rem; color:var(--ink-muted); margin:0 0 14px; }
+  .bar-row{ display:grid; grid-template-columns:104px 1fr 74px; align-items:center; gap:10px; margin-bottom:7px; }
+  #chart-alerta .bar-row{ grid-template-columns:132px 1fr 56px; }
+  #chart-alerta .bar-row .lbl{ font-size:.73rem; }
+  .bar-row .lbl{ font-size:.8rem; color:var(--ink-secondary); text-align:right; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .bar-row .track{ background:var(--surface-sunken); border-radius:5px; height:16px; position:relative; overflow:hidden; }
+  .bar-row .fill{ height:100%; border-radius:5px; min-width:3px; }
+  .bar-row .val{ font-size:.8rem; font-weight:600; color:var(--ink-primary); text-align:right; }
+  .bar-row.empty .track{ opacity:.35; }
+  .bar-empty-note{ font-size:.82rem; color:var(--ink-muted); padding:6px 0; }
+
+  .top10-grid{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  @media (max-width:900px){ .top10-grid{ grid-template-columns:1fr; } }
+
+  .trend-banner{
+    display:flex; gap:16px; align-items:center; flex-wrap:wrap; justify-content:space-between;
+    background:var(--surface-card); border:1px solid var(--border); border-radius:12px;
+    padding:16px 20px; box-shadow:var(--shadow);
+  }
+  .trend-banner .t-text{ font-size:.88rem; color:var(--ink-secondary); max-width:56ch; }
+  .trend-points{ display:flex; gap:10px; align-items:flex-end; }
+  .trend-points .pt{ text-align:center; font-size:.72rem; color:var(--ink-muted); }
+  .trend-points .pt .dot-wrap{ width:14px; height:14px; border-radius:50%; background:var(--brand); margin:0 auto 6px; }
+
+  footer.foot{ border-top:1px solid var(--border); padding-block:20px 40px; font-size:.78rem; color:var(--ink-muted); line-height:1.6; }
+  footer.foot code{ background:var(--surface-sunken); padding:1px 5px; border-radius:4px; }
+
+  @media (prefers-reduced-motion:no-preference){
+    .bar-row .fill{ transition:width .5s ease; }
+  }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <p class="eyebrow">Barry Callebaut · Estoque LX03</p>
+    <h1>Painel de Estoque — LX03</h1>
+    <p class="sub">Fornecimento por posição no depósito, com os pontos que carecem de monitoramento já destacados. Os filtros abaixo recalculam cartões, gráficos e as tabelas de Top&nbsp;10 na hora.</p>
+    <div class="meta">
+      <span>Última atualização: <b id="meta-atualizacao">—</b></span>
+      <span>Arquivo de origem: <b id="meta-arquivo">—</b></span>
+      <span><b id="meta-linhas">—</b> posições carregadas</span>
+    </div>
+  </header>
+
+  <div class="filterbar">
+    <div class="row">
+      <label>Tipo de Depósito
+        <select id="f-tipo"></select>
+      </label>
+      <label>Centro
+        <select id="f-centro"></select>
+      </label>
+      <label>Alerta
+        <select id="f-alerta"></select>
+      </label>
+      <button class="reset" id="f-reset" type="button">Limpar filtros</button>
+    </div>
+    <p class="active-note" id="active-note"></p>
+  </div>
+
+  <section>
+    <h2>Indicadores gerais</h2>
+    <p class="section-sub">Conforme os filtros selecionados acima.</p>
+    <div class="kpi-grid" id="kpi-grid"></div>
+  </section>
+
+  <section>
+    <h2>Pontos que carecem de monitoramento</h2>
+    <p class="section-sub">Sempre todo o armazém, sem filtro — pensado para leitura de diretoria.</p>
+    <div class="table-scroll">
+      <table class="poa">
+        <thead>
+          <tr><th>Categoria</th><th>O que significa</th><th class="num">Posições</th><th class="num">Peso (kg)</th><th class="num">% do kg</th><th>Severidade</th><th>Ação recomendada</th></tr>
+        </thead>
+        <tbody id="poa-body"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Visão por categoria</h2>
+    <p class="section-sub" id="chart-note">Conforme os filtros selecionados acima.</p>
+    <div class="chart-grid">
+      <div class="chart-card">
+        <h3>Estoque (kg) por Tipo de Depósito</h3>
+        <p class="chart-sub">Top 12 tipos — filtrado por Centro e Alerta</p>
+        <div id="chart-tipo"></div>
+      </div>
+      <div class="chart-card">
+        <h3>Posições por Alerta</h3>
+        <p class="chart-sub">Filtrado por Tipo de Depósito e Centro</p>
+        <div id="chart-alerta"></div>
+      </div>
+      <div class="chart-card">
+        <h3>Dias sem giro (faixas)</h3>
+        <p class="chart-sub">Posições ocupadas, por tempo desde o último movimento</p>
+        <div id="chart-aging"></div>
+      </div>
+      <div class="chart-card">
+        <h3>Vencimento (faixas)</h3>
+        <p class="chart-sub">Posições ocupadas, por proximidade do vencimento</p>
+        <div id="chart-venc"></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Top 10 — maiores posições</h2>
+    <p class="section-sub">Filtrado por Tipo de Depósito e Centro (kg)</p>
+    <div class="top10-grid">
+      <div class="chart-card">
+        <h3>Maior estoque parado/sem giro</h3>
+        <div class="table-scroll"><table class="poa" id="top-parado"><thead><tr><th>Material</th><th>Lote</th><th>Posição</th><th>Tipo</th><th class="num">kg</th><th class="num">Dias parado</th></tr></thead><tbody></tbody></table></div>
+      </div>
+      <div class="chart-card">
+        <h3>Maior estoque vencido</h3>
+        <div class="table-scroll"><table class="poa" id="top-vencido"><thead><tr><th>Material</th><th>Lote</th><th>Posição</th><th>Tipo</th><th class="num">kg</th><th class="num">Dias vencido</th></tr></thead><tbody></tbody></table></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Tendência</h2>
+    <div class="trend-banner">
+      <p class="t-text" id="trend-text"></p>
+      <div class="trend-points" id="trend-points"></div>
+    </div>
+  </section>
+
+  <footer class="foot">
+    Painel gerado automaticamente a partir do export SAP LX03 pelo mesmo pipeline Python do dashboard Excel
+    (<code>lx03/scripts/atualizar_dashboard.py</code>). Esta página é uma fotografia estática da última carga —
+    para o arquivo vivo com fórmulas, filtros nativos do Excel e exportação em PDF, veja
+    <code>lx03/dashboard/Dashboard_Estoque_LX03.xlsx</code> no repositório.
+  </footer>
+</div>
+
+<script type="application/json" id="dados-raw">__DADOS_JSON__</script>
+<script>
+(function(){
+  "use strict";
+  const DADOS = JSON.parse(document.getElementById("dados-raw").textContent);
+  const COLS = DADOS.colunas.reduce((m,c,i)=>(m[c]=i,m),{});
+  const fmtInt = new Intl.NumberFormat("pt-BR");
+  const fmtPct = (x)=> (x*100).toLocaleString("pt-BR",{minimumFractionDigits:1,maximumFractionDigits:1})+"%";
+
+  const ALERTAS_ORDEM = ["VENCIDO","PRÓX. VENCIMENTO","QUALIDADE","BLOQUEADO","RESTRITO/DEVOLUÇÃO","QUARENTENA","DESCARTE/DEVOLUÇÃO","SEM LOTE","PARADO/SEM GIRO","OK","VAZIA"];
+  const ALERTAS_RISCO = ALERTAS_ORDEM.filter(a=>a!=="OK" && a!=="VAZIA");
+  const STATUS_MAP = {
+    "VENCIDO":"critical", "DESCARTE/DEVOLUÇÃO":"critical", "SEM LOTE":"critical",
+    "PRÓX. VENCIMENTO":"warning", "OK":"good", "VAZIA":"neutral",
+  };
+  const statusOf = (a)=> STATUS_MAP[a] || "serious";
+  const STATUS_LABEL = {good:"OK", warning:"Atenção", serious:"Atenção", critical:"Crítico", neutral:"—"};
+
+  const DESCRICAO = {
+    "VENCIDO":"Material já venceu",
+    "PRÓX. VENCIMENTO":"Vence em breve",
+    "QUALIDADE":"Em inspeção de qualidade",
+    "BLOQUEADO":"Bloqueado para uso",
+    "RESTRITO/DEVOLUÇÃO":"Estoque restrito/devolução",
+    "QUARENTENA":"Em quarentena",
+    "DESCARTE/DEVOLUÇÃO":"Em posição de descarte/devolução",
+    "SEM LOTE":"Sem lote (falta de rastreabilidade)",
+    "PARADO/SEM GIRO":"Sem movimento há muito tempo",
+  };
+  const ACAO = {
+    "VENCIDO":"Separar fisicamente, abrir processo de baixa/descarte e investigar a causa raiz.",
+    "PRÓX. VENCIMENTO":"Priorizar consumo/expedição por ordem de vencimento (FEFO).",
+    "QUALIDADE":"Acompanhar com a Qualidade o prazo de liberação.",
+    "BLOQUEADO":"Identificar o motivo do bloqueio e definir prazo de liberação/descarte.",
+    "RESTRITO/DEVOLUÇÃO":"Definir destino (retrabalho, devolução ou descarte) sem deixar acumular.",
+    "QUARENTENA":"Confirmar com Qualidade/Compras a liberação do lote.",
+    "DESCARTE/DEVOLUÇÃO":"Formalizar e executar o descarte/retorno.",
+    "SEM LOTE":"Corrigir o apontamento no SAP — lote é obrigatório para rastreabilidade.",
+    "PARADO/SEM GIRO":"Revisar previsão de demanda ou redistribuir entre centros.",
+  };
+
+  const ORDINAL = ["var(--ord-1)","var(--ord-2)","var(--ord-3)","var(--ord-4)","var(--ord-5)","var(--ord-6)"];
+  const STATUS_COLOR = {good:"var(--good)",warning:"var(--warning)",serious:"var(--serious)",critical:"var(--critical)",neutral:"var(--ink-muted)"};
+
+  // ---- filter state -------------------------------------------------
+  const els = {
+    tipo: document.getElementById("f-tipo"),
+    centro: document.getElementById("f-centro"),
+    alerta: document.getElementById("f-alerta"),
+    reset: document.getElementById("f-reset"),
+    note: document.getElementById("active-note"),
+  };
+  function fillSelect(sel, values){
+    sel.innerHTML = "";
+    const optTodos = document.createElement("option");
+    optTodos.value=""; optTodos.textContent="(Todos)";
+    sel.appendChild(optTodos);
+    values.forEach(v=>{ const o=document.createElement("option"); o.value=v; o.textContent=v; sel.appendChild(o); });
+  }
+  fillSelect(els.tipo, DADOS.tipos);
+  fillSelect(els.centro, DADOS.centros);
+  fillSelect(els.alerta, ALERTAS_ORDEM);
+  [els.tipo, els.centro, els.alerta].forEach(s=> s.addEventListener("change", renderAll));
+  els.reset.addEventListener("click", ()=>{ els.tipo.value=""; els.centro.value=""; els.alerta.value=""; renderAll(); });
+
+  function currentFilter(){ return { tipo: els.tipo.value, centro: els.centro.value, alerta: els.alerta.value }; }
+
+  // ---- meta -----------------------------------------------------------
+  document.getElementById("meta-atualizacao").textContent = DADOS.meta.ultima_atualizacao || "—";
+  document.getElementById("meta-arquivo").textContent = DADOS.meta.arquivo_origem || "—";
+  document.getElementById("meta-linhas").textContent = fmtInt.format(DADOS.linhas.length);
+
+  // ---- bar chart component (plain HTML/CSS bars) -----------------------
+  function renderBars(container, items, opts){
+    opts = opts || {};
+    container.innerHTML = "";
+    if(!items.length || items.every(i=>i.value===0)){
+      const p = document.createElement("p");
+      p.className = "bar-empty-note";
+      p.textContent = "Sem dados para os filtros selecionados.";
+      container.appendChild(p);
+      return;
+    }
+    const max = Math.max(...items.map(i=>i.value), 1);
+    items.forEach(it=>{
+      const row = document.createElement("div");
+      row.className = "bar-row" + (it.value===0 ? " empty" : "");
+      const pct = Math.max((it.value/max)*100, it.value>0?2:0);
+      row.innerHTML = `
+        <div class="lbl" title="${it.label}">${it.label}</div>
+        <div class="track"><div class="fill" style="width:${pct}%;background:${it.color}"></div></div>
+        <div class="val num">${opts.fmt ? opts.fmt(it.value) : fmtInt.format(it.value)}</div>`;
+      row.title = `${it.label}: ${opts.fmt ? opts.fmt(it.value) : fmtInt.format(it.value)}`;
+      container.appendChild(row);
+    });
+  }
+
+  // ---- main render ------------------------------------------------------
+  function renderAll(){
+    const f = currentFilter();
+    const matchTC = (r)=> (!f.tipo || r[COLS.tipo]===f.tipo) && (!f.centro || r[COLS.centro]===f.centro);
+    const matchTCA = (r)=> matchTC(r) && (!f.alerta || r[COLS.alerta]===f.alerta);
+
+    const parts = [];
+    if(f.tipo) parts.push(`Tipo: ${f.tipo}`);
+    if(f.centro) parts.push(`Centro: ${f.centro}`);
+    if(f.alerta) parts.push(`Alerta: ${f.alerta}`);
+    els.note.textContent = parts.length ? "Filtro ativo — " + parts.join(" · ") : "Nenhum filtro ativo — mostrando todo o armazém.";
+
+    // KPIs (respect all 3 filters)
+    const filtered = DADOS.linhas.filter(matchTCA);
+    let totalKg=0, totalUn=0, ocupadas=0, vazias=0;
+    filtered.forEach(r=>{
+      if(r[COLS.alerta]==="VAZIA") vazias++; else ocupadas++;
+      if(r[COLS.um]==="KG") totalKg += r[COLS.peso];
+      else if(r[COLS.um]==="UN") totalUn += r[COLS.peso];
+    });
+    const taxaOcup = (ocupadas+vazias)>0 ? ocupadas/(ocupadas+vazias) : 0;
+    const materiaisUnicos = new Set(DADOS.linhas.filter(r=>r[COLS.material]!=="<< vazio >>").map(r=>r[COLS.material])).size;
+
+    const kpis = [
+      ["Total em KG", fmtInt.format(Math.round(totalKg))],
+      ["Total em UN", fmtInt.format(Math.round(totalUn))],
+      ["Posições ocupadas", fmtInt.format(ocupadas)],
+      ["Posições vazias", fmtInt.format(vazias)],
+      ["Taxa de ocupação", fmtPct(taxaOcup)],
+      ["Materiais únicos", fmtInt.format(materiaisUnicos), "todo o armazém"],
+    ];
+    document.getElementById("kpi-grid").innerHTML = kpis.map(([lbl,val,note])=>`
+      <div class="kpi"><div class="label">${lbl}</div><div class="value num">${val}${note?` <small>(${note})</small>`:""}</div></div>
+    `).join("");
+
+    // Pontos de Atenção — sempre sem filtro (todo o armazém)
+    const totalKgGeral = DADOS.linhas.filter(r=>r[COLS.um]==="KG").reduce((s,r)=>s+r[COLS.peso],0);
+    const poaRows = ALERTAS_RISCO.map(cat=>{
+      const rowsCat = DADOS.linhas.filter(r=>r[COLS.alerta]===cat);
+      const qtd = rowsCat.length;
+      const kg = rowsCat.filter(r=>r[COLS.um]==="KG").reduce((s,r)=>s+r[COLS.peso],0);
+      const pct = totalKgGeral>0 ? kg/totalKgGeral : 0;
+      const status = statusOf(cat);
+      return {cat, qtd, kg, pct, status};
+    });
+    document.getElementById("poa-body").innerHTML = poaRows.map(r=>`
+      <tr>
+        <td><b>${r.cat}</b></td>
+        <td class="desc">${DESCRICAO[r.cat]}</td>
+        <td class="num">${fmtInt.format(r.qtd)}</td>
+        <td class="num">${fmtInt.format(Math.round(r.kg))}</td>
+        <td class="num">${fmtPct(r.pct)}</td>
+        <td><span class="chip ${r.qtd>0?r.status:'good'}"><span class="dot"></span>${r.qtd>0?STATUS_LABEL[r.status]:'OK'}</span></td>
+        <td class="acao">${ACAO[r.cat]}</td>
+      </tr>
+    `).join("");
+
+    // Chart: kg por Tipo de Depósito (filtro: centro + alerta, tipo é o eixo)
+    const porTipo = {};
+    DADOS.linhas.filter(r=> (!f.centro || r[COLS.centro]===f.centro) && (!f.alerta || r[COLS.alerta]===f.alerta) && r[COLS.um]==="KG")
+      .forEach(r=>{ porTipo[r[COLS.tipo]] = (porTipo[r[COLS.tipo]]||0) + r[COLS.peso]; });
+    const tipoItems = Object.entries(porTipo).sort((a,b)=>b[1]-a[1]).slice(0,12)
+      .map(([tipo,kg])=>({label:tipo, value:Math.round(kg), color:"var(--brand)"}));
+    renderBars(document.getElementById("chart-tipo"), tipoItems);
+
+    // Chart: posições por Alerta (filtro: tipo + centro)
+    const porAlerta = {};
+    ALERTAS_ORDEM.forEach(a=>porAlerta[a]=0);
+    DADOS.linhas.filter(matchTC).forEach(r=>{ porAlerta[r[COLS.alerta]] = (porAlerta[r[COLS.alerta]]||0)+1; });
+    const alertaItems = ALERTAS_ORDEM.map(a=>({label:a, value:porAlerta[a], color:STATUS_COLOR[statusOf(a)]}));
+    renderBars(document.getElementById("chart-alerta"), alertaItems);
+
+    // Chart: dias sem giro (faixas) — filtro tipo+centro+alerta
+    const faixasAging = [["0–30 dias",0,30],["31–60 dias",31,60],["61–90 dias",61,90],["91–180 dias",91,180],["181–365 dias",181,365],["> 365 dias",366,Infinity]];
+    const agingRows = filtered.filter(r=> r[COLS.alerta]!=="VAZIA" && r[COLS.duracao]!==null);
+    const agingItems = faixasAging.map(([label,ini,fim],i)=>({
+      label, value: agingRows.filter(r=>r[COLS.duracao]>=ini && r[COLS.duracao]<=fim).length, color: ORDINAL[i],
+    }));
+    renderBars(document.getElementById("chart-aging"), agingItems);
+
+    // Chart: vencimento (faixas) — filtro tipo+centro+alerta
+    const vencRows = filtered.filter(r=> r[COLS.alerta]!=="VAZIA");
+    const semData = vencRows.filter(r=> r[COLS.dias_venc]===null).length;
+    const comData = vencRows.filter(r=> r[COLS.dias_venc]!==null);
+    const faixasVenc = [["Vencido",-Infinity,-0.0001],["0–30 dias",0,30],["31–60 dias",31,60],["61–90 dias",61,90],["> 90 dias",91,Infinity]];
+    const vencItems = faixasVenc.map(([label,ini,fim],i)=>({
+      label, value: comData.filter(r=>r[COLS.dias_venc]>=ini && r[COLS.dias_venc]<=fim).length, color: ORDINAL[i],
+    }));
+    vencItems.push({label:"Sem data", value: semData, color:"var(--ink-muted)"});
+    renderBars(document.getElementById("chart-venc"), vencItems);
+
+    // Top 10 tables — filtro tipo+centro
+    function top10(alertaAlvo, diasCol, diasSign){
+      return DADOS.linhas.filter(r=> matchTC(r) && r[COLS.alerta]===alertaAlvo && r[COLS.um]==="KG")
+        .sort((a,b)=>b[COLS.peso]-a[COLS.peso]).slice(0,10)
+        .map(r=>({ material:r[COLS.material], lote:r[COLS.lote]||"—", posicao:r[COLS.posicao], tipo:r[COLS.tipo],
+                   kg: Math.round(r[COLS.peso]), dias: r[diasCol]!==null ? Math.round(diasSign*r[diasCol]) : "—" }));
+    }
+    function fillTop(tableId, rows){
+      const tbody = document.querySelector(`#${tableId} tbody`);
+      tbody.innerHTML = rows.length ? rows.map(r=>`
+        <tr><td>${r.material}</td><td>${r.lote}</td><td>${r.posicao}</td><td>${r.tipo}</td>
+            <td class="num">${fmtInt.format(r.kg)}</td><td class="num">${r.dias}</td></tr>
+      `).join("") : `<tr><td colspan="6" class="desc">Nenhuma posição para os filtros selecionados.</td></tr>`;
+    }
+    fillTop("top-parado", top10("PARADO/SEM GIRO", COLS.duracao, 1));
+    fillTop("top-vencido", top10("VENCIDO", COLS.dias_venc, -1));
+  }
+
+  // ---- trend banner (static, independent of filters) --------------------
+  (function(){
+    const t = DADOS.tendencia || [];
+    const textEl = document.getElementById("trend-text");
+    const ptsEl = document.getElementById("trend-points");
+    if(t.length <= 1){
+      textEl.textContent = "O acompanhamento de tendência começou nesta atualização — a partir da 2ª carga diária, este espaço mostra a evolução dos pontos de atenção dia a dia.";
+    } else {
+      const first = t[0], last = t[t.length-1];
+      textEl.textContent = `Acompanhando desde ${first.data} — ${t.length} atualizações registradas.`;
+    }
+    ptsEl.innerHTML = t.slice(-14).map(p=>`
+      <div class="pt"><div class="dot-wrap"></div>${p.data.slice(5)}<br><b class="num">${fmtInt.format(Math.round(p.total_kg))}</b>kg</div>
+    `).join("");
+  })();
+
+  renderAll();
+})();
+</script>
