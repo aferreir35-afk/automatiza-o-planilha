@@ -65,3 +65,34 @@ Arquivo: [`planilhas/Volume_por_Turno_Setembro_2026.xlsx`](planilhas/Volume_por_
   móvel nem desvio-padrão.
 - O ranking de maiores desvios não trata empates de forma especial (pode
   repetir uma divisão quando o Saldo é igual).
+
+## Análise de Capacidade — GM (09 a 21/09/2026)
+
+Arquivo: [`planilhas/Analise_Capacidade_GM_09_a_21.xlsx`](planilhas/Analise_Capacidade_GM_09_a_21.xlsx)
+
+Análise do volume bruto de fornecimentos (base `Analise_GM_DO_DIA_01_AO_DIA_20.XLSX`,
+enviada pelo usuário) frente à capacidade diária declarada de 35–40 t e à
+equipe de separação (4 separadores + 3 operadores por turno, escala 2x2 de
+12h — 2 turnos/dia cobrindo as 24h, ou seja, 8 separadores e 6 operadores em
+atividade por dia).
+
+- Aba **Dados_Filtrados**: 1.379 fornecimentos com "Data do picking" entre
+  09/09 e 21/09/2026, extraídos do arquivo original.
+- Aba **Dimensionamento**: premissas de equipe/escala (células amarelas,
+  editáveis) e capacidade/produtividade implícita, tudo por fórmula.
+- Aba **Analise_Diaria**: volume bruto por dia (`SUMIFS`/`COUNTIFS` sobre
+  Dados_Filtrados), comparação com a faixa de 35–40 t, status
+  (Acima/Dentro/Abaixo, com formatação condicional) e estimativa de
+  separadores necessários/gap por dia.
+- Aba **Painel**: KPIs do período, gráfico de volume diário x faixa de
+  capacidade e uma leitura rápida dos principais achados.
+
+**Principais achados:** o volume oscilou entre 0,6 t e 127,2 t/dia — muito
+acima ou abaixo da faixa de 35–40 t. Sete dias (12, 14 a 19/09) ficaram
+acima da capacidade máxima (alguns em mais de 3x, ex.: 14/09 com ~127 t),
+enquanto os domingos (13 e 20/09) ficaram bem abaixo. Isso indica
+concentração de "data do picking" em poucos dias, não uma demanda
+uniformemente distribuída — recomenda-se validar com a operação se é pico
+real de demanda ou efeito de atualização em lote do status no sistema, e
+medir a produtividade real por separador (apontamento de mão de obra) para
+substituir a produtividade implícita usada na estimativa de gap de equipe.
