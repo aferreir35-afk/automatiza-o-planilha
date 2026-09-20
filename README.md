@@ -96,3 +96,17 @@ uniformemente distribuída — recomenda-se validar com a operação se é pico
 real de demanda ou efeito de atualização em lote do status no sistema, e
 medir a produtividade real por separador (apontamento de mão de obra) para
 substituir a produtividade implícita usada na estimativa de gap de equipe.
+
+## Dashboard de Estoque LX03 — Barry Callebaut (com automação em Python)
+
+Pasta: [`lx03/`](lx03/README.md)
+
+Automação em Python + Excel para transformar o export da transação SAP
+**LX03** (estoque por posição no depósito) num painel diário com os pontos
+de atenção já destacados (vencidos, bloqueados, em quarentena, parados sem
+giro, etc.), filtros por Tipo de Depósito/Centro/Alerta, gráficos e
+exportação em PDF — pronto para acompanhamento operacional e apresentação à
+diretoria. Rodar `python lx03/scripts/atualizar_dashboard.py <export do
+dia>.xlsx` é o único passo do dia a dia; veja [`lx03/README.md`](lx03/README.md)
+para os detalhes completos e as limitações assumidas (inclusive sobre a
+paleta de cores da marca, que não pôde ser confirmada oficialmente).
