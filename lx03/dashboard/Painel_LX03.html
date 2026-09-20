@@ -1,3 +1,10 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
 <title>Painel LX03</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -68,12 +75,24 @@
     border:1px solid var(--border-strong); background:var(--surface-card); color:var(--ink-primary);
     min-width:170px;
   }
-  .filterbar .reset{
+  .filterbar .reset, .filterbar .btn{
     font-size:.82rem; color:var(--brand); background:none; border:1px solid var(--border-strong);
     border-radius:8px; padding:8px 12px; cursor:pointer; font-weight:600; align-self:flex-end;
+    font-family:inherit;
   }
-  .filterbar .reset:hover{ background:var(--surface-sunken); }
+  .filterbar .reset:hover, .filterbar .btn:hover{ background:var(--surface-sunken); }
+  .filterbar .btn.primary{ background:var(--brand); color:var(--surface-card); border-color:var(--brand); }
+  .filterbar .btn.primary:hover{ opacity:.9; background:var(--brand); }
+  .filterbar .spacer{ flex:1 1 auto; }
   .filterbar .active-note{ font-size:.8rem; color:var(--ink-muted); margin-top:8px; }
+
+  @media print{
+    .filterbar{ position:static; }
+    .no-print{ display:none !important; }
+    body{ background:#fff; }
+    .kpi, .chart-card, table.poa, .trend-banner{ box-shadow:none; border:1px solid #ccc; }
+    section{ break-inside:avoid; }
+  }
 
   section{ margin-bottom:38px; }
   section > h2{ font-size:1.15rem; font-weight:600; color:var(--brand-strong); margin:0 0 4px; }
@@ -168,6 +187,9 @@
         <select id="f-alerta"></select>
       </label>
       <button class="reset" id="f-reset" type="button">Limpar filtros</button>
+      <span class="spacer no-print"></span>
+      <button class="btn no-print" id="f-export-csv" type="button">⬇ Exportar dados filtrados (CSV)</button>
+      <button class="btn primary no-print" id="f-print" type="button">🖶 Imprimir / Salvar PDF</button>
     </div>
     <p class="active-note" id="active-note"></p>
   </div>
@@ -315,6 +337,34 @@
   els.reset.addEventListener("click", ()=>{ els.tipo.value=""; els.centro.value=""; els.alerta.value=""; renderAll(); });
 
   function currentFilter(){ return { tipo: els.tipo.value, centro: els.centro.value, alerta: els.alerta.value }; }
+
+  // ---- exportar CSV / imprimir ------------------------------------------
+  const CSV_CABECALHO = ["Tipo de Depósito","Centro","Alerta","UM","Peso","Duração (dias)","Dias até vencer","Material","Lote","Posição"];
+  function csvCampo(v){
+    if(v===null || v===undefined) return "";
+    if(typeof v === "number") return v.toLocaleString("pt-BR");
+    const s = String(v);
+    return /[;"\n]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s;
+  }
+  function baixarArquivo(nome, conteudo, tipo){
+    const blob = new Blob([conteudo], {type: tipo});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = nome;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url), 1000);
+  }
+  document.getElementById("f-export-csv").addEventListener("click", ()=>{
+    const f = currentFilter();
+    const linhas = DADOS.linhas.filter(r=>
+      (!f.tipo || r[COLS.tipo]===f.tipo) && (!f.centro || r[COLS.centro]===f.centro) && (!f.alerta || r[COLS.alerta]===f.alerta)
+    );
+    const corpo = linhas.map(r => CSV_CABECALHO.map((_,i)=>csvCampo(r[i])).join(";")).join("\r\n");
+    const csv = "﻿" + CSV_CABECALHO.join(";") + "\r\n" + corpo;
+    const hoje = new Date().toISOString().slice(0,10);
+    baixarArquivo(`lx03_export_${hoje}.csv`, csv, "text/csv;charset=utf-8;");
+  });
+  document.getElementById("f-print").addEventListener("click", ()=> window.print());
 
   // ---- meta -----------------------------------------------------------
   document.getElementById("meta-atualizacao").textContent = DADOS.meta.ultima_atualizacao || "—";
@@ -474,3 +524,6 @@
   renderAll();
 })();
 </script>
+
+</body>
+</html>

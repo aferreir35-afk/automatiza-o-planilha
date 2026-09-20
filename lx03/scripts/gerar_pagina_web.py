@@ -87,7 +87,26 @@ def gerar(caminho_dashboard: Path, caminho_tendencia_db: Path, caminho_saida: Pa
     dados_json = json.dumps(dados, ensure_ascii=False, separators=(",", ":")).replace("</script", "<\\/script")
 
     template = TEMPLATE_PATH.read_text(encoding="utf-8")
-    pagina = template.replace("__DADOS_JSON__", dados_json)
+    corpo = template.replace("__DADOS_JSON__", dados_json)
+
+    # templates/painel.html é um fragmento (sem <html>/<head>/<body>) pensado
+    # para ser publicado como Artifact, que injeta o <meta charset> sozinho.
+    # Para o arquivo .html avulso (aberto direto no navegador, fora do
+    # Artifact) isso não acontece — sem um <meta charset> logo no início do
+    # arquivo, alguns navegadores adivinham a codificação errada e os
+    # acentos saem corrompidos. Por isso embrulhamos aqui num documento
+    # HTML completo; o navegador reposiciona sozinho <title>/<link>/<style>
+    # para o <head> (regra padrão do algoritmo de parsing do HTML5).
+    pagina = (
+        "<!DOCTYPE html>\n"
+        '<html lang="pt-BR">\n'
+        "<head>\n"
+        '<meta charset="utf-8">\n'
+        '<meta name="viewport" content="width=device-width, initial-scale=1">\n'
+        "</head>\n<body>\n"
+        + corpo +
+        "\n</body>\n</html>\n"
+    )
 
     caminho_saida.parent.mkdir(parents=True, exist_ok=True)
     caminho_saida.write_text(pagina, encoding="utf-8")

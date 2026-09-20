@@ -82,7 +82,19 @@ Depósito/Centro/Alerta), indicadores, gráficos, Pontos de Atenção e Top 10 d
 Painel do Excel. É uma fotografia estática da última carga (os filtros
 recalculam na hora, no navegador, mas os dados só atualizam na próxima
 rodada do script) — para compartilhar, é só enviar o arquivo `.html` (não
-precisa de servidor). Para gerar avulso, sem rodar a atualização inteira:
+precisa de servidor).
+
+Dois botões no topo da página (ao lado dos filtros):
+- **Exportar dados filtrados (CSV)** — baixa as posições que estão sendo
+  mostradas no momento (respeitando os filtros ativos) num `.csv` que abre
+  direto no Excel, com acentuação e separador certos para o padrão
+  brasileiro.
+- **Imprimir / Salvar PDF** — abre o diálogo de impressão do navegador
+  (filtros e botões somem automaticamente do resultado); escolher "Salvar
+  como PDF" no destino gera um PDF da página como está, com o filtro atual
+  aplicado.
+
+Para gerar a página avulsa, sem rodar a atualização inteira:
 
 ```bash
 python lx03/scripts/gerar_pagina_web.py lx03/dashboard/Dashboard_Estoque_LX03.xlsx
