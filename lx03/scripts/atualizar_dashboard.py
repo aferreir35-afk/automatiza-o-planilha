@@ -300,9 +300,6 @@ def construir_parametros(wb, linhas, nome_arquivo_origem, ultima_atualizacao, la
         ws.cell(row=15 + i, column=6, value="").font = F_TXT
         ws.cell(row=15 + i, column=6).fill = FILL_INPUT
     linha_fim_tipo = 14 + len(tipos)
-    ws.cell(row=linha_fim_tipo + 1, column=5,
-            value="↑ preencha a coluna F com o nome de negócio de cada código (ex.: FM1 = Produto Acabado 1) — aparece só aqui, é sua referência.").font = F_NOTA
-    ws.merge_cells(start_row=linha_fim_tipo + 1, start_column=5, end_row=linha_fim_tipo + 1, end_column=9)
 
     ws["H13"] = "Centro"
     ws["H13"].font = F_HDR
@@ -321,6 +318,12 @@ def construir_parametros(wb, linhas, nome_arquivo_origem, ultima_atualizacao, la
     for i, a in enumerate(ALERTAS_ORDEM):
         ws.cell(row=15 + i, column=col_alerta, value=a).font = F_TXT
     linha_fim_alerta = 14 + len(ALERTAS_ORDEM)
+
+    linha_nota = max(linha_fim_tipo, linha_fim_centro, linha_fim_alerta) + 1
+    ws.cell(row=linha_nota, column=5,
+            value="↑ preencha a coluna F com o nome de negócio de cada código de Tipo de Depósito "
+                  "(ex.: FM1 = Produto Acabado 1) — aparece só aqui, é sua referência.").font = F_NOTA
+    ws.merge_cells(start_row=linha_nota, start_column=5, end_row=linha_nota, end_column=6)
 
     refs = {
         "dias_venc": "Parametros!$B$10",
@@ -925,7 +928,7 @@ def exportar_pdf(caminho_xlsx, pasta_pdf, data_ref):
     tmp_path = pasta_pdf / f"_tmp_pdf_{data_ref}.xlsx"
     wb = openpyxl.load_workbook(caminho_xlsx)
     for nome in wb.sheetnames:
-        if nome not in ("Painel", "Pontos_de_Atencao"):
+        if nome not in ("Painel", "Pontos_de_Atencao", "Tendencia"):
             wb[nome].sheet_state = "hidden"
     wb.save(tmp_path)
     destino_pdf = pasta_pdf / f"Relatorio_LX03_{data_ref}.pdf"
@@ -947,15 +950,23 @@ def exportar_pdf(caminho_xlsx, pasta_pdf, data_ref):
         tmp_path.unlink(missing_ok=True)
 
 
-def imprimir_resumo(linhas, dias_venc, dias_parado, hoje):
+def calcular_resumo(linhas, dias_venc, dias_parado, hoje):
+    """Contagem e kg por categoria de Alerta — usado no resumo do terminal,
+    no histórico de tendência e na comparação para os alertas por e-mail/Teams."""
     contagem = {a: 0 for a in ALERTAS_ORDEM}
     kg = {a: 0.0 for a in ALERTAS_ORDEM}
+    un = 0.0
     for linha in linhas:
         alerta = calcular_alerta(linha, dias_venc, dias_parado, hoje)
         contagem[alerta] += 1
         if linha.get("UM básica") == "KG":
             kg[alerta] += linha.get("Estoque total") or 0
+        elif linha.get("UM básica") == "UN":
+            un += linha.get("Estoque total") or 0
+    return contagem, kg, un
 
+
+def imprimir_resumo(contagem, kg):
     print("\n" + "=" * 70)
     print("RESUMO DA ATUALIZAÇÃO — pontos que carecem de monitoramento")
     print("=" * 70)
@@ -971,36 +982,73 @@ def imprimir_resumo(linhas, dias_venc, dias_parado, hoje):
 
 def main():
     ap = argparse.ArgumentParser(description="Atualiza o dashboard de estoque LX03 a partir de um novo export do SAP.")
-    ap.add_argument("arquivo_sap", help="Caminho do arquivo .xlsx exportado da LX03 no SAP")
+    ap.add_argument("arquivo_sap", nargs="?", help="Caminho do arquivo .xlsx exportado da LX03 no SAP (não usar com --usar-sap)")
     ap.add_argument("--saida", default=str(DASHBOARD_PATH), help="Caminho do dashboard a gerar/atualizar")
     ap.add_argument("--sem-pdf", action="store_true", help="Não gerar o PDF automático")
     ap.add_argument("--sem-historico", action="store_true", help="Não guardar cópia em historico/")
+    ap.add_argument("--sem-tendencia", action="store_true", help="Não gravar/gerar a aba e o histórico de Tendência")
+    ap.add_argument("--sem-notificacoes", action="store_true", help="Não enviar e-mail/Teams mesmo se configurado")
+    ap.add_argument("--sem-nuvem", action="store_true", help="Não publicar no Google Sheets/Power BI mesmo se configurado")
+    ap.add_argument("--usar-sap", action="store_true", help="Buscar os dados direto do SAP (OData/RFC) em vez de um arquivo — requer config/config.ini")
     args = ap.parse_args()
 
-    caminho_entrada = Path(args.arquivo_sap)
-    if not caminho_entrada.exists():
-        raise SystemExit(f"ERRO: arquivo não encontrado: {caminho_entrada}")
-
-    print(f"Lendo {caminho_entrada.name} ...")
-    linhas = ler_lx03(caminho_entrada)
+    if args.usar_sap:
+        import conector_sap
+        print("Buscando dados diretamente do SAP (config/config.ini) ...")
+        linhas = conector_sap.buscar_dados()
+        nome_origem = "SAP (conexão direta)"
+    else:
+        if not args.arquivo_sap:
+            raise SystemExit("ERRO: informe o arquivo do export da LX03, ou use --usar-sap para buscar direto do SAP.")
+        caminho_entrada = Path(args.arquivo_sap)
+        if not caminho_entrada.exists():
+            raise SystemExit(f"ERRO: arquivo não encontrado: {caminho_entrada}")
+        print(f"Lendo {caminho_entrada.name} ...")
+        linhas = ler_lx03(caminho_entrada)
+        nome_origem = caminho_entrada.name
     print(f"{len(linhas)} posições lidas.")
 
     agora = datetime.datetime.now()
     hoje = agora.date()
+    data_referencia = hoje.isoformat()
     carimbo = agora.strftime("%Y-%m-%d_%H%M")
     ultima_atualizacao_txt = agora.strftime("%d/%m/%Y %H:%M")
+
+    contagem, kg, total_un = calcular_resumo(linhas, DIAS_PROX_VENC_PADRAO, DIAS_PARADO_PADRAO, hoje)
+    posicoes_ocupadas = sum(v for k, v in contagem.items() if k != "VAZIA")
+    posicoes_vazias = contagem["VAZIA"]
+    total_kg = sum(kg.values())
+    materiais_unicos = len({l["Material"] for l in linhas if l["Material"] != MATERIAL_VAZIO})
 
     wb = openpyxl.Workbook()
     wb.remove(wb.active)
 
     ws_dados, last_row = None, len(linhas) + 1
-    ws_param, refs = construir_parametros(wb, linhas, caminho_entrada.name, ultima_atualizacao_txt, last_row)
+    ws_param, refs = construir_parametros(wb, linhas, nome_origem, ultima_atualizacao_txt, last_row)
     ws_dados, last_row = construir_dados_sap(wb, linhas, refs)
     ws_painel, graf_refs, _ = construir_painel(wb, refs, last_row, linhas)
     construir_pontos_atencao(wb, last_row)
+
+    if not args.sem_tendencia:
+        import tendencia
+        conn = tendencia.conectar()
+        tendencia.registrar_snapshot(
+            conn, data_referencia, ultima_atualizacao_txt, nome_origem,
+            contagem, kg, posicoes_ocupadas, posicoes_vazias, total_kg, total_un, materiais_unicos,
+        )
+        estilos_tendencia = {
+            "titulo": F_TITULO, "subtitulo": F_SUBTITULO, "nota": F_NOTA,
+            "cab_fonte": F_HDR, "cab_fill": FILL_HDR,
+        }
+        tendencia.construir_aba_tendencia(wb, conn, estilos_tendencia)
+        conn.close()
+
     construir_leiame(wb)
 
-    ordem = ["Painel", "Pontos_de_Atencao", "Dados_SAP", "Parametros", "Leia-me"]
+    ordem = ["Painel", "Pontos_de_Atencao", "Dados_SAP", "Parametros"]
+    if not args.sem_tendencia:
+        ordem.append("Tendencia")
+    ordem.append("Leia-me")
     wb._sheets = [wb[nome] for nome in ordem]
     wb.active = 0
 
@@ -1013,14 +1061,24 @@ def main():
 
     if not args.sem_historico:
         HISTORICO_DIR.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(caminho_entrada, HISTORICO_DIR / f"lx03_origem_{carimbo}.xlsx")
+        if not args.usar_sap:
+            shutil.copy2(caminho_entrada, HISTORICO_DIR / f"lx03_origem_{carimbo}.xlsx")
         shutil.copy2(caminho_saida, HISTORICO_DIR / f"dashboard_{carimbo}.xlsx")
         print(f"Cópia de auditoria guardada em: {HISTORICO_DIR}")
 
     if not args.sem_pdf:
         exportar_pdf(caminho_saida, PDF_DIR, carimbo)
 
-    imprimir_resumo(linhas, DIAS_PROX_VENC_PADRAO, DIAS_PARADO_PADRAO, hoje)
+    imprimir_resumo(contagem, kg)
+
+    if not args.sem_notificacoes:
+        import notificacoes
+        notificacoes.avaliar_e_notificar(data_referencia, contagem, kg, nome_origem, ultima_atualizacao_txt)
+
+    if not args.sem_nuvem:
+        import publicar_nuvem
+        publicar_nuvem.publicar(caminho_saida)
+
     print("Atualização concluída com sucesso.")
 
 

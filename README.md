@@ -107,6 +107,14 @@ de atenção já destacados (vencidos, bloqueados, em quarentena, parados sem
 giro, etc.), filtros por Tipo de Depósito/Centro/Alerta, gráficos e
 exportação em PDF — pronto para acompanhamento operacional e apresentação à
 diretoria. Rodar `python lx03/scripts/atualizar_dashboard.py <export do
-dia>.xlsx` é o único passo do dia a dia; veja [`lx03/README.md`](lx03/README.md)
-para os detalhes completos e as limitações assumidas (inclusive sobre a
-paleta de cores da marca, que não pôde ser confirmada oficialmente).
+dia>.xlsx` é o único passo do dia a dia.
+
+Também inclui, todos opcionais e desligados por padrão: **agendamento
+automático** (Task Scheduler/cron), **alertas por e-mail/Teams** quando um
+ponto de atenção piora, **histórico de tendência** (SQLite + aba com
+gráfico de evolução diária), **conexão direta ao SAP** (OData/RFC, sem
+exportar manualmente) e **publicação em Google Sheets/Power BI**. Veja
+[`lx03/README.md`](lx03/README.md) para os detalhes completos, o que já foi
+testado (com servidores simulados, sem credenciais reais) e as limitações
+assumidas (inclusive sobre a paleta de cores da marca, que não pôde ser
+confirmada oficialmente).
