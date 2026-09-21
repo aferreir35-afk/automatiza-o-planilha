@@ -97,15 +97,59 @@ página se ajusta na hora conforme o que estiver marcado:
   funciona como uma forma visual de comparar só os tipos que importam.
 - **Gráfico "Posições por Alerta"** — mostra só as categorias marcadas.
 
-Dois botões no topo da página (ao lado dos filtros):
-- **Exportar dados filtrados (CSV)** — baixa as posições que estão sendo
+### Abas — Visão Geral + uma por categoria de alerta
+
+Logo abaixo dos filtros tem uma barra de abas: **Visão Geral** (o painel
+completo de sempre — KPIs, Pontos de Atenção, gráficos, Top 10, Tendência)
+e mais uma aba **para cada uma das 9 categorias de alerta** (Vencido,
+Qualidade, Bloqueado, etc.). Cada aba de alerta traz:
+- Uma descrição da categoria e a ação recomendada;
+- KPIs só daquela categoria (posições, peso total em kg, total em UN, peso
+  médio por posição);
+- A lista **completa** de posições daquela categoria (não só o Top 10),
+  com **Material, Lote, Posição, Tipo, Centro, UM, Quantidade, Data de
+  Vencimento, Dias sem giro e Dias até vencer** — clique no cabeçalho de
+  qualquer coluna para ordenar por ela (clique de novo para inverter), com
+  paginação de 50 em 50 linhas.
+
+As abas de alerta respeitam os filtros de Tipo de Depósito e Centro (para
+ver só uma categoria com tudo, use a aba dela em vez do filtro de Alerta,
+que é mais útil para combinar categorias na Visão Geral).
+
+### Botões do topo
+
+- **📤 Enviar novo relatório** — veja a seção "Atualizar sem rodar o
+  script", abaixo.
+- **⬇ Exportar dados filtrados (CSV)** — baixa as posições que estão sendo
   mostradas no momento (respeitando os filtros ativos) num `.csv` que abre
-  direto no Excel, com acentuação e separador certos para o padrão
-  brasileiro.
-- **Imprimir / Salvar PDF** — abre o diálogo de impressão do navegador
+  direto no Excel, com acentuação, separador e casas decimais no padrão
+  brasileiro (inclui a Data de Vencimento de cada posição).
+- **🖶 Imprimir / Salvar PDF** — abre o diálogo de impressão do navegador
   (filtros e botões somem automaticamente do resultado); escolher "Salvar
   como PDF" no destino gera um PDF da página como está, com o filtro atual
   aplicado.
+
+### Atualizar sem rodar o script
+
+O botão **"📤 Enviar novo relatório"** deixa escolher um novo export da
+LX03 (`.xlsx`) e processa tudo **direto no navegador** — sem instalar
+Python, sem rodar comando nenhum. Em poucos segundos a página inteira
+(KPIs, todas as abas, gráficos, Top 10) atualiza com os dados novos,
+recalculando os mesmos alertas (vencido, bloqueado, parado/sem giro etc.)
+com a data de hoje.
+
+**O que esse botão NÃO faz** (para isso, continue rodando o script Python
+normalmente):
+- Não atualiza o arquivo Excel nem o `Painel_LX03.html` salvo no
+  computador — o que você vê é só nesta aba do navegador, e some se
+  fechar ou recarregar a página.
+- Não grava nada em `lx03/historico/` nem na aba/gráfico de **Tendência**
+  (ela continua mostrando o histórico salvo pelo script Python).
+- Não envia e-mail/Teams, não publica no Google Sheets/Power BI.
+
+Pense nele como uma forma rápida de espiar um export novo (ex.: conferir
+antes de rodar oficialmente, ou usar num computador sem Python instalado)
+— para o registro "oficial" do dia, sempre rode o `atualizar_dashboard.py`.
 
 Para gerar a página avulsa, sem rodar a atualização inteira:
 
@@ -302,3 +346,11 @@ resto.
   schema do dataset do Power BI, etc.), me avisem que eu ajusto.
 - `config.ini` nunca deve ser commitado no Git (já está no `.gitignore`) —
   é onde ficam as credenciais reais.
+- O botão "Enviar novo relatório" carrega a biblioteca de leitura de Excel
+  (SheetJS) de um CDN público — **precisa de internet** no navegador para
+  funcionar (o resto da página funciona 100% offline, já que os dados da
+  última atualização vêm embutidos no próprio arquivo `.html`).
+- A cor de cada linha "Crítico"/"Atenção" nos pontos de atenção segue a
+  mesma prioridade do Excel (ex.: um item vencido aparece só como
+  "VENCIDO", mesmo que também esteja bloqueado) — os totais das duas
+  versões (Excel e web) sempre batem porque usam exatamente a mesma regra.

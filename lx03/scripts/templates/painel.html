@@ -59,15 +59,10 @@
   .filterbar{
     position:sticky; top:env(safe-area-inset-top,0px); z-index:20;
     background:var(--surface); border-bottom:1px solid var(--border);
-    padding-block:12px; margin-bottom:24px;
+    padding-block:12px; margin-bottom:0;
   }
   .filterbar .row{ display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
   .filterbar label{ font-size:.78rem; color:var(--ink-muted); display:flex; flex-direction:column; gap:4px; font-weight:600; }
-  .filterbar select{
-    font:inherit; font-size:.9rem; padding:8px 10px; border-radius:8px;
-    border:1px solid var(--border-strong); background:var(--surface-card); color:var(--ink-primary);
-    min-width:170px;
-  }
   .filterbar .reset, .filterbar .btn{
     font-size:.82rem; color:var(--brand); background:none; border:1px solid var(--border-strong);
     border-radius:8px; padding:8px 12px; cursor:pointer; font-weight:600; align-self:flex-end;
@@ -76,8 +71,12 @@
   .filterbar .reset:hover, .filterbar .btn:hover{ background:var(--surface-sunken); }
   .filterbar .btn.primary{ background:var(--brand); color:var(--surface-card); border-color:var(--brand); }
   .filterbar .btn.primary:hover{ opacity:.9; background:var(--brand); }
+  .filterbar .btn.gold{ background:var(--gold); color:var(--surface-card); border-color:var(--gold); }
+  .filterbar .btn.gold:hover{ opacity:.88; background:var(--gold); }
   .filterbar .spacer{ flex:1 1 auto; }
   .filterbar .active-note{ font-size:.8rem; color:var(--ink-muted); margin-top:8px; }
+  .filterbar .active-note.erro{ color:var(--critical); font-weight:600; }
+  .filterbar .active-note.ok{ color:var(--good); font-weight:600; }
 
   .msel{ position:relative; font-size:.78rem; }
   .msel-toggle{
@@ -104,8 +103,22 @@
   .msel-opt input{ accent-color:var(--brand); width:15px; height:15px; flex:none; }
   .msel-opt span{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 
+  .tabs{
+    position:sticky; top:calc(env(safe-area-inset-top,0px) + 1px); z-index:19;
+    display:flex; gap:4px; overflow-x:auto; background:var(--surface);
+    border-bottom:1px solid var(--border); padding-block:10px; margin-bottom:24px;
+    scrollbar-width:thin;
+  }
+  .tab-btn{
+    font:inherit; font-family:"Source Sans 3",sans-serif; font-size:.85rem; font-weight:600;
+    color:var(--ink-secondary); background:none; border:none; border-bottom:3px solid transparent;
+    padding:8px 14px; cursor:pointer; white-space:nowrap; border-radius:8px 8px 0 0;
+  }
+  .tab-btn:hover{ background:var(--surface-sunken); color:var(--ink-primary); }
+  .tab-btn.active{ color:var(--brand-strong); border-bottom-color:var(--brand); background:var(--surface-sunken); }
+
   @media print{
-    .filterbar{ position:static; }
+    .filterbar, .tabs{ position:static; }
     .no-print{ display:none !important; }
     body{ background:#fff; }
     .kpi, .chart-card, table.poa, .trend-banner{ box-shadow:none; border:1px solid #ccc; }
@@ -116,7 +129,7 @@
   section > h2{ font-size:1.15rem; font-weight:600; color:var(--brand-strong); margin:0 0 4px; }
   section > .section-sub{ font-size:.85rem; color:var(--ink-muted); margin:0 0 16px; }
 
-  .kpi-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; }
+  .kpi-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin-bottom:24px; }
   .kpi{
     background:var(--surface-card); border:1px solid var(--border); border-radius:12px;
     padding:14px 16px; box-shadow:var(--shadow);
@@ -133,6 +146,10 @@
   table.poa td.num{ text-align:right; white-space:nowrap; }
   table.poa td.desc{ color:var(--ink-secondary); min-width:180px; }
   table.poa td.acao{ color:var(--ink-secondary); min-width:220px; font-size:.83rem; }
+  table.poa.sortable th[data-key]{ cursor:pointer; user-select:none; }
+  table.poa.sortable th[data-key]:hover{ color:var(--ink-primary); }
+  table.poa.sortable th.sort-asc::after{ content:" ▲"; }
+  table.poa.sortable th.sort-desc::after{ content:" ▼"; }
 
   .chip{ display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:999px; font-size:.78rem; font-weight:700; white-space:nowrap; }
   .chip .dot{ width:8px; height:8px; border-radius:50%; flex:none; }
@@ -173,6 +190,23 @@
   .trend-points .pt{ text-align:center; font-size:.72rem; color:var(--ink-muted); }
   .trend-points .pt .dot-wrap{ width:14px; height:14px; border-radius:50%; background:var(--brand); margin:0 auto 6px; }
 
+  .alerta-head{
+    background:var(--surface-card); border:1px solid var(--border); border-radius:12px;
+    padding:18px 20px; box-shadow:var(--shadow); margin-bottom:18px;
+  }
+  .alerta-head-top{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .alerta-head-top h2{ margin:0; color:var(--brand-strong); }
+  .alerta-desc{ margin:8px 0 0; color:var(--ink-secondary); }
+  .alerta-acao{ margin:6px 0 0; color:var(--ink-secondary); font-size:.9rem; }
+
+  .pagination{ display:flex; align-items:center; gap:12px; justify-content:center; padding-top:14px; font-size:.85rem; color:var(--ink-secondary); }
+  .pagination button{
+    font:inherit; font-size:.82rem; color:var(--brand); background:var(--surface-card); border:1px solid var(--border-strong);
+    border-radius:8px; padding:6px 12px; cursor:pointer; font-weight:600;
+  }
+  .pagination button:disabled{ opacity:.4; cursor:default; }
+  .pagination button:not(:disabled):hover{ background:var(--surface-sunken); }
+
   footer.foot{ border-top:1px solid var(--border); padding-block:20px 40px; font-size:.78rem; color:var(--ink-muted); line-height:1.6; }
   footer.foot code{ background:var(--surface-sunken); padding:1px 5px; border-radius:4px; }
 
@@ -185,7 +219,7 @@
   <header class="top">
     <p class="eyebrow">Barry Callebaut · Estoque LX03</p>
     <h1>Painel de Estoque — LX03</h1>
-    <p class="sub">Fornecimento por posição no depósito, com os pontos que carecem de monitoramento já destacados. Os filtros abaixo recalculam cartões, gráficos e as tabelas de Top&nbsp;10 na hora.</p>
+    <p class="sub">Fornecimento por posição no depósito, com os pontos que carecem de monitoramento já destacados. Os filtros abaixo recalculam cartões, gráficos, abas por alerta e as tabelas de Top&nbsp;10 na hora.</p>
     <div class="meta">
       <span>Última atualização: <b id="meta-atualizacao">—</b></span>
       <span>Arquivo de origem: <b id="meta-arquivo">—</b></span>
@@ -200,94 +234,105 @@
       <div class="msel" id="msel-alerta" data-label="Alerta"></div>
       <button class="reset" id="f-reset" type="button">Limpar filtros</button>
       <span class="spacer no-print"></span>
+      <button class="btn gold no-print" id="upload-btn" type="button">📤 Enviar novo relatório</button>
+      <input type="file" id="upload-input" accept=".xlsx" hidden>
       <button class="btn no-print" id="f-export-csv" type="button">⬇ Exportar dados filtrados (CSV)</button>
       <button class="btn primary no-print" id="f-print" type="button">🖶 Imprimir / Salvar PDF</button>
     </div>
     <p class="active-note" id="active-note"></p>
+    <p class="active-note no-print" id="upload-status" hidden></p>
   </div>
 
-  <section>
-    <h2>Indicadores gerais</h2>
-    <p class="section-sub">Conforme os filtros selecionados acima.</p>
-    <div class="kpi-grid" id="kpi-grid"></div>
-  </section>
+  <nav class="tabs" id="tabs"></nav>
 
-  <section>
-    <h2>Pontos que carecem de monitoramento</h2>
-    <p class="section-sub">Conforme os filtros selecionados acima.</p>
-    <div class="table-scroll">
-      <table class="poa">
-        <thead>
-          <tr><th>Categoria</th><th>O que significa</th><th class="num">Posições</th><th class="num">Peso (kg)</th><th class="num">% do kg</th><th>Severidade</th><th>Ação recomendada</th></tr>
-        </thead>
-        <tbody id="poa-body"></tbody>
-      </table>
-    </div>
-  </section>
+  <div id="tab-geral">
+    <section>
+      <h2>Indicadores gerais</h2>
+      <p class="section-sub">Conforme os filtros selecionados acima.</p>
+      <div class="kpi-grid" id="kpi-grid"></div>
+    </section>
 
-  <section>
-    <h2>Visão por categoria</h2>
-    <p class="section-sub" id="chart-note">Conforme os filtros selecionados acima.</p>
-    <div class="chart-grid">
-      <div class="chart-card">
-        <h3>Estoque (kg) por Tipo de Depósito</h3>
-        <p class="chart-sub" id="chart-tipo-sub">Top 12 tipos</p>
-        <div id="chart-tipo"></div>
+    <section>
+      <h2>Pontos que carecem de monitoramento</h2>
+      <p class="section-sub">Conforme os filtros selecionados acima — clique numa aba acima para ver todas as posições daquela categoria.</p>
+      <div class="table-scroll">
+        <table class="poa">
+          <thead>
+            <tr><th>Categoria</th><th>O que significa</th><th class="num">Posições</th><th class="num">Peso (kg)</th><th class="num">% do kg</th><th>Severidade</th><th>Ação recomendada</th></tr>
+          </thead>
+          <tbody id="poa-body"></tbody>
+        </table>
       </div>
-      <div class="chart-card">
-        <h3>Posições por Alerta</h3>
-        <p class="chart-sub">Categorias selecionadas no filtro Alerta</p>
-        <div id="chart-alerta"></div>
-      </div>
-      <div class="chart-card">
-        <h3>Dias sem giro (faixas)</h3>
-        <p class="chart-sub">Posições ocupadas, por tempo desde o último movimento</p>
-        <div id="chart-aging"></div>
-      </div>
-      <div class="chart-card">
-        <h3>Vencimento (faixas)</h3>
-        <p class="chart-sub">Posições ocupadas, por proximidade do vencimento</p>
-        <div id="chart-venc"></div>
-      </div>
-    </div>
-  </section>
+    </section>
 
-  <section>
-    <h2>Top 10 — maiores posições</h2>
-    <p class="section-sub">Conforme os filtros selecionados acima (kg)</p>
-    <div class="top10-grid">
-      <div class="chart-card">
-        <h3>Maior estoque parado/sem giro</h3>
-        <div class="table-scroll"><table class="poa" id="top-parado"><thead><tr><th>Material</th><th>Lote</th><th>Posição</th><th>Tipo</th><th class="num">kg</th><th class="num">Dias parado</th></tr></thead><tbody></tbody></table></div>
+    <section>
+      <h2>Visão por categoria</h2>
+      <p class="section-sub" id="chart-note">Conforme os filtros selecionados acima.</p>
+      <div class="chart-grid">
+        <div class="chart-card">
+          <h3>Estoque (kg) por Tipo de Depósito</h3>
+          <p class="chart-sub" id="chart-tipo-sub">Top 12 tipos</p>
+          <div id="chart-tipo"></div>
+        </div>
+        <div class="chart-card">
+          <h3>Posições por Alerta</h3>
+          <p class="chart-sub">Categorias selecionadas no filtro Alerta</p>
+          <div id="chart-alerta"></div>
+        </div>
+        <div class="chart-card">
+          <h3>Dias sem giro (faixas)</h3>
+          <p class="chart-sub">Posições ocupadas, por tempo desde o último movimento</p>
+          <div id="chart-aging"></div>
+        </div>
+        <div class="chart-card">
+          <h3>Vencimento (faixas)</h3>
+          <p class="chart-sub">Posições ocupadas, por proximidade do vencimento</p>
+          <div id="chart-venc"></div>
+        </div>
       </div>
-      <div class="chart-card">
-        <h3>Maior estoque vencido</h3>
-        <div class="table-scroll"><table class="poa" id="top-vencido"><thead><tr><th>Material</th><th>Lote</th><th>Posição</th><th>Tipo</th><th class="num">kg</th><th class="num">Dias vencido</th></tr></thead><tbody></tbody></table></div>
-      </div>
-    </div>
-  </section>
+    </section>
 
-  <section>
-    <h2>Tendência</h2>
-    <div class="trend-banner">
-      <p class="t-text" id="trend-text"></p>
-      <div class="trend-points" id="trend-points"></div>
-    </div>
-  </section>
+    <section>
+      <h2>Top 10 — maiores posições</h2>
+      <p class="section-sub">Conforme os filtros selecionados acima (kg)</p>
+      <div class="top10-grid">
+        <div class="chart-card">
+          <h3>Maior estoque parado/sem giro</h3>
+          <div class="table-scroll"><table class="poa" id="top-parado"><thead><tr><th>Material</th><th>Lote</th><th>Posição</th><th>Tipo</th><th class="num">kg</th><th>Vencimento</th><th class="num">Dias parado</th></tr></thead><tbody></tbody></table></div>
+        </div>
+        <div class="chart-card">
+          <h3>Maior estoque vencido</h3>
+          <div class="table-scroll"><table class="poa" id="top-vencido"><thead><tr><th>Material</th><th>Lote</th><th>Posição</th><th>Tipo</th><th class="num">kg</th><th>Vencimento</th><th class="num">Dias vencido</th></tr></thead><tbody></tbody></table></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Tendência</h2>
+      <p class="section-sub">Histórico salvo no servidor a cada atualização — não muda se você usar o botão de upload (que só processa dados neste navegador).</p>
+      <div class="trend-banner">
+        <p class="t-text" id="trend-text"></p>
+        <div class="trend-points" id="trend-points"></div>
+      </div>
+    </section>
+  </div>
+
+  <div id="paineis-alerta"></div>
 
   <footer class="foot">
     Painel gerado automaticamente a partir do export SAP LX03 pelo mesmo pipeline Python do dashboard Excel
     (<code>lx03/scripts/atualizar_dashboard.py</code>). Esta página é uma fotografia estática da última carga —
-    para o arquivo vivo com fórmulas, filtros nativos do Excel e exportação em PDF, veja
-    <code>lx03/dashboard/Dashboard_Estoque_LX03.xlsx</code> no repositório.
+    o botão "Enviar novo relatório" permite atualizar os dados direto no navegador, sem rodar o script, mas isso
+    não grava histórico nem atualiza o arquivo Excel — para isso, use o pipeline Python normalmente.
   </footer>
 </div>
 
 <script type="application/json" id="dados-raw">__DADOS_JSON__</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 (function(){
   "use strict";
-  const DADOS = JSON.parse(document.getElementById("dados-raw").textContent);
+  let DADOS = JSON.parse(document.getElementById("dados-raw").textContent);
   const COLS = DADOS.colunas.reduce((m,c,i)=>(m[c]=i,m),{});
   const fmtInt = new Intl.NumberFormat("pt-BR");
   const fmtPct = (x)=> (x*100).toLocaleString("pt-BR",{minimumFractionDigits:1,maximumFractionDigits:1})+"%";
@@ -326,6 +371,13 @@
 
   const ORDINAL = ["var(--ord-1)","var(--ord-2)","var(--ord-3)","var(--ord-4)","var(--ord-5)","var(--ord-6)"];
   const STATUS_COLOR = {good:"var(--good)",warning:"var(--warning)",serious:"var(--serious)",critical:"var(--critical)",neutral:"var(--ink-muted)"};
+
+  function slug(s){ return s.replace(/[^a-zA-Z0-9]/g,"_"); }
+  function matchTC(r, f){
+    // linhas de posição vazia não têm Tipo/Centro reais (campo em branco no
+    // SAP) — não devem ser excluídas por uma seleção específica nesses filtros
+    return (r[COLS.tipo]==="" || f.tipo.has(r[COLS.tipo])) && (r[COLS.centro]==="" || f.centro.has(r[COLS.centro]));
+  }
 
   // ---- filtros de seleção múltipla ---------------------------------------
   // Cada filtro guarda um Set com os valores marcados. Todos marcados =
@@ -395,11 +447,15 @@
     };
   }
 
-  const msTipo = criarMultiSelect(document.getElementById("msel-tipo"), DADOS.tipos, renderAll);
-  const msCentro = criarMultiSelect(document.getElementById("msel-centro"), DADOS.centros, renderAll);
-  const msAlerta = criarMultiSelect(document.getElementById("msel-alerta"), ALERTAS_ORDEM, renderAll);
+  let msTipo, msCentro, msAlerta;
+  function criarFiltros(){
+    todosFechar.length = 0;
+    msTipo = criarMultiSelect(document.getElementById("msel-tipo"), DADOS.tipos, renderTudo);
+    msCentro = criarMultiSelect(document.getElementById("msel-centro"), DADOS.centros, renderTudo);
+    msAlerta = criarMultiSelect(document.getElementById("msel-alerta"), ALERTAS_ORDEM, renderTudo);
+  }
   const els = { reset: document.getElementById("f-reset"), note: document.getElementById("active-note") };
-  els.reset.addEventListener("click", ()=>{ msTipo.reset(); msCentro.reset(); msAlerta.reset(); renderAll(); });
+  els.reset.addEventListener("click", ()=>{ msTipo.reset(); msCentro.reset(); msAlerta.reset(); renderTudo(); });
 
   function resumoFiltro(nome, sel, total){
     if(sel.size === total) return null;
@@ -409,7 +465,7 @@
   function currentFilter(){ return { tipo: msTipo.selecionados, centro: msCentro.selecionados, alerta: msAlerta.selecionados }; }
 
   // ---- exportar CSV / imprimir ------------------------------------------
-  const CSV_CABECALHO = ["Tipo de Depósito","Centro","Alerta","UM","Peso","Duração (dias)","Dias até vencer","Material","Lote","Posição"];
+  const CSV_CABECALHO = ["Tipo de Depósito","Centro","Alerta","UM","Peso","Duração (dias)","Dias até vencer","Material","Lote","Posição","Vencimento"];
   function csvCampo(v){
     if(v===null || v===undefined) return "";
     if(typeof v === "number") return v.toLocaleString("pt-BR");
@@ -426,9 +482,7 @@
   }
   document.getElementById("f-export-csv").addEventListener("click", ()=>{
     const f = currentFilter();
-    const linhas = DADOS.linhas.filter(r=>
-      f.tipo.has(r[COLS.tipo]) && f.centro.has(r[COLS.centro]) && f.alerta.has(r[COLS.alerta])
-    );
+    const linhas = DADOS.linhas.filter(r=> matchTC(r,f) && f.alerta.has(r[COLS.alerta]));
     const corpo = linhas.map(r => CSV_CABECALHO.map((_,i)=>csvCampo(r[i])).join(";")).join("\r\n");
     const csv = "﻿" + CSV_CABECALHO.join(";") + "\r\n" + corpo;
     const hoje = new Date().toISOString().slice(0,10);
@@ -437,9 +491,11 @@
   document.getElementById("f-print").addEventListener("click", ()=> window.print());
 
   // ---- meta -----------------------------------------------------------
-  document.getElementById("meta-atualizacao").textContent = DADOS.meta.ultima_atualizacao || "—";
-  document.getElementById("meta-arquivo").textContent = DADOS.meta.arquivo_origem || "—";
-  document.getElementById("meta-linhas").textContent = fmtInt.format(DADOS.linhas.length);
+  function atualizarMeta(){
+    document.getElementById("meta-atualizacao").textContent = DADOS.meta.ultima_atualizacao || "—";
+    document.getElementById("meta-arquivo").textContent = DADOS.meta.arquivo_origem || "—";
+    document.getElementById("meta-linhas").textContent = fmtInt.format(DADOS.linhas.length);
+  }
 
   // ---- bar chart component (plain HTML/CSS bars) -----------------------
   function renderBars(container, items, opts){
@@ -466,13 +522,10 @@
     });
   }
 
-  // ---- main render ------------------------------------------------------
-  function renderAll(){
+  // ---- Visão Geral --------------------------------------------------------
+  function renderGeral(){
     const f = currentFilter();
-    // linhas de posição vazia não têm Tipo/Centro reais (campo em branco no
-    // SAP) — não devem ser excluídas por uma seleção específica nesses filtros
-    const matchTC = (r)=> (r[COLS.tipo]==="" || f.tipo.has(r[COLS.tipo])) && (r[COLS.centro]==="" || f.centro.has(r[COLS.centro]));
-    const matchTCA = (r)=> matchTC(r) && f.alerta.has(r[COLS.alerta]);
+    const matchTCA = (r)=> matchTC(r,f) && f.alerta.has(r[COLS.alerta]);
 
     const parts = [
       resumoFiltro("Tipo", f.tipo, DADOS.tipos.length),
@@ -505,7 +558,7 @@
     `).join("");
 
     // Pontos de Atenção — conforme os filtros (Tipo/Centro sempre; Alerta decide quais categorias aparecem)
-    const rowsTC = DADOS.linhas.filter(matchTC);
+    const rowsTC = DADOS.linhas.filter(r=>matchTC(r,f));
     const totalKgTC = rowsTC.filter(r=>r[COLS.um]==="KG").reduce((s,r)=>s+r[COLS.peso],0);
     const categoriasVisiveis = ALERTAS_RISCO.filter(cat=>f.alerta.has(cat));
     const poaRows = categoriasVisiveis.map(cat=>{
@@ -545,7 +598,7 @@
     // categorias marcadas no filtro de Alerta)
     const porAlerta = {};
     ALERTAS_ORDEM.forEach(a=>porAlerta[a]=0);
-    DADOS.linhas.filter(matchTC).forEach(r=>{ porAlerta[r[COLS.alerta]] = (porAlerta[r[COLS.alerta]]||0)+1; });
+    rowsTC.forEach(r=>{ porAlerta[r[COLS.alerta]] = (porAlerta[r[COLS.alerta]]||0)+1; });
     const alertaItems = ALERTAS_ORDEM.filter(a=>f.alerta.has(a)).map(a=>({label:a, value:porAlerta[a], color:STATUS_COLOR[statusOf(a)]}));
     renderBars(document.getElementById("chart-alerta"), alertaItems);
 
@@ -572,42 +625,313 @@
     // marcada no filtro de Alerta
     function top10(alertaAlvo, diasCol, diasSign){
       if(!f.alerta.has(alertaAlvo)) return null;
-      return DADOS.linhas.filter(r=> matchTC(r) && r[COLS.alerta]===alertaAlvo && r[COLS.um]==="KG")
+      return DADOS.linhas.filter(r=> matchTC(r,f) && r[COLS.alerta]===alertaAlvo && r[COLS.um]==="KG")
         .sort((a,b)=>b[COLS.peso]-a[COLS.peso]).slice(0,10)
         .map(r=>({ material:r[COLS.material], lote:r[COLS.lote]||"—", posicao:r[COLS.posicao], tipo:r[COLS.tipo],
-                   kg: Math.round(r[COLS.peso]), dias: r[diasCol]!==null ? Math.round(diasSign*r[diasCol]) : "—" }));
+                   kg: Math.round(r[COLS.peso]), venc: r[COLS.vencimento]||"—",
+                   dias: r[diasCol]!==null ? Math.round(diasSign*r[diasCol]) : "—" }));
     }
     function fillTop(tableId, rows){
       const tbody = document.querySelector(`#${tableId} tbody`);
       if(rows === null){
-        tbody.innerHTML = `<tr><td colspan="6" class="desc">Categoria excluída pelo filtro de Alerta selecionado.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" class="desc">Categoria excluída pelo filtro de Alerta selecionado.</td></tr>`;
       } else {
         tbody.innerHTML = rows.length ? rows.map(r=>`
           <tr><td>${r.material}</td><td>${r.lote}</td><td>${r.posicao}</td><td>${r.tipo}</td>
-              <td class="num">${fmtInt.format(r.kg)}</td><td class="num">${r.dias}</td></tr>
-        `).join("") : `<tr><td colspan="6" class="desc">Nenhuma posição para os filtros selecionados.</td></tr>`;
+              <td class="num">${fmtInt.format(r.kg)}</td><td>${r.venc}</td><td class="num">${r.dias}</td></tr>
+        `).join("") : `<tr><td colspan="7" class="desc">Nenhuma posição para os filtros selecionados.</td></tr>`;
       }
     }
     fillTop("top-parado", top10("PARADO/SEM GIRO", COLS.duracao, 1));
     fillTop("top-vencido", top10("VENCIDO", COLS.dias_venc, -1));
   }
 
-  // ---- trend banner (static, independent of filters) --------------------
-  (function(){
+  // ---- Painéis individuais por Alerta -------------------------------------
+  const PAGE_SIZE = 50;
+  const sortState = {};
+  const pageState = {};
+  ALERTAS_RISCO.forEach(c=>{ sortState[c] = {campo:"peso", dir:"desc"}; pageState[c] = 1; });
+
+  const CAMPO_PARA_COL = {
+    material:"material", lote:"lote", posicao:"posicao", tipo:"tipo", centro:"centro", um:"um",
+    peso:"peso", vencimento:"dias_venc", duracao:"duracao", dias_venc:"dias_venc",
+  };
+  function compararLinhas(a, b, campo, dir){
+    const i = COLS[CAMPO_PARA_COL[campo]];
+    let va = a[i], vb = b[i];
+    const vazioA = va===null || va==="", vazioB = vb===null || vb==="";
+    if(vazioA && vazioB) return 0;
+    if(vazioA) return 1;
+    if(vazioB) return -1;
+    if(typeof va === "string" || typeof vb === "string"){
+      va = String(va); vb = String(vb);
+      return dir==="asc" ? va.localeCompare(vb,"pt-BR") : vb.localeCompare(va,"pt-BR");
+    }
+    return dir==="asc" ? va-vb : vb-va;
+  }
+
+  function construirAbas(){
+    const nav = document.getElementById("tabs");
+    const container = document.getElementById("paineis-alerta");
+    nav.innerHTML = "";
+    container.innerHTML = "";
+
+    function addTabButton(key, label){
+      const btn = document.createElement("button");
+      btn.type = "button"; btn.className = "tab-btn no-print"; btn.dataset.tab = key;
+      btn.textContent = label;
+      btn.addEventListener("click", ()=>mudarAba(key));
+      nav.appendChild(btn);
+    }
+    addTabButton("geral", "Visão Geral");
+    ALERTAS_RISCO.forEach(cat=> addTabButton(slug(cat), cat));
+
+    ALERTAS_RISCO.forEach(cat=>{
+      const s = slug(cat);
+      const div = document.createElement("div");
+      div.className = "tab-panel"; div.id = `painel-${s}`; div.hidden = true;
+      div.innerHTML = `
+        <div class="alerta-head">
+          <div class="alerta-head-top"><h2>${cat}</h2><span class="chip ${statusOf(cat)}"><span class="dot"></span>${STATUS_LABEL[statusOf(cat)]}</span></div>
+          <p class="alerta-desc">${DESCRICAO[cat]}</p>
+          <p class="alerta-acao"><b>Ação recomendada:</b> ${ACAO[cat]}</p>
+        </div>
+        <div class="kpi-grid" id="kpi-${s}"></div>
+        <div class="table-scroll">
+          <table class="poa sortable" id="tabela-${s}">
+            <thead><tr>
+              <th data-key="material">Material</th><th data-key="lote">Lote</th><th data-key="posicao">Posição</th>
+              <th data-key="tipo">Tipo</th><th data-key="centro">Centro</th><th data-key="um">UM</th>
+              <th class="num" data-key="peso">Quantidade</th><th data-key="vencimento">Vencimento</th>
+              <th class="num" data-key="duracao">Dias sem giro</th><th class="num" data-key="dias_venc">Dias até vencer</th>
+            </tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="pag-${s}"></div>
+      `;
+      div.querySelectorAll("th[data-key]").forEach(th=>{
+        th.addEventListener("click", ()=>{
+          const campo = th.dataset.key;
+          const atual = sortState[cat];
+          if(atual.campo === campo) atual.dir = atual.dir==="asc" ? "desc" : "asc";
+          else { atual.campo = campo; atual.dir = "desc"; }
+          pageState[cat] = 1;
+          renderAlertaPanel(cat);
+        });
+      });
+      container.appendChild(div);
+    });
+  }
+
+  let abaAtiva = "geral";
+  function mudarAba(key){
+    abaAtiva = key;
+    document.querySelectorAll(".tab-btn").forEach(b=> b.classList.toggle("active", b.dataset.tab===key));
+    document.getElementById("tab-geral").hidden = key !== "geral";
+    ALERTAS_RISCO.forEach(cat=>{
+      document.getElementById(`painel-${slug(cat)}`).hidden = key !== slug(cat);
+    });
+  }
+
+  function atualizarSetaOrdenacao(s, campo, dir){
+    document.querySelectorAll(`#tabela-${s} th[data-key]`).forEach(th=>{
+      th.classList.remove("sort-asc","sort-desc");
+      if(th.dataset.key===campo) th.classList.add(dir==="asc"?"sort-asc":"sort-desc");
+    });
+  }
+
+  function renderPaginacao(container, cat, totalPaginas, totalLinhas){
+    const atual = pageState[cat];
+    container.innerHTML = `
+      <button type="button" data-act="prev" ${atual<=1?"disabled":""}>‹ Anterior</button>
+      <span>Página ${atual} de ${totalPaginas} (${fmtInt.format(totalLinhas)} posições)</span>
+      <button type="button" data-act="next" ${atual>=totalPaginas?"disabled":""}>Próxima ›</button>`;
+    const prev = container.querySelector('[data-act="prev"]');
+    const next = container.querySelector('[data-act="next"]');
+    if(prev) prev.addEventListener("click", ()=>{ pageState[cat]=Math.max(1,atual-1); renderAlertaPanel(cat); });
+    if(next) next.addEventListener("click", ()=>{ pageState[cat]=Math.min(totalPaginas,atual+1); renderAlertaPanel(cat); });
+  }
+
+  function renderAlertaPanel(cat){
+    const f = currentFilter();
+    const linhas = DADOS.linhas.filter(r=> matchTC(r,f) && r[COLS.alerta]===cat);
+    const totalKg = linhas.filter(r=>r[COLS.um]==="KG").reduce((s,r)=>s+r[COLS.peso],0);
+    const totalUn = linhas.filter(r=>r[COLS.um]==="UN").reduce((s,r)=>s+r[COLS.peso],0);
+    const qtd = linhas.length;
+    const s = slug(cat);
+
+    document.getElementById(`kpi-${s}`).innerHTML = [
+      ["Posições", fmtInt.format(qtd)],
+      ["Peso total (kg)", fmtInt.format(Math.round(totalKg))],
+      ["Total em UN", fmtInt.format(Math.round(totalUn))],
+      ["Peso médio (kg/posição)", qtd ? fmtInt.format(Math.round(totalKg/qtd)) : "—"],
+    ].map(([lbl,val])=>`<div class="kpi"><div class="label">${lbl}</div><div class="value num">${val}</div></div>`).join("");
+
+    const {campo, dir} = sortState[cat];
+    const ordenadas = [...linhas].sort((a,b)=>compararLinhas(a,b,campo,dir));
+    const totalPaginas = Math.max(1, Math.ceil(ordenadas.length / PAGE_SIZE));
+    if(pageState[cat] > totalPaginas) pageState[cat] = totalPaginas;
+    const pagina = ordenadas.slice((pageState[cat]-1)*PAGE_SIZE, pageState[cat]*PAGE_SIZE);
+
+    const tbody = document.querySelector(`#tabela-${s} tbody`);
+    tbody.innerHTML = pagina.length ? pagina.map(r=>`
+      <tr>
+        <td>${r[COLS.material]}</td><td>${r[COLS.lote]||"—"}</td><td>${r[COLS.posicao]}</td>
+        <td>${r[COLS.tipo]}</td><td>${r[COLS.centro]||"—"}</td><td>${r[COLS.um]||"—"}</td>
+        <td class="num">${fmtInt.format(Math.round(r[COLS.peso]))}</td>
+        <td>${r[COLS.vencimento]||"—"}</td>
+        <td class="num">${r[COLS.duracao]!==null ? fmtInt.format(Math.round(r[COLS.duracao])) : "—"}</td>
+        <td class="num">${r[COLS.dias_venc]!==null ? fmtInt.format(Math.round(r[COLS.dias_venc])) : "—"}</td>
+      </tr>
+    `).join("") : `<tr><td colspan="10" class="desc">Nenhuma posição para os filtros de Tipo/Centro selecionados.</td></tr>`;
+
+    renderPaginacao(document.getElementById(`pag-${s}`), cat, totalPaginas, ordenadas.length);
+    atualizarSetaOrdenacao(s, campo, dir);
+  }
+
+  function renderTudo(){
+    renderGeral();
+    ALERTAS_RISCO.forEach(cat=> renderAlertaPanel(cat));
+  }
+
+  // ---- tendência (independe dos filtros e do upload) --------------------
+  function renderizarTendencia(){
     const t = DADOS.tendencia || [];
     const textEl = document.getElementById("trend-text");
     const ptsEl = document.getElementById("trend-points");
     if(t.length <= 1){
-      textEl.textContent = "O acompanhamento de tendência começou nesta atualização — a partir da 2ª carga diária, este espaço mostra a evolução dos pontos de atenção dia a dia.";
+      textEl.textContent = "O acompanhamento de tendência começou na última atualização pelo script Python — a partir da 2ª carga diária, este espaço mostra a evolução dos pontos de atenção dia a dia.";
     } else {
-      const first = t[0], last = t[t.length-1];
+      const first = t[0];
       textEl.textContent = `Acompanhando desde ${first.data} — ${t.length} atualizações registradas.`;
     }
     ptsEl.innerHTML = t.slice(-14).map(p=>`
       <div class="pt"><div class="dot-wrap"></div>${p.data.slice(5)}<br><b class="num">${fmtInt.format(Math.round(p.total_kg))}</b>kg</div>
     `).join("");
-  })();
+  }
 
-  renderAll();
+  // ---- upload de um novo relatório (processado só no navegador) ---------
+  const COLUNAS_ESPERADAS = [
+    "Tipo de depósito", "Posição no depósito", "Material", "Lote",
+    "Nº de quantos", "Tipo de estoque", "Unidade de depósito",
+    "Estoque disponível", "Último movimento", "Estoque total", "UM básica",
+    "Duração", "Inventário ativo", "Depósito", "Data do vencimento", "Centro",
+  ];
+
+  function calcularAlertaJs(campo, diasVenc, diasParado, diasAteVencer){
+    const material = campo("Material") || "";
+    if(material === "<< vazio >>") return "VAZIA";
+    const venc = campo("Data do vencimento");
+    if(venc instanceof Date){
+      if(diasAteVencer < 0) return "VENCIDO";
+      if(diasAteVencer <= diasVenc) return "PRÓX. VENCIMENTO";
+    }
+    const tipoEstoque = campo("Tipo de estoque");
+    if(tipoEstoque === "Q") return "QUALIDADE";
+    if(tipoEstoque === "S") return "BLOQUEADO";
+    if(tipoEstoque === "R") return "RESTRITO/DEVOLUÇÃO";
+    const deposito = campo("Depósito");
+    if(deposito === "QUAR" || deposito === "QRES") return "QUARENTENA";
+    const posicao = campo("Posição no depósito");
+    if(posicao === "DESCARTE" || posicao === "DEVOLUÇÃO") return "DESCARTE/DEVOLUÇÃO";
+    const lote = campo("Lote");
+    const um = campo("UM básica");
+    if(!lote && um) return "SEM LOTE";
+    const duracao = parseFloat(campo("Duração"));
+    if(!isNaN(duracao) && duracao >= diasParado) return "PARADO/SEM GIRO";
+    return "OK";
+  }
+
+  function processarUpload(bruto, nomeArquivo){
+    if(!bruto.length) throw new Error("Arquivo vazio.");
+    const cabecalho = bruto[0];
+    const idx = {};
+    cabecalho.forEach((h,i)=>{ if(h) idx[h]=i; });
+    const faltando = COLUNAS_ESPERADAS.filter(c=> !(c in idx));
+    if(faltando.length) throw new Error(`Não parece um export da LX03 — faltam as colunas: ${faltando.join(", ")}`);
+
+    const diasVenc = DADOS.meta.dias_prox_venc || 60;
+    const diasParado = DADOS.meta.dias_parado || 90;
+    const hoje = new Date(); hoje.setHours(0,0,0,0);
+    const novasLinhas = [];
+    const novosTipos = new Set(), novosCentros = new Set();
+
+    for(let r=1; r<bruto.length; r++){
+      const linha = bruto[r];
+      if(!linha || linha.every(v=>v===null || v==="")) continue;
+      const campo = (nome)=> linha[idx[nome]];
+      const tipo = campo("Tipo de depósito") || "";
+      const centro = campo("Centro") || "";
+      const um = campo("UM básica") || "";
+      const peso = Number(campo("Estoque total")) || 0;
+      const material = campo("Material") || "";
+      const lote = campo("Lote") || "";
+      const posicao = campo("Posição no depósito") || "";
+      const duracaoRaw = campo("Duração");
+      const duracao = (duracaoRaw!==null && duracaoRaw!=="" && !isNaN(parseFloat(duracaoRaw))) ? parseFloat(duracaoRaw) : null;
+      const venc = campo("Data do vencimento");
+      const vencDate = (venc instanceof Date) ? venc : null;
+      const diasAteVencer = vencDate ? Math.round((vencDate - hoje) / 86400000) : null;
+      const vencimentoTxt = vencDate ? vencDate.toLocaleDateString("pt-BR",{timeZone:"UTC"}) : "";
+      const alerta = calcularAlertaJs(campo, diasVenc, diasParado, diasAteVencer);
+
+      if(tipo) novosTipos.add(tipo);
+      if(centro) novosCentros.add(centro);
+      novasLinhas.push([tipo, centro, alerta, um, Math.round(peso*100)/100, duracao, diasAteVencer, material, lote, posicao, vencimentoTxt]);
+    }
+
+    return {
+      meta: {
+        ultima_atualizacao: new Date().toLocaleString("pt-BR"),
+        arquivo_origem: `${nomeArquivo} (enviado no navegador)`,
+        dias_prox_venc: diasVenc, dias_parado: diasParado,
+      },
+      colunas: DADOS.colunas,
+      linhas: novasLinhas,
+      tipos: [...novosTipos].sort((a,b)=>a.localeCompare(b,"pt-BR")),
+      centros: [...novosCentros].sort((a,b)=>a.localeCompare(b,"pt-BR")),
+      tendencia: DADOS.tendencia,
+    };
+  }
+
+  const uploadBtn = document.getElementById("upload-btn");
+  const uploadInput = document.getElementById("upload-input");
+  const uploadStatus = document.getElementById("upload-status");
+  uploadBtn.addEventListener("click", ()=> uploadInput.click());
+  uploadInput.addEventListener("change", async (e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    uploadStatus.hidden = false;
+    uploadStatus.className = "active-note no-print";
+    uploadStatus.textContent = `Lendo ${file.name} ...`;
+    try{
+      if(typeof XLSX === "undefined") throw new Error("biblioteca de leitura de Excel não carregou (sem internet?).");
+      const buf = await file.arrayBuffer();
+      const wb = XLSX.read(buf, {type:"array", cellDates:true});
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const bruto = XLSX.utils.sheet_to_json(ws, {header:1, defval:null, raw:true});
+      const novoDados = processarUpload(bruto, file.name);
+      DADOS = novoDados;
+      criarFiltros();
+      atualizarMeta();
+      renderTudo();
+      uploadStatus.className = "active-note no-print ok";
+      uploadStatus.textContent = `✓ ${fmtInt.format(novoDados.linhas.length)} posições carregadas de "${file.name}". A aba Tendência continua mostrando o histórico salvo no servidor — este upload não grava histórico nem atualiza o Excel.`;
+    } catch(err){
+      uploadStatus.className = "active-note no-print erro";
+      uploadStatus.textContent = `Erro ao processar o arquivo: ${err.message}`;
+    } finally {
+      e.target.value = "";
+    }
+  });
+
+  // ---- inicialização ------------------------------------------------------
+  construirAbas();
+  criarFiltros();
+  atualizarMeta();
+  renderizarTendencia();
+  mudarAba("geral");
+  renderTudo();
 })();
 </script>

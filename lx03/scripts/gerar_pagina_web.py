@@ -9,6 +9,7 @@ Chamado automaticamente por atualizar_dashboard.py a cada atualização
     python gerar_pagina_web.py caminho/Dashboard_Estoque_LX03.xlsx caminho/saida.html
 """
 
+import datetime
 import json
 import sqlite3
 import sys
@@ -18,16 +19,21 @@ import openpyxl
 
 TEMPLATE_PATH = Path(__file__).resolve().parent / "templates" / "painel.html"
 
-COLUNAS_LINHA = [
-    "Tipo de depósito", "Posição no depósito", "Material", "Lote", "UM básica",
-    "Estoque total", "Centro", "Duração (dias)", "Dias até vencer",
-]
 # ordem das chaves compactas usadas no JSON embutido na página (ver painel.html)
-CHAVES_JSON = ["tipo", "centro", "alerta", "um", "peso", "duracao", "dias_venc", "material", "lote", "posicao"]
+# — o mesmo formato é produzido pelo motor de alertas em JavaScript quando o
+# usuário sobe um novo arquivo pelo botão de upload, então os dois lados
+# (Python e JS) têm que gerar exatamente essas 11 colunas, nessa ordem.
+CHAVES_JSON = ["tipo", "centro", "alerta", "um", "peso", "duracao", "dias_venc", "material", "lote", "posicao", "vencimento"]
 
 
 def _num_ou_none(v):
     return round(float(v), 2) if isinstance(v, (int, float)) else None
+
+
+def _data_ou_vazio(v):
+    if isinstance(v, (datetime.datetime, datetime.date)):
+        return v.strftime("%d/%m/%Y")
+    return ""
 
 
 def extrair_dados(caminho_dashboard: Path, caminho_tendencia_db: Path):
@@ -54,6 +60,7 @@ def extrair_dados(caminho_dashboard: Path, caminho_tendencia_db: Path):
             _num_ou_none(r[idx["Duração (dias)"]]),
             _num_ou_none(r[idx["Dias até vencer"]]),
             r[idx["Material"]] or "", r[idx["Lote"]] or "", r[idx["Posição no depósito"]] or "",
+            _data_ou_vazio(r[idx["Data do vencimento"]]),
         ])
 
     tendencia = []
