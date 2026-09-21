@@ -22,12 +22,22 @@ TEMPLATE_PATH = Path(__file__).resolve().parent / "templates" / "painel.html"
 # ordem das chaves compactas usadas no JSON embutido na página (ver painel.html)
 # — o mesmo formato é produzido pelo motor de alertas em JavaScript quando o
 # usuário sobe um novo arquivo pelo botão de upload, então os dois lados
-# (Python e JS) têm que gerar exatamente essas 11 colunas, nessa ordem.
-CHAVES_JSON = ["tipo", "centro", "alerta", "um", "peso", "duracao", "dias_venc", "material", "lote", "posicao", "vencimento"]
+# (Python e JS) têm que gerar exatamente essas colunas, nessa ordem. As 11
+# primeiras são os campos já calculados/usados nos filtros e gráficos; as
+# demais são os campos brutos do SAP mantidos só para a tela de detalhe e a
+# exportação com todos os dados da LX03 (não entram em nenhuma conta).
+CHAVES_JSON = [
+    "tipo", "centro", "alerta", "um", "peso", "duracao", "dias_venc", "material", "lote", "posicao", "vencimento",
+    "nquantos", "tipo_estoque", "unidade_deposito", "estoque_disp", "ultimo_mov", "inventario_ativo", "deposito",
+]
 
 
 def _num_ou_none(v):
     return round(float(v), 2) if isinstance(v, (int, float)) else None
+
+
+def _texto_ou_vazio(v):
+    return "" if v is None else str(v)
 
 
 def _data_ou_vazio(v):
@@ -61,6 +71,13 @@ def extrair_dados(caminho_dashboard: Path, caminho_tendencia_db: Path):
             _num_ou_none(r[idx["Dias até vencer"]]),
             r[idx["Material"]] or "", r[idx["Lote"]] or "", r[idx["Posição no depósito"]] or "",
             _data_ou_vazio(r[idx["Data do vencimento"]]),
+            _texto_ou_vazio(r[idx["Nº de quantos"]]),
+            _texto_ou_vazio(r[idx["Tipo de estoque"]]),
+            _texto_ou_vazio(r[idx["Unidade de depósito"]]),
+            _num_ou_none(r[idx["Estoque disponível"]]),
+            _data_ou_vazio(r[idx["Último movimento"]]),
+            _texto_ou_vazio(r[idx["Inventário ativo"]]),
+            _texto_ou_vazio(r[idx["Depósito"]]),
         ])
 
     tendencia = []

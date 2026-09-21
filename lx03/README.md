@@ -103,6 +103,24 @@ página se ajusta na hora conforme o que estiver marcado:
   funciona como uma forma visual de comparar só os tipos que importam.
 - **Gráfico "Posições por Alerta"** — mostra só as categorias marcadas.
 
+### Unidade de medida sempre explícita
+
+Os cartões de "Total" não somam mais tudo como se fosse quilo: cada unidade
+que aparecer no arquivo (KG, UN, CX ou qualquer outra que o SAP venha a
+usar) ganha o seu próprio cartão, com o nome da unidade no título ("Total
+(KG)", "Total (CX)"...). Antes, uma quantidade numa unidade diferente de
+KG/UN era descartada silenciosamente dessas contas — agora nada some, e dá
+pra ver exatamente quanto tem de cada unidade.
+
+### Ver todos os dados da LX03 (tela de detalhe)
+
+Clicar em qualquer cartão de indicador (na Visão Geral ou dentro de uma aba
+de alerta) abre uma tela com a lista completa de posições por trás daquele
+número, com **todas as colunas originais do SAP** — não só as usadas nos
+filtros e gráficos, mas também Nº de quantos, Tipo de Estoque, Estoque
+Disponível, Último Movimento, Inventário Ativo e Depósito. De lá dá para
+exportar só aquele recorte em CSV. Tecla `Esc` ou o "✕" fecham a tela.
+
 ### Abas — Visão Geral + uma por categoria de alerta
 
 Logo abaixo dos filtros tem uma barra de abas: **Visão Geral** (o painel
@@ -110,8 +128,8 @@ completo de sempre — KPIs, Pontos de Atenção, gráficos, Top 10, Tendência)
 e mais uma aba **para cada uma das 9 categorias de alerta** (Vencido,
 Qualidade, Bloqueado, etc.). Cada aba de alerta traz:
 - Uma descrição da categoria e a ação recomendada;
-- KPIs só daquela categoria (posições, peso total em kg, total em UN, peso
-  médio por posição);
+- KPIs só daquela categoria (posições, total por cada unidade de medida
+  presente e, quando há KG, o peso médio por posição);
 - A lista **completa** de posições daquela categoria (não só o Top 10),
   com **Material, Lote, Posição, Tipo, Centro, UM, Quantidade, Data de
   Vencimento, Dias sem giro e Dias até vencer** — clique no cabeçalho de
@@ -129,7 +147,12 @@ que é mais útil para combinar categorias na Visão Geral).
 - **⬇ Exportar dados filtrados (CSV)** — baixa as posições que estão sendo
   mostradas no momento (respeitando os filtros ativos) num `.csv` que abre
   direto no Excel, com acentuação, separador e casas decimais no padrão
-  brasileiro (inclui a Data de Vencimento de cada posição).
+  brasileiro. Traz **todas as colunas da LX03** (as usadas nos filtros e
+  também os campos brutos do SAP — Nº de quantos, Tipo de Estoque, Estoque
+  Disponível, Último Movimento, Inventário Ativo, Depósito), não só um
+  resumo. O mesmo CSV completo pode ser baixado só de um recorte, pela tela
+  de detalhe (clique num cartão de indicador) ou pelo botão "Baixar" de
+  cada linha em Pontos que Carecem de Monitoramento.
 - **🖶 Imprimir / Salvar PDF** — abre o diálogo de impressão do navegador
   (filtros e botões somem automaticamente do resultado); escolher "Salvar
   como PDF" no destino gera um PDF da página como está, com o filtro atual

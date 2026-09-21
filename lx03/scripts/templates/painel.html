@@ -232,6 +232,38 @@
   footer.foot{ border-top:1px solid var(--border); padding-block:20px 40px; font-size:.78rem; color:var(--ink-muted); line-height:1.6; }
   footer.foot code{ background:var(--surface-sunken); padding:1px 5px; border-radius:4px; }
 
+  .kpi[data-modal-key]{ cursor:pointer; }
+  .kpi[data-modal-key]:hover, .kpi[data-modal-key]:focus-visible{ border-color:var(--brand); outline:none; }
+  .kpi[data-modal-key]:focus-visible{ box-shadow:0 0 0 2px color-mix(in srgb, var(--brand) 35%, transparent); }
+
+  .row-download{
+    display:inline-flex; align-items:center; justify-content:center; width:30px; height:30px;
+    border-radius:8px; border:1px solid var(--border-strong); background:var(--surface-card); color:var(--brand); cursor:pointer;
+  }
+  .row-download:hover{ background:var(--surface-sunken); }
+  .row-download svg{ width:15px; height:15px; }
+
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(5,7,10,.6); display:flex; align-items:flex-start; justify-content:center;
+    padding:32px 16px; z-index:100; overflow-y:auto;
+  }
+  .modal-overlay[hidden]{ display:none; }
+  .modal-box{
+    background:var(--surface-card); border-radius:14px; max-width:1400px; width:100%; box-shadow:var(--shadow);
+    display:flex; flex-direction:column; max-height:calc(100vh - 64px);
+  }
+  .modal-head{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; padding:18px 22px; border-bottom:1px solid var(--border); }
+  .modal-head h3{ margin:0; font-size:1.05rem; color:var(--brand-strong); }
+  .modal-count{ display:block; font-size:.8rem; color:var(--ink-muted); font-weight:500; margin-top:2px; }
+  .modal-close{
+    font:inherit; font-size:1rem; line-height:1; background:none; border:none; color:var(--ink-muted); cursor:pointer;
+    padding:8px; border-radius:8px; flex:none;
+  }
+  .modal-close:hover{ background:var(--surface-sunken); color:var(--ink-primary); }
+  .modal-body{ padding:16px 22px; overflow:auto; }
+  .modal-body table.poa{ font-size:.8rem; }
+  .modal-foot{ display:flex; justify-content:flex-end; gap:10px; padding:14px 22px; border-top:1px solid var(--border); }
+
   @media (prefers-reduced-motion:no-preference){
     .bar-row .fill{ transition:width .5s ease; }
   }
@@ -289,7 +321,7 @@
       <div class="table-scroll">
         <table class="poa">
           <thead>
-            <tr><th>Categoria</th><th>O que significa</th><th class="num">Posições</th><th class="num">Peso (kg)</th><th class="num">% do kg</th><th>Severidade</th><th>Ação recomendada</th></tr>
+            <tr><th>Categoria</th><th>O que significa</th><th class="num">Posições</th><th class="num">Peso (kg)</th><th class="num">% do kg</th><th>Severidade</th><th>Ação recomendada</th><th>Baixar</th></tr>
           </thead>
           <tbody id="poa-body"></tbody>
         </table>
@@ -358,6 +390,24 @@
   </footer>
 </div>
 
+<div class="modal-overlay no-print" id="modal-overlay" hidden>
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modal-titulo">
+    <div class="modal-head">
+      <div>
+        <h3 id="modal-titulo">Dados</h3>
+        <span class="modal-count" id="modal-contagem"></span>
+      </div>
+      <button type="button" class="modal-close" id="modal-fechar" aria-label="Fechar">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="table-scroll"><table class="poa" id="modal-tabela"><thead></thead><tbody></tbody></table></div>
+    </div>
+    <div class="modal-foot">
+      <button type="button" class="btn primary" id="modal-exportar">Exportar estas linhas — todos os dados da LX03 (CSV)</button>
+    </div>
+  </div>
+</div>
+
 <script type="application/json" id="dados-raw">__DADOS_JSON__</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
@@ -417,12 +467,14 @@
     alertTriangle: '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line>',
     alertOctagon: '<polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"></polygon><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line>',
     circle: '<circle cx="12" cy="12" r="10"></circle>',
+    download: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line>',
   };
   function icone(nome){ return `<svg class="icon" viewBox="0 0 24 24">${ICON_PATHS[nome]}</svg>`; }
   const STATUS_ICON = {good:"check", warning:"alertCircle", serious:"alertTriangle", critical:"alertOctagon", neutral:"circle"};
   function chip(status, label){ return `<span class="chip ${status}">${icone(STATUS_ICON[status])}${label}</span>`; }
-  function kpiCard(iconName, label, value, note){
-    return `<div class="kpi"><span class="icon-badge">${icone(iconName)}</span><div class="body"><div class="label">${label}</div><div class="value num">${value}${note?` <small>(${note})</small>`:""}</div></div></div>`;
+  function kpiCard(iconName, label, value, note, modalKey){
+    const attrs = modalKey ? ` data-modal-key="${modalKey}" role="button" tabindex="0"` : "";
+    return `<div class="kpi"${attrs}><span class="icon-badge">${icone(iconName)}</span><div class="body"><div class="label">${label}</div><div class="value num">${value}${note?` <small>(${note})</small>`:""}</div></div></div>`;
   }
 
   function slug(s){ return s.replace(/[^a-zA-Z0-9]/g,"_"); }
@@ -518,7 +570,17 @@
   function currentFilter(){ return { tipo: msTipo.selecionados, centro: msCentro.selecionados, alerta: msAlerta.selecionados }; }
 
   // ---- exportar CSV / imprimir ------------------------------------------
-  const CSV_CABECALHO = ["Tipo de Depósito","Centro","Alerta","UM","Peso","Duração (dias)","Dias até vencer","Material","Lote","Posição","Vencimento"];
+  // Exporta sempre TODAS as colunas da LX03 (não só as usadas nos filtros e
+  // gráficos) — inclui os campos brutos do SAP (nº de quantos, tipo de
+  // estoque, estoque disponível, último movimento, inventário ativo, depósito).
+  const COLUNAS_COMPLETAS = [
+    ["tipo","Tipo de Depósito"], ["centro","Centro"], ["alerta","Alerta"], ["um","UM"],
+    ["peso","Quantidade"], ["duracao","Duração (dias)"], ["dias_venc","Dias até vencer"],
+    ["material","Material"], ["lote","Lote"], ["posicao","Posição"], ["vencimento","Data do Vencimento"],
+    ["nquantos","Nº de Quantos"], ["tipo_estoque","Tipo de Estoque"], ["unidade_deposito","Unidade de Depósito"],
+    ["estoque_disp","Estoque Disponível"], ["ultimo_mov","Último Movimento"], ["inventario_ativo","Inventário Ativo"],
+    ["deposito","Depósito"],
+  ];
   function csvCampo(v){
     if(v===null || v===undefined) return "";
     if(typeof v === "number") return v.toLocaleString("pt-BR");
@@ -533,15 +595,85 @@
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     setTimeout(()=>URL.revokeObjectURL(url), 1000);
   }
-  document.getElementById("f-export-csv").addEventListener("click", ()=>{
+  function exportarCsv(nomeArquivo, linhas){
+    const corpo = linhas.map(r => COLUNAS_COMPLETAS.map(([k])=>csvCampo(r[COLS[k]])).join(";")).join("\r\n");
+    const csv = "﻿" + COLUNAS_COMPLETAS.map(([,lbl])=>lbl).join(";") + "\r\n" + corpo;
+    baixarArquivo(nomeArquivo, csv, "text/csv;charset=utf-8;");
+  }
+  function linhasFiltradas(){
     const f = currentFilter();
-    const linhas = DADOS.linhas.filter(r=> matchTC(r,f) && f.alerta.has(r[COLS.alerta]));
-    const corpo = linhas.map(r => CSV_CABECALHO.map((_,i)=>csvCampo(r[i])).join(";")).join("\r\n");
-    const csv = "﻿" + CSV_CABECALHO.join(";") + "\r\n" + corpo;
+    return DADOS.linhas.filter(r=> matchTC(r,f) && f.alerta.has(r[COLS.alerta]));
+  }
+  document.getElementById("f-export-csv").addEventListener("click", ()=>{
     const hoje = new Date().toISOString().slice(0,10);
-    baixarArquivo(`lx03_export_${hoje}.csv`, csv, "text/csv;charset=utf-8;");
+    exportarCsv(`lx03_dados_completos_${hoje}.csv`, linhasFiltradas());
   });
   document.getElementById("f-print").addEventListener("click", ()=> window.print());
+
+  // ---- tela de detalhe ("ver todos os dados da LX03") -------------------
+  // Um mesmo "modal" serve para qualquer recorte: clicar num cartão de
+  // indicador, ou no botão de baixar de uma categoria em Pontos de Atenção.
+  // A receita é recalculada na hora do clique (sempre com o filtro atual).
+  function receitaModal(chave){
+    const f = currentFilter();
+    if(chave === "ocupadas") return {titulo:"Posições ocupadas", linhas: linhasFiltradas().filter(r=>r[COLS.alerta]!=="VAZIA")};
+    if(chave === "vazias") return {titulo:"Posições vazias", linhas: linhasFiltradas().filter(r=>r[COLS.alerta]==="VAZIA")};
+    if(chave === "ocupacao") return {titulo:"Todas as posições (ocupadas + vazias)", linhas: linhasFiltradas()};
+    if(chave === "materiais") return {titulo:"Posições com material", linhas: linhasFiltradas().filter(r=>r[COLS.material]!=="<< vazio >>")};
+    if(chave.startsWith("un:")){
+      const u = chave.slice(3);
+      return {titulo:`Posições em ${u}`, linhas: linhasFiltradas().filter(r=>r[COLS.um]===u)};
+    }
+    if(chave.startsWith("cat:")){
+      const cat = chave.slice(4);
+      return {titulo:cat, linhas: DADOS.linhas.filter(r=> matchTC(r,f) && r[COLS.alerta]===cat)};
+    }
+    return {titulo:"Dados", linhas: []};
+  }
+  function valorCelulaModal(v){
+    return (v===null || v===undefined || v==="") ? "—" : (typeof v==="number" ? fmtInt.format(v) : v);
+  }
+  let modalLinhasAtuais = [];
+  const modalOverlay = document.getElementById("modal-overlay");
+  function abrirModal(titulo, linhas){
+    document.getElementById("modal-titulo").textContent = titulo;
+    document.getElementById("modal-contagem").textContent = `${fmtInt.format(linhas.length)} posições — todos os dados da LX03`;
+    const thead = document.querySelector("#modal-tabela thead");
+    const tbody = document.querySelector("#modal-tabela tbody");
+    thead.innerHTML = `<tr>${COLUNAS_COMPLETAS.map(([,lbl])=>`<th>${lbl}</th>`).join("")}</tr>`;
+    tbody.innerHTML = linhas.length ? linhas.map(r=>`<tr>${COLUNAS_COMPLETAS.map(([k])=>{
+      const cls = typeof r[COLS[k]] === "number" ? ' class="num"' : "";
+      return `<td${cls}>${valorCelulaModal(r[COLS[k]])}</td>`;
+    }).join("")}</tr>`).join("") : `<tr><td colspan="${COLUNAS_COMPLETAS.length}" class="desc">Nenhuma posição para este recorte.</td></tr>`;
+    modalLinhasAtuais = linhas;
+    modalOverlay.hidden = false;
+    document.body.style.overflow = "hidden";
+  }
+  function fecharModal(){ modalOverlay.hidden = true; document.body.style.overflow = ""; }
+  document.getElementById("modal-fechar").addEventListener("click", fecharModal);
+  modalOverlay.addEventListener("click", (e)=>{ if(e.target === modalOverlay) fecharModal(); });
+  document.addEventListener("keydown", (e)=>{ if(e.key === "Escape" && !modalOverlay.hidden) fecharModal(); });
+  document.getElementById("modal-exportar").addEventListener("click", ()=>{
+    const hoje = new Date().toISOString().slice(0,10);
+    exportarCsv(`lx03_dados_completos_${hoje}.csv`, modalLinhasAtuais);
+  });
+  document.addEventListener("click", (e)=>{
+    const kpiEl = e.target.closest(".kpi[data-modal-key]");
+    if(kpiEl){ const r = receitaModal(kpiEl.dataset.modalKey); abrirModal(r.titulo, r.linhas); return; }
+    const btnBaixar = e.target.closest(".row-download");
+    if(btnBaixar){
+      const r = receitaModal(`cat:${btnBaixar.dataset.cat}`);
+      const hoje = new Date().toISOString().slice(0,10);
+      exportarCsv(`lx03_${slug(btnBaixar.dataset.cat)}_${hoje}.csv`, r.linhas);
+    }
+  });
+  document.addEventListener("keydown", (e)=>{
+    if((e.key==="Enter" || e.key===" ") && e.target.matches(".kpi[data-modal-key]")){
+      e.preventDefault();
+      const r = receitaModal(e.target.dataset.modalKey);
+      abrirModal(r.titulo, r.linhas);
+    }
+  });
 
   // ---- meta -----------------------------------------------------------
   function atualizarMeta(){
@@ -589,24 +721,33 @@
 
     // KPIs (respect all 3 filters)
     const filtered = DADOS.linhas.filter(matchTCA);
-    let totalKg=0, totalUn=0, ocupadas=0, vazias=0;
+    let ocupadas=0, vazias=0;
+    const totalPorUnidade = {};
     filtered.forEach(r=>{
       if(r[COLS.alerta]==="VAZIA") vazias++; else ocupadas++;
-      if(r[COLS.um]==="KG") totalKg += r[COLS.peso];
-      else if(r[COLS.um]==="UN") totalUn += r[COLS.peso];
+      const u = r[COLS.um];
+      if(u) totalPorUnidade[u] = (totalPorUnidade[u]||0) + r[COLS.peso];
     });
     const taxaOcup = (ocupadas+vazias)>0 ? ocupadas/(ocupadas+vazias) : 0;
     const materiaisUnicos = new Set(filtered.filter(r=>r[COLS.material]!=="<< vazio >>").map(r=>r[COLS.material])).size;
 
+    // Cada unidade de medida que aparecer nos dados (KG, UN, CX ou qualquer
+    // outra) vira seu próprio cartão — nenhuma quantidade fica escondida ou
+    // somada com uma unidade diferente.
+    const ICONES_UNIDADE = ["box","grid","tag","layers"];
+    const unidadesOrdenadas = Object.keys(totalPorUnidade).sort((a,b)=> a==="KG"?-1 : b==="KG"?1 : a.localeCompare(b));
+    const kpisUnidade = unidadesOrdenadas.map((u,i)=>([
+      ICONES_UNIDADE[i % ICONES_UNIDADE.length], `Total (${u})`, fmtInt.format(Math.round(totalPorUnidade[u])), null, `un:${u}`,
+    ]));
+
     const kpis = [
-      ["box", "Total em KG", fmtInt.format(Math.round(totalKg))],
-      ["grid", "Total em UN", fmtInt.format(Math.round(totalUn))],
-      ["check", "Posições ocupadas", fmtInt.format(ocupadas)],
-      ["square", "Posições vazias", fmtInt.format(vazias)],
-      ["percent", "Taxa de ocupação", fmtPct(taxaOcup)],
-      ["tag", "Materiais únicos", fmtInt.format(materiaisUnicos)],
+      ...kpisUnidade,
+      ["check", "Posições ocupadas", fmtInt.format(ocupadas), null, "ocupadas"],
+      ["square", "Posições vazias", fmtInt.format(vazias), null, "vazias"],
+      ["percent", "Taxa de ocupação", fmtPct(taxaOcup), null, "ocupacao"],
+      ["tag", "Materiais únicos", fmtInt.format(materiaisUnicos), null, "materiais"],
     ];
-    document.getElementById("kpi-grid").innerHTML = kpis.map(([ic,lbl,val])=>kpiCard(ic,lbl,val)).join("");
+    document.getElementById("kpi-grid").innerHTML = kpis.map(([ic,lbl,val,note,mk])=>kpiCard(ic,lbl,val,note,mk)).join("");
 
     // Pontos de Atenção — conforme os filtros (Tipo/Centro sempre; Alerta decide quais categorias aparecem)
     const rowsTC = DADOS.linhas.filter(r=>matchTC(r,f));
@@ -629,8 +770,9 @@
         <td class="num">${fmtPct(r.pct)}</td>
         <td>${chip(r.qtd>0?r.status:'good', r.qtd>0?STATUS_LABEL[r.status]:'OK')}</td>
         <td class="acao">${ACAO[r.cat]}</td>
+        <td><button type="button" class="row-download no-print" data-cat="${r.cat}" title="Baixar todos os dados desta categoria (CSV)">${icone("download")}</button></td>
       </tr>
-    `).join("") : `<tr><td colspan="7" class="desc">Nenhuma categoria de risco selecionada no filtro Alerta.</td></tr>`;
+    `).join("") : `<tr><td colspan="8" class="desc">Nenhuma categoria de risco selecionada no filtro Alerta.</td></tr>`;
 
     // Chart: kg por Tipo de Depósito (filtro: centro + alerta; se o filtro de
     // Tipo tiver uma seleção específica, o gráfico mostra só os tipos escolhidos)
@@ -807,17 +949,19 @@
   function renderAlertaPanel(cat){
     const f = currentFilter();
     const linhas = DADOS.linhas.filter(r=> matchTC(r,f) && r[COLS.alerta]===cat);
-    const totalKg = linhas.filter(r=>r[COLS.um]==="KG").reduce((s,r)=>s+r[COLS.peso],0);
-    const totalUn = linhas.filter(r=>r[COLS.um]==="UN").reduce((s,r)=>s+r[COLS.peso],0);
     const qtd = linhas.length;
     const s = slug(cat);
+    const mk = `cat:${cat}`;
 
-    document.getElementById(`kpi-${s}`).innerHTML = [
-      ["layers", "Posições", fmtInt.format(qtd)],
-      ["box", "Peso total (kg)", fmtInt.format(Math.round(totalKg))],
-      ["grid", "Total em UN", fmtInt.format(Math.round(totalUn))],
-      ["bars", "Peso médio (kg/posição)", qtd ? fmtInt.format(Math.round(totalKg/qtd)) : "—"],
-    ].map(([ic,lbl,val])=>kpiCard(ic,lbl,val)).join("");
+    const porUnidadeCat = {};
+    linhas.forEach(r=>{ const u=r[COLS.um]; if(u) porUnidadeCat[u]=(porUnidadeCat[u]||0)+r[COLS.peso]; });
+    const ICONES_UNIDADE = ["box","grid","tag","layers"];
+    const unidadesCat = Object.keys(porUnidadeCat).sort((a,b)=> a==="KG"?-1 : b==="KG"?1 : a.localeCompare(b));
+    const kpisUnidadeCat = unidadesCat.map((u,i)=>([ICONES_UNIDADE[i%ICONES_UNIDADE.length], `Total (${u})`, fmtInt.format(Math.round(porUnidadeCat[u]))]));
+
+    const kpisFinal = [["layers", "Posições", fmtInt.format(qtd)], ...kpisUnidadeCat];
+    if(porUnidadeCat["KG"]) kpisFinal.push(["bars", "Peso médio (kg/posição)", fmtInt.format(Math.round(porUnidadeCat["KG"]/qtd))]);
+    document.getElementById(`kpi-${s}`).innerHTML = kpisFinal.map(([ic,lbl,val])=>kpiCard(ic,lbl,val,null,mk)).join("");
 
     const {campo, dir} = sortState[cat];
     const ordenadas = [...linhas].sort((a,b)=>compararLinhas(a,b,campo,dir));
@@ -927,9 +1071,22 @@
       const vencimentoTxt = vencDate ? vencDate.toLocaleDateString("pt-BR",{timeZone:"UTC"}) : "";
       const alerta = calcularAlertaJs(campo, diasVenc, diasParado, diasAteVencer);
 
+      const nquantos = campo("Nº de quantos") ?? "";
+      const tipoEstoque = campo("Tipo de estoque") ?? "";
+      const unidadeDeposito = campo("Unidade de depósito") ?? "";
+      const estoqueDispRaw = campo("Estoque disponível");
+      const estoqueDisp = (typeof estoqueDispRaw === "number") ? estoqueDispRaw : (parseFloat(estoqueDispRaw) || null);
+      const ultimoMovRaw = campo("Último movimento");
+      const ultimoMovTxt = (ultimoMovRaw instanceof Date) ? ultimoMovRaw.toLocaleDateString("pt-BR",{timeZone:"UTC"}) : "";
+      const inventarioAtivo = campo("Inventário ativo") ?? "";
+      const deposito = campo("Depósito") ?? "";
+
       if(tipo) novosTipos.add(tipo);
       if(centro) novosCentros.add(centro);
-      novasLinhas.push([tipo, centro, alerta, um, Math.round(peso*100)/100, duracao, diasAteVencer, material, lote, posicao, vencimentoTxt]);
+      novasLinhas.push([
+        tipo, centro, alerta, um, Math.round(peso*100)/100, duracao, diasAteVencer, material, lote, posicao, vencimentoTxt,
+        nquantos, tipoEstoque, unidadeDeposito, estoqueDisp, ultimoMovTxt, inventarioAtivo, deposito,
+      ]);
     }
 
     return {
