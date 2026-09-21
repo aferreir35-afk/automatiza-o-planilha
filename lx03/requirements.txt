@@ -1,0 +1,21 @@
+# Dependências do Dashboard LX03
+#
+# Instalação básica (gera o dashboard a partir de um arquivo exportado —
+# cobre tudo neste guia, exceto os itens marcados como "opcional" abaixo):
+#   pip install -r requirements.txt
+#
+# LibreOffice também precisa estar instalado no sistema (comando `soffice`)
+# para o recálculo automático das fórmulas e a geração do PDF — não é um
+# pacote Python, instale pelo gerenciador de pacotes do seu sistema
+# operacional (ex.: `apt install libreoffice-calc` no Linux, ou baixe o
+# instalador em libreoffice.org no Windows/Mac).
+
+openpyxl>=3.1
+pandas>=2.0
+requests>=2.31          # necessário para: Teams, conexão SAP via OData, Power BI
+
+# Opcionais — só necessários se for usar a integração correspondente:
+# gspread>=6.0            # publicar no Google Sheets
+# google-auth>=2.30       # publicar no Google Sheets (credenciais)
+# pyrfc                   # conexão direta ao SAP via RFC (também exige o
+#                          # SAP NetWeaver RFC SDK, instalado à parte)

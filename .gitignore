@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+
+# credenciais e configuração local do dashboard LX03 — nunca versionar
+lx03/config/config.ini
+lx03/config/google_credentials.json
+lx03/config/*.pem
+lx03/config/*.key

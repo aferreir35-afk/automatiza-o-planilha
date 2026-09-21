@@ -1,0 +1,1171 @@
+<title>Painel LX03</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    color-scheme:light;
+    --surface:#eef1f5; --surface-card:#ffffff; --surface-sunken:#e3e8ee;
+    --ink-primary:#131a24; --ink-secondary:#4b5768; --ink-muted:#87909c;
+    --brand:#6e1423; --brand-strong:#4a0d18; --gold:#8f6a2c;
+    --border:rgba(19,26,36,.10); --border-strong:rgba(19,26,36,.20);
+    --good:#0ca30c; --warning:#c98500; --serious:#c15a34; --critical:#d03b3b;
+    --ord-1:#d99aa7; --ord-2:#c77c8c; --ord-3:#ac5468; --ord-4:#8a2f45; --ord-5:#651226; --ord-6:#450a19;
+    --topbar-bg:#12161f; --topbar-fg:#f2f4f7; --topbar-fg-muted:#a7b0bd; --topbar-accent:#d9a75c;
+    --shadow: 0 1px 2px rgba(19,26,36,.06), 0 8px 24px -12px rgba(19,26,36,.16);
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      color-scheme:dark;
+      --surface:#12151b; --surface-card:#1b1f27; --surface-sunken:#0d1015;
+      --ink-primary:#eef1f5; --ink-secondary:#a9b2bf; --ink-muted:#717a86;
+      --brand:#e2a3b1; --brand-strong:#f0c8d0; --gold:#d9a75c;
+      --border:rgba(238,241,245,.12); --border-strong:rgba(238,241,245,.22);
+      --good:#0ca30c; --warning:#fab219; --serious:#ec835a; --critical:#e66767;
+      --ord-1:#f0c8d0; --ord-2:#e2a3b1; --ord-3:#cf7d8f; --ord-4:#b25569; --ord-5:#984262; --ord-6:#823348;
+      --topbar-bg:#05070a; --topbar-fg:#eef1f5; --topbar-fg-muted:#7c8794; --topbar-accent:#d9a75c;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.5);
+    }
+  }
+  :root[data-theme="dark"]{
+    color-scheme:dark;
+    --surface:#12151b; --surface-card:#1b1f27; --surface-sunken:#0d1015;
+    --ink-primary:#eef1f5; --ink-secondary:#a9b2bf; --ink-muted:#717a86;
+    --brand:#e2a3b1; --brand-strong:#f0c8d0; --gold:#d9a75c;
+    --border:rgba(238,241,245,.12); --border-strong:rgba(238,241,245,.22);
+    --good:#0ca30c; --warning:#fab219; --serious:#ec835a; --critical:#e66767;
+    --ord-1:#f0c8d0; --ord-2:#e2a3b1; --ord-3:#cf7d8f; --ord-4:#b25569; --ord-5:#984262; --ord-6:#823348;
+    --topbar-bg:#05070a; --topbar-fg:#eef1f5; --topbar-fg-muted:#7c8794; --topbar-accent:#d9a75c;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.5);
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    background:var(--surface); color:var(--ink-primary);
+    font-family:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+    margin:0; padding:0; -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.display{ font-family:"Inter",system-ui,sans-serif; text-wrap:balance; letter-spacing:-.01em; }
+  .wrap{ max-width:1220px; margin:0 auto; padding-inline:16px; }
+  .num{ font-variant-numeric:tabular-nums; }
+  svg.icon{ width:1em; height:1em; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; flex:none; vertical-align:-2px; }
+
+  header.topbar{ background:var(--topbar-bg); color:var(--topbar-fg); }
+  .topbar-inner{ padding-block:22px 18px; }
+  .topbar-row{ display:flex; align-items:flex-start; justify-content:space-between; gap:20px; flex-wrap:wrap; }
+  .topbar-brand{ display:flex; align-items:center; gap:14px; }
+  .topbar-mark{
+    width:44px; height:44px; border-radius:10px; flex:none; display:flex; align-items:center; justify-content:center;
+    background:color-mix(in srgb, var(--topbar-accent) 22%, transparent); color:var(--topbar-accent);
+  }
+  .topbar-mark svg{ width:24px; height:24px; }
+  .topbar-eyebrow{
+    margin:0 0 4px; font-size:.72rem; letter-spacing:.12em; text-transform:uppercase; color:var(--topbar-accent); font-weight:700;
+  }
+  header.topbar h1{ margin:0; font-size:clamp(1.35rem,2.6vw,1.85rem); font-weight:700; color:var(--topbar-fg); }
+  .topbar-meta{ display:flex; gap:8px; flex-wrap:wrap; }
+  .meta-pill{
+    display:inline-flex; align-items:center; gap:6px; font-size:.78rem; color:var(--topbar-fg-muted);
+    background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); border-radius:999px; padding:6px 12px; white-space:nowrap;
+  }
+  .meta-pill b{ color:var(--topbar-fg); font-weight:600; }
+  .topbar-sub{ margin:14px 0 0; color:var(--topbar-fg-muted); max-width:70ch; line-height:1.5; font-size:.92rem; }
+
+  .filterbar{
+    position:sticky; top:env(safe-area-inset-top,0px); z-index:20;
+    background:var(--surface); border-bottom:1px solid var(--border);
+    padding-block:12px; margin-bottom:0;
+  }
+  .filterbar .row{ display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+  .filterbar label{ font-size:.78rem; color:var(--ink-muted); display:flex; flex-direction:column; gap:4px; font-weight:600; }
+  .filterbar .reset, .filterbar .btn{
+    display:inline-flex; align-items:center; gap:6px;
+    font-size:.82rem; color:var(--brand); background:none; border:1px solid var(--border-strong);
+    border-radius:8px; padding:8px 12px; cursor:pointer; font-weight:600; align-self:flex-end;
+    font-family:inherit;
+  }
+  .filterbar .reset:hover, .filterbar .btn:hover{ background:var(--surface-sunken); }
+  .filterbar .btn.primary{ background:var(--brand); color:var(--surface-card); border-color:var(--brand); }
+  .filterbar .btn.primary:hover{ opacity:.9; background:var(--brand); }
+  .filterbar .btn.gold{ background:var(--gold); color:var(--surface-card); border-color:var(--gold); }
+  .filterbar .btn.gold:hover{ opacity:.88; background:var(--gold); }
+  .filterbar .spacer{ flex:1 1 auto; }
+  .filterbar .active-note{ font-size:.8rem; color:var(--ink-muted); margin-top:8px; }
+  .filterbar .active-note.erro{ color:var(--critical); font-weight:600; }
+  .filterbar .active-note.ok{ color:var(--good); font-weight:600; }
+
+  .msel{ position:relative; font-size:.78rem; }
+  .msel-toggle{
+    font:inherit; font-size:.9rem; padding:8px 10px; border-radius:8px; text-align:left;
+    border:1px solid var(--border-strong); background:var(--surface-card); color:var(--ink-primary);
+    min-width:190px; cursor:pointer; display:flex; align-items:center; justify-content:space-between; gap:8px;
+  }
+  .msel-toggle .lbl{ font-size:.72rem; color:var(--ink-muted); font-weight:700; display:block; }
+  .msel-toggle .val{ display:block; margin-top:2px; }
+  .msel-toggle .car{ color:var(--ink-muted); font-size:.7rem; }
+  .msel[data-open="true"] .msel-toggle{ border-color:var(--brand); }
+  .msel-panel{
+    position:absolute; top:calc(100% + 6px); left:0; z-index:30; min-width:230px; max-height:280px;
+    overflow-y:auto; background:var(--surface-card); border:1px solid var(--border-strong); border-radius:10px;
+    box-shadow:var(--shadow); padding:8px;
+  }
+  .msel-actions{ display:flex; gap:8px; padding:2px 4px 8px; border-bottom:1px solid var(--border); margin-bottom:6px; }
+  .msel-actions button{
+    font:inherit; font-size:.74rem; color:var(--brand); background:none; border:none; cursor:pointer; padding:2px 4px; font-weight:600;
+  }
+  .msel-actions button:hover{ text-decoration:underline; }
+  .msel-opt{ display:flex; align-items:center; gap:8px; padding:5px 4px; border-radius:6px; cursor:pointer; font-size:.85rem; }
+  .msel-opt:hover{ background:var(--surface-sunken); }
+  .msel-opt input{ accent-color:var(--brand); width:15px; height:15px; flex:none; }
+  .msel-opt span{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+  .tabs{
+    position:sticky; top:calc(env(safe-area-inset-top,0px) + 1px); z-index:19;
+    display:flex; gap:4px; overflow-x:auto; background:var(--surface);
+    border-bottom:1px solid var(--border); padding-block:10px; margin-bottom:24px;
+    scrollbar-width:thin;
+  }
+  .tab-btn{
+    font:inherit; font-family:"Source Sans 3",sans-serif; font-size:.85rem; font-weight:600;
+    color:var(--ink-secondary); background:none; border:none; border-bottom:3px solid transparent;
+    padding:8px 14px; cursor:pointer; white-space:nowrap; border-radius:8px 8px 0 0;
+  }
+  .tab-btn:hover{ background:var(--surface-sunken); color:var(--ink-primary); }
+  .tab-btn.active{ color:var(--brand-strong); border-bottom-color:var(--brand); background:var(--surface-sunken); }
+  .tab-dot{ display:inline-block; width:7px; height:7px; border-radius:50%; margin-right:7px; vertical-align:1px; }
+
+  @media print{
+    .filterbar, .tabs{ position:static; }
+    .no-print{ display:none !important; }
+    body{ background:#fff; }
+    .kpi, .chart-card, table.poa, .trend-banner{ box-shadow:none; border:1px solid #ccc; }
+    section{ break-inside:avoid; }
+  }
+
+  section{ margin-bottom:38px; }
+  section > h2{ font-size:1.15rem; font-weight:600; color:var(--brand-strong); margin:0 0 4px; }
+  section > .section-sub{ font-size:.85rem; color:var(--ink-muted); margin:0 0 16px; }
+
+  .kpi-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:10px; margin-bottom:24px; }
+  .kpi{
+    display:flex; align-items:flex-start; gap:12px;
+    background:var(--surface-card); border:1px solid var(--border); border-left:3px solid var(--brand); border-radius:10px;
+    padding:14px 16px; box-shadow:var(--shadow);
+  }
+  .kpi .icon-badge{
+    width:34px; height:34px; border-radius:8px; flex:none; display:flex; align-items:center; justify-content:center;
+    background:color-mix(in srgb, var(--brand) 12%, transparent); color:var(--brand-strong);
+  }
+  .kpi .icon-badge svg{ width:18px; height:18px; }
+  .kpi .body{ min-width:0; }
+  .kpi .label{ font-size:.72rem; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-muted); font-weight:700; }
+  .kpi .value{ font-family:"Inter",sans-serif; font-size:1.55rem; font-weight:700; color:var(--ink-primary); margin-top:2px; }
+  .kpi .value small{ font-size:.9rem; font-weight:500; color:var(--ink-secondary); }
+
+  table.poa{ width:100%; border-collapse:collapse; background:var(--surface-card); border-radius:10px; overflow:hidden; box-shadow:var(--shadow); }
+  .table-scroll{ overflow-x:auto; overflow-y:auto; max-height:560px; border-radius:10px; border:1px solid var(--border); }
+  table.poa th, table.poa td{ padding:10px 12px; text-align:left; border-bottom:1px solid var(--border); font-size:.86rem; vertical-align:top; }
+  table.poa th{ font-size:.7rem; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-muted); background:var(--surface-sunken); white-space:nowrap; position:sticky; top:0; z-index:1; }
+  table.poa tbody tr:nth-child(even){ background:color-mix(in srgb, var(--surface-sunken) 45%, transparent); }
+  table.poa tr:last-child td{ border-bottom:none; }
+  table.poa td.num{ text-align:right; white-space:nowrap; }
+  table.poa td.desc{ color:var(--ink-secondary); min-width:180px; }
+  table.poa td.acao{ color:var(--ink-secondary); min-width:220px; font-size:.83rem; }
+  table.poa.sortable th[data-key]{ cursor:pointer; user-select:none; }
+  table.poa.sortable th[data-key]:hover{ color:var(--ink-primary); }
+  table.poa.sortable th.sort-asc::after{ content:" ▲"; }
+  table.poa.sortable th.sort-desc::after{ content:" ▼"; }
+
+  .chip{ display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:999px; font-size:.78rem; font-weight:700; white-space:nowrap; }
+  .chip svg{ width:13px; height:13px; }
+  .chip.good{ color:var(--good); background:color-mix(in srgb, var(--good) 14%, transparent); }
+  .chip.warning{ color:var(--warning); background:color-mix(in srgb, var(--warning) 16%, transparent); }
+  .chip.serious{ color:var(--serious); background:color-mix(in srgb, var(--serious) 16%, transparent); }
+  .chip.critical{ color:var(--critical); background:color-mix(in srgb, var(--critical) 16%, transparent); }
+  .chip.neutral{ color:var(--ink-muted); background:color-mix(in srgb, var(--ink-muted) 14%, transparent); }
+
+  .chart-grid{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  @media (max-width:820px){ .chart-grid{ grid-template-columns:1fr; } }
+  .chart-card{ background:var(--surface-card); border:1px solid var(--border); border-radius:12px; padding:18px 20px; box-shadow:var(--shadow); }
+  .chart-card h3{ margin:0 0 2px; font-size:1rem; font-weight:600; }
+  .chart-card .chart-sub{ font-size:.78rem; color:var(--ink-muted); margin:0 0 14px; }
+  .bar-row{ display:grid; grid-template-columns:104px 1fr 74px; align-items:center; gap:10px; margin-bottom:7px; }
+  #chart-alerta .bar-row{ grid-template-columns:132px 1fr 56px; }
+  #chart-alerta .bar-row .lbl{ font-size:.73rem; }
+  .bar-row .lbl{ font-size:.8rem; color:var(--ink-secondary); text-align:right; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .bar-row .track{ background:var(--surface-sunken); border-radius:5px; height:16px; position:relative; overflow:hidden; }
+  .bar-row .fill{ height:100%; border-radius:5px; min-width:3px; }
+  .bar-row .val{ font-size:.8rem; font-weight:600; color:var(--ink-primary); text-align:right; }
+  .bar-row.empty .track{ opacity:.35; }
+  .bar-empty-note{ font-size:.82rem; color:var(--ink-muted); padding:6px 0; }
+
+  .top10-grid{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  @media (max-width:900px){ .top10-grid{ grid-template-columns:1fr; } }
+
+  .trend-banner{
+    display:flex; gap:16px; align-items:center; flex-wrap:wrap; justify-content:space-between;
+    background:var(--surface-card); border:1px solid var(--border); border-radius:12px;
+    padding:16px 20px; box-shadow:var(--shadow);
+  }
+  .trend-banner .t-text{ font-size:.88rem; color:var(--ink-secondary); max-width:56ch; }
+  .trend-points{ display:flex; gap:10px; align-items:flex-end; }
+  .trend-points .pt{ text-align:center; font-size:.72rem; color:var(--ink-muted); }
+  .trend-points .pt .dot-wrap{ width:14px; height:14px; border-radius:50%; background:var(--brand); margin:0 auto 6px; }
+
+  .alerta-head{
+    background:var(--surface-card); border:1px solid var(--border); border-radius:12px;
+    padding:18px 20px; box-shadow:var(--shadow); margin-bottom:18px;
+  }
+  .alerta-head-top{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .alerta-head-top h2{ margin:0; color:var(--brand-strong); }
+  .alerta-desc{ margin:8px 0 0; color:var(--ink-secondary); }
+  .alerta-acao{ margin:6px 0 0; color:var(--ink-secondary); font-size:.9rem; }
+
+  .pagination{ display:flex; align-items:center; gap:12px; justify-content:center; padding-top:14px; font-size:.85rem; color:var(--ink-secondary); }
+  .pagination button{
+    font:inherit; font-size:.82rem; color:var(--brand); background:var(--surface-card); border:1px solid var(--border-strong);
+    border-radius:8px; padding:6px 12px; cursor:pointer; font-weight:600;
+  }
+  .pagination button:disabled{ opacity:.4; cursor:default; }
+  .pagination button:not(:disabled):hover{ background:var(--surface-sunken); }
+
+  footer.foot{ border-top:1px solid var(--border); padding-block:20px 40px; font-size:.78rem; color:var(--ink-muted); line-height:1.6; }
+  footer.foot code{ background:var(--surface-sunken); padding:1px 5px; border-radius:4px; }
+
+  .kpi[data-modal-key]{ cursor:pointer; }
+  .kpi[data-modal-key]:hover, .kpi[data-modal-key]:focus-visible{ border-color:var(--brand); outline:none; }
+  .kpi[data-modal-key]:focus-visible{ box-shadow:0 0 0 2px color-mix(in srgb, var(--brand) 35%, transparent); }
+
+  .row-download{
+    display:inline-flex; align-items:center; justify-content:center; width:30px; height:30px;
+    border-radius:8px; border:1px solid var(--border-strong); background:var(--surface-card); color:var(--brand); cursor:pointer;
+  }
+  .row-download:hover{ background:var(--surface-sunken); }
+  .row-download svg{ width:15px; height:15px; }
+
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(5,7,10,.6); display:flex; align-items:flex-start; justify-content:center;
+    padding:32px 16px; z-index:100; overflow-y:auto;
+  }
+  .modal-overlay[hidden]{ display:none; }
+  .modal-box{
+    background:var(--surface-card); border-radius:14px; max-width:1400px; width:100%; box-shadow:var(--shadow);
+    display:flex; flex-direction:column; max-height:calc(100vh - 64px);
+  }
+  .modal-head{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; padding:18px 22px; border-bottom:1px solid var(--border); }
+  .modal-head h3{ margin:0; font-size:1.05rem; color:var(--brand-strong); }
+  .modal-count{ display:block; font-size:.8rem; color:var(--ink-muted); font-weight:500; margin-top:2px; }
+  .modal-close{
+    font:inherit; font-size:1rem; line-height:1; background:none; border:none; color:var(--ink-muted); cursor:pointer;
+    padding:8px; border-radius:8px; flex:none;
+  }
+  .modal-close:hover{ background:var(--surface-sunken); color:var(--ink-primary); }
+  .modal-body{ padding:16px 22px; overflow:auto; }
+  .modal-body table.poa{ font-size:.8rem; }
+  .modal-foot{ display:flex; justify-content:flex-end; gap:10px; padding:14px 22px; border-top:1px solid var(--border); }
+
+  @media (prefers-reduced-motion:no-preference){
+    .bar-row .fill{ transition:width .5s ease; }
+  }
+</style>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <div class="topbar-row">
+      <div class="topbar-brand">
+        <span class="topbar-mark" aria-hidden="true"><svg class="icon" viewBox="0 0 24 24"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4a2 2 0 0 0 1-1.73V8z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg></span>
+        <div>
+          <p class="topbar-eyebrow">Barry Callebaut · Logística de Armazém</p>
+          <h1>Controle de Estoque — LX03</h1>
+        </div>
+      </div>
+      <div class="topbar-meta">
+        <span class="meta-pill"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> Atualizado <b id="meta-atualizacao">—</b></span>
+        <span class="meta-pill"><svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg> <b id="meta-arquivo">—</b></span>
+        <span class="meta-pill"><svg class="icon" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg> <b id="meta-linhas">—</b> posições</span>
+      </div>
+    </div>
+    <p class="topbar-sub">Fornecimento por posição no depósito, com os pontos que carecem de monitoramento já destacados. Os filtros abaixo recalculam cartões, gráficos, abas por alerta e as tabelas de Top&nbsp;10 na hora.</p>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="filterbar">
+    <div class="row">
+      <div class="msel" id="msel-tipo" data-label="Tipo de Depósito"></div>
+      <div class="msel" id="msel-centro" data-label="Centro"></div>
+      <div class="msel" id="msel-alerta" data-label="Alerta"></div>
+      <button class="reset" id="f-reset" type="button"><svg class="icon" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg> Limpar filtros</button>
+      <span class="spacer no-print"></span>
+      <button class="btn gold no-print" id="upload-btn" type="button"><svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg> Enviar novo relatório</button>
+      <input type="file" id="upload-input" accept=".xlsx" hidden>
+      <button class="btn no-print" id="f-export-csv" type="button"><svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> Exportar dados filtrados (CSV)</button>
+      <button class="btn primary no-print" id="f-print" type="button"><svg class="icon" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg> Imprimir / Salvar PDF</button>
+      <button class="btn no-print" id="f-email" type="button"><svg class="icon" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22 6 12 13 2 6"></polyline></svg> Compartilhar por e-mail</button>
+    </div>
+    <p class="active-note" id="active-note"></p>
+    <p class="active-note no-print" id="upload-status" hidden></p>
+  </div>
+
+  <nav class="tabs" id="tabs"></nav>
+
+  <div id="tab-geral">
+    <section>
+      <h2>Indicadores gerais</h2>
+      <p class="section-sub">Conforme os filtros selecionados acima.</p>
+      <div class="kpi-grid" id="kpi-grid"></div>
+    </section>
+
+    <section>
+      <h2>Pontos que carecem de monitoramento</h2>
+      <p class="section-sub">Conforme os filtros selecionados acima — clique numa aba acima para ver todas as posições daquela categoria.</p>
+      <div class="table-scroll">
+        <table class="poa">
+          <thead>
+            <tr><th>Categoria</th><th>O que significa</th><th class="num">Posições</th><th class="num">Peso (kg)</th><th class="num">% do kg</th><th>Severidade</th><th>Ação recomendada</th><th>Baixar</th></tr>
+          </thead>
+          <tbody id="poa-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <h2>Visão por categoria</h2>
+      <p class="section-sub" id="chart-note">Conforme os filtros selecionados acima.</p>
+      <div class="chart-grid">
+        <div class="chart-card">
+          <h3>Estoque (kg) por Tipo de Depósito</h3>
+          <p class="chart-sub" id="chart-tipo-sub">Top 12 tipos</p>
+          <div id="chart-tipo"></div>
+        </div>
+        <div class="chart-card">
+          <h3>Posições por Alerta</h3>
+          <p class="chart-sub">Categorias selecionadas no filtro Alerta</p>
+          <div id="chart-alerta"></div>
+        </div>
+        <div class="chart-card">
+          <h3>Dias sem giro (faixas)</h3>
+          <p class="chart-sub">Posições ocupadas, por tempo desde o último movimento</p>
+          <div id="chart-aging"></div>
+        </div>
+        <div class="chart-card">
+          <h3>Vencimento (faixas)</h3>
+          <p class="chart-sub">Posições ocupadas, por proximidade do vencimento</p>
+          <div id="chart-venc"></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Top 10 — maiores posições</h2>
+      <p class="section-sub">Conforme os filtros selecionados acima (kg)</p>
+      <div class="top10-grid">
+        <div class="chart-card">
+          <h3>Maior estoque parado/sem giro</h3>
+          <div class="table-scroll"><table class="poa" id="top-parado"><thead><tr><th>Material</th><th>Lote</th><th>Posição</th><th>Tipo</th><th class="num">kg</th><th>Vencimento</th><th class="num">Dias parado</th></tr></thead><tbody></tbody></table></div>
+        </div>
+        <div class="chart-card">
+          <h3>Maior estoque vencido</h3>
+          <div class="table-scroll"><table class="poa" id="top-vencido"><thead><tr><th>Material</th><th>Lote</th><th>Posição</th><th>Tipo</th><th class="num">kg</th><th>Vencimento</th><th class="num">Dias vencido</th></tr></thead><tbody></tbody></table></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Tendência</h2>
+      <p class="section-sub">Histórico salvo no servidor a cada atualização — não muda se você usar o botão de upload (que só processa dados neste navegador).</p>
+      <div class="trend-banner">
+        <p class="t-text" id="trend-text"></p>
+        <div class="trend-points" id="trend-points"></div>
+      </div>
+    </section>
+  </div>
+
+  <div id="paineis-alerta"></div>
+
+  <footer class="foot">
+    Painel gerado automaticamente a partir do export SAP LX03 pelo mesmo pipeline Python do dashboard Excel
+    (<code>lx03/scripts/atualizar_dashboard.py</code>). Esta página é uma fotografia estática da última carga —
+    o botão "Enviar novo relatório" permite atualizar os dados direto no navegador, sem rodar o script, mas isso
+    não grava histórico nem atualiza o arquivo Excel — para isso, use o pipeline Python normalmente.
+  </footer>
+</div>
+
+<div class="modal-overlay no-print" id="modal-overlay" hidden>
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modal-titulo">
+    <div class="modal-head">
+      <div>
+        <h3 id="modal-titulo">Dados</h3>
+        <span class="modal-count" id="modal-contagem"></span>
+      </div>
+      <button type="button" class="modal-close" id="modal-fechar" aria-label="Fechar">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="table-scroll"><table class="poa" id="modal-tabela"><thead></thead><tbody></tbody></table></div>
+    </div>
+    <div class="modal-foot">
+      <button type="button" class="btn primary" id="modal-exportar">Exportar estas linhas — todos os dados da LX03 (CSV)</button>
+    </div>
+  </div>
+</div>
+
+<script type="application/json" id="dados-raw">__DADOS_JSON__</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+(function(){
+  "use strict";
+  let DADOS = JSON.parse(document.getElementById("dados-raw").textContent);
+  const COLS = DADOS.colunas.reduce((m,c,i)=>(m[c]=i,m),{});
+  const fmtInt = new Intl.NumberFormat("pt-BR");
+  const fmtPct = (x)=> (x*100).toLocaleString("pt-BR",{minimumFractionDigits:1,maximumFractionDigits:1})+"%";
+
+  const ALERTAS_ORDEM = ["VENCIDO","PRÓX. VENCIMENTO","QUALIDADE","BLOQUEADO","RESTRITO/DEVOLUÇÃO","QUARENTENA","DESCARTE/DEVOLUÇÃO","SEM LOTE","PARADO/SEM GIRO","OK","VAZIA"];
+  const ALERTAS_RISCO = ALERTAS_ORDEM.filter(a=>a!=="OK" && a!=="VAZIA");
+  const STATUS_MAP = {
+    "VENCIDO":"critical", "DESCARTE/DEVOLUÇÃO":"critical", "SEM LOTE":"critical",
+    "PRÓX. VENCIMENTO":"warning", "OK":"good", "VAZIA":"neutral",
+  };
+  const statusOf = (a)=> STATUS_MAP[a] || "serious";
+  const STATUS_LABEL = {good:"OK", warning:"Atenção", serious:"Atenção", critical:"Crítico", neutral:"—"};
+
+  const DESCRICAO = {
+    "VENCIDO":"Material já venceu",
+    "PRÓX. VENCIMENTO":"Vence em breve",
+    "QUALIDADE":"Em inspeção de qualidade",
+    "BLOQUEADO":"Bloqueado para uso",
+    "RESTRITO/DEVOLUÇÃO":"Estoque restrito/devolução",
+    "QUARENTENA":"Em quarentena",
+    "DESCARTE/DEVOLUÇÃO":"Em posição de descarte/devolução",
+    "SEM LOTE":"Sem lote (falta de rastreabilidade)",
+    "PARADO/SEM GIRO":"Sem movimento há muito tempo",
+  };
+  const ACAO = {
+    "VENCIDO":"Separar fisicamente, abrir processo de baixa/descarte e investigar a causa raiz.",
+    "PRÓX. VENCIMENTO":"Priorizar consumo/expedição por ordem de vencimento (FEFO).",
+    "QUALIDADE":"Acompanhar com a Qualidade o prazo de liberação.",
+    "BLOQUEADO":"Identificar o motivo do bloqueio e definir prazo de liberação/descarte.",
+    "RESTRITO/DEVOLUÇÃO":"Definir destino (retrabalho, devolução ou descarte) sem deixar acumular.",
+    "QUARENTENA":"Confirmar com Qualidade/Compras a liberação do lote.",
+    "DESCARTE/DEVOLUÇÃO":"Formalizar e executar o descarte/retorno.",
+    "SEM LOTE":"Corrigir o apontamento no SAP — lote é obrigatório para rastreabilidade.",
+    "PARADO/SEM GIRO":"Revisar previsão de demanda ou redistribuir entre centros.",
+  };
+
+  const ORDINAL = ["var(--ord-1)","var(--ord-2)","var(--ord-3)","var(--ord-4)","var(--ord-5)","var(--ord-6)"];
+  const STATUS_COLOR = {good:"var(--good)",warning:"var(--warning)",serious:"var(--serious)",critical:"var(--critical)",neutral:"var(--ink-muted)"};
+
+  // ---- ícones (SVG inline, sem depender de fonte de ícone externa) ------
+  const ICON_PATHS = {
+    box: '<path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4a2 2 0 0 0 1-1.73V8z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line>',
+    grid: '<rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect>',
+    check: '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline>',
+    square: '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>',
+    percent: '<line x1="19" y1="5" x2="5" y2="19"></line><circle cx="6.5" cy="6.5" r="2.5"></circle><circle cx="17.5" cy="17.5" r="2.5"></circle>',
+    tag: '<path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>',
+    layers: '<polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline>',
+    bars: '<line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line>',
+    alertCircle: '<circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line>',
+    alertTriangle: '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line>',
+    alertOctagon: '<polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"></polygon><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line>',
+    circle: '<circle cx="12" cy="12" r="10"></circle>',
+    download: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line>',
+  };
+  function icone(nome){ return `<svg class="icon" viewBox="0 0 24 24">${ICON_PATHS[nome]}</svg>`; }
+  const STATUS_ICON = {good:"check", warning:"alertCircle", serious:"alertTriangle", critical:"alertOctagon", neutral:"circle"};
+  function chip(status, label){ return `<span class="chip ${status}">${icone(STATUS_ICON[status])}${label}</span>`; }
+  function kpiCard(iconName, label, value, note, modalKey){
+    const attrs = modalKey ? ` data-modal-key="${modalKey}" role="button" tabindex="0"` : "";
+    return `<div class="kpi"${attrs}><span class="icon-badge">${icone(iconName)}</span><div class="body"><div class="label">${label}</div><div class="value num">${value}${note?` <small>(${note})</small>`:""}</div></div></div>`;
+  }
+
+  function slug(s){ return s.replace(/[^a-zA-Z0-9]/g,"_"); }
+  function matchTC(r, f){
+    // linhas de posição vazia não têm Tipo/Centro reais (campo em branco no
+    // SAP) — não devem ser excluídas por uma seleção específica nesses filtros
+    return (r[COLS.tipo]==="" || f.tipo.has(r[COLS.tipo])) && (r[COLS.centro]==="" || f.centro.has(r[COLS.centro]));
+  }
+
+  // ---- filtros de seleção múltipla ---------------------------------------
+  // Cada filtro guarda um Set com os valores marcados. Todos marcados =
+  // equivalente a "(Todos)". Desmarcar tudo mostra zero linhas (avisa na tela).
+  const todosFechar = [];
+  function criarMultiSelect(container, opcoes, onChange){
+    const rotulo = container.dataset.label;
+    const selecionados = new Set(opcoes);
+    let aberto = false;
+
+    container.innerHTML = `
+      <button type="button" class="msel-toggle">
+        <span><span class="lbl">${rotulo}</span><span class="val">(Todos)</span></span>
+        <span class="car">▾</span>
+      </button>
+      <div class="msel-panel" hidden>
+        <div class="msel-actions">
+          <button type="button" data-all>Selecionar todos</button>
+          <button type="button" data-none>Limpar</button>
+        </div>
+        <div class="msel-options"></div>
+      </div>`;
+    const toggle = container.querySelector(".msel-toggle");
+    const panel = container.querySelector(".msel-panel");
+    const optsEl = container.querySelector(".msel-options");
+    const valEl = container.querySelector(".val");
+
+    opcoes.forEach(op=>{
+      const id = `${container.id}-${op}`.replace(/[^a-zA-Z0-9_-]/g,"_");
+      const row = document.createElement("label");
+      row.className = "msel-opt";
+      row.innerHTML = `<input type="checkbox" id="${id}" checked><span title="${op}">${op}</span>`;
+      row.querySelector("input").addEventListener("change", (e)=>{
+        if(e.target.checked) selecionados.add(op); else selecionados.delete(op);
+        atualizarRotulo();
+        onChange();
+      });
+      optsEl.appendChild(row);
+    });
+
+    function atualizarRotulo(){
+      if(selecionados.size === opcoes.length) valEl.textContent = "(Todos)";
+      else if(selecionados.size === 0) valEl.textContent = "Nenhum";
+      else if(selecionados.size <= 2) valEl.textContent = [...selecionados].join(", ");
+      else valEl.textContent = `${selecionados.size} de ${opcoes.length} selecionados`;
+    }
+    function fechar(){ aberto=false; panel.hidden=true; container.removeAttribute("data-open"); }
+    function abrir(){ todosFechar.forEach(fn=>fn!==fechar && fn()); aberto=true; panel.hidden=false; container.setAttribute("data-open","true"); }
+    todosFechar.push(fechar);
+
+    toggle.addEventListener("click", (e)=>{ e.stopPropagation(); aberto ? fechar() : abrir(); });
+    container.querySelector("[data-all]").addEventListener("click", ()=>{
+      opcoes.forEach(op=>selecionados.add(op));
+      optsEl.querySelectorAll("input").forEach(i=>i.checked=true);
+      atualizarRotulo(); onChange();
+    });
+    container.querySelector("[data-none]").addEventListener("click", ()=>{
+      selecionados.clear();
+      optsEl.querySelectorAll("input").forEach(i=>i.checked=false);
+      atualizarRotulo(); onChange();
+    });
+    document.addEventListener("click", (e)=>{ if(aberto && !container.contains(e.target)) fechar(); });
+
+    return {
+      selecionados,
+      reset(){ opcoes.forEach(op=>selecionados.add(op)); optsEl.querySelectorAll("input").forEach(i=>i.checked=true); atualizarRotulo(); },
+    };
+  }
+
+  let msTipo, msCentro, msAlerta;
+  function criarFiltros(){
+    todosFechar.length = 0;
+    msTipo = criarMultiSelect(document.getElementById("msel-tipo"), DADOS.tipos, renderTudo);
+    msCentro = criarMultiSelect(document.getElementById("msel-centro"), DADOS.centros, renderTudo);
+    msAlerta = criarMultiSelect(document.getElementById("msel-alerta"), ALERTAS_ORDEM, renderTudo);
+  }
+  const els = { reset: document.getElementById("f-reset"), note: document.getElementById("active-note") };
+  els.reset.addEventListener("click", ()=>{ msTipo.reset(); msCentro.reset(); msAlerta.reset(); renderTudo(); });
+
+  function resumoFiltro(nome, sel, total){
+    if(sel.size === total) return null;
+    if(sel.size === 0) return `${nome}: nenhum selecionado`;
+    return `${nome}: ${[...sel].join(", ")}`;
+  }
+  function currentFilter(){ return { tipo: msTipo.selecionados, centro: msCentro.selecionados, alerta: msAlerta.selecionados }; }
+
+  // ---- exportar CSV / imprimir ------------------------------------------
+  // Exporta sempre TODAS as colunas da LX03 (não só as usadas nos filtros e
+  // gráficos) — inclui os campos brutos do SAP (nº de quantos, tipo de
+  // estoque, estoque disponível, último movimento, inventário ativo, depósito).
+  const COLUNAS_COMPLETAS = [
+    ["tipo","Tipo de Depósito"], ["centro","Centro"], ["alerta","Alerta"], ["um","UM"],
+    ["peso","Quantidade"], ["duracao","Duração (dias)"], ["dias_venc","Dias até vencer"],
+    ["material","Material"], ["lote","Lote"], ["posicao","Posição"], ["vencimento","Data do Vencimento"],
+    ["nquantos","Nº de Quantos"], ["tipo_estoque","Tipo de Estoque"], ["unidade_deposito","Unidade de Depósito"],
+    ["estoque_disp","Estoque Disponível"], ["ultimo_mov","Último Movimento"], ["inventario_ativo","Inventário Ativo"],
+    ["deposito","Depósito"],
+  ];
+  function csvCampo(v){
+    if(v===null || v===undefined) return "";
+    if(typeof v === "number") return v.toLocaleString("pt-BR");
+    const s = String(v);
+    return /[;"\n]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s;
+  }
+  function baixarArquivo(nome, conteudo, tipo){
+    const blob = new Blob([conteudo], {type: tipo});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = nome;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url), 1000);
+  }
+  function exportarCsv(nomeArquivo, linhas){
+    const corpo = linhas.map(r => COLUNAS_COMPLETAS.map(([k])=>csvCampo(r[COLS[k]])).join(";")).join("\r\n");
+    const csv = "﻿" + COLUNAS_COMPLETAS.map(([,lbl])=>lbl).join(";") + "\r\n" + corpo;
+    baixarArquivo(nomeArquivo, csv, "text/csv;charset=utf-8;");
+  }
+  function linhasFiltradas(){
+    const f = currentFilter();
+    return DADOS.linhas.filter(r=> matchTC(r,f) && f.alerta.has(r[COLS.alerta]));
+  }
+  document.getElementById("f-export-csv").addEventListener("click", ()=>{
+    const hoje = new Date().toISOString().slice(0,10);
+    exportarCsv(`lx03_dados_completos_${hoje}.csv`, linhasFiltradas());
+  });
+  document.getElementById("f-print").addEventListener("click", ()=> window.print());
+
+  // ---- compartilhar por e-mail -------------------------------------------
+  // Atualize este link sempre que publicar uma nova versão do painel como
+  // Artifact (mesma URL a cada republicação pelo mesmo caminho de arquivo).
+  // Deixe "" se não houver link publicado — o e-mail então só lembra de
+  // anexar o arquivo .html.
+  const LINK_PAINEL = "https://claude.ai/artifact/TGAK8YT1znTvo3e2Yn9ZrZ";
+  document.getElementById("f-email").addEventListener("click", ()=>{
+    const assunto = `Painel de Estoque LX03 — Barry Callebaut (${DADOS.meta.ultima_atualizacao || "atualização"})`;
+    const linhas = [
+      "Segue o Painel de Estoque LX03 (Barry Callebaut).",
+      "",
+      `Atualizado em: ${DADOS.meta.ultima_atualizacao || "—"}`,
+      `Total de posições: ${fmtInt.format(DADOS.linhas.length)}`,
+      "",
+    ];
+    if(LINK_PAINEL){
+      linhas.push("Acesse o painel interativo pelo link abaixo:", LINK_PAINEL, "",
+        "(Esse link não baixa arquivo nenhum, só abre o painel no navegador de quem receber. Se preferir, também é possível anexar o arquivo Painel_LX03.html a este e-mail antes de enviar.)");
+    } else {
+      linhas.push("Antes de enviar, anexe o arquivo Painel_LX03.html a este e-mail — quem receber abre com duplo clique em qualquer navegador, sem precisar de internet.");
+    }
+    const corpo = linhas.join("\n");
+    window.location.href = `mailto:?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`;
+  });
+
+  // ---- tela de detalhe ("ver todos os dados da LX03") -------------------
+  // Um mesmo "modal" serve para qualquer recorte: clicar num cartão de
+  // indicador, ou no botão de baixar de uma categoria em Pontos de Atenção.
+  // A receita é recalculada na hora do clique (sempre com o filtro atual).
+  function receitaModal(chave){
+    const f = currentFilter();
+    if(chave === "ocupadas") return {titulo:"Posições ocupadas", linhas: linhasFiltradas().filter(r=>r[COLS.alerta]!=="VAZIA")};
+    if(chave === "vazias") return {titulo:"Posições vazias", linhas: linhasFiltradas().filter(r=>r[COLS.alerta]==="VAZIA")};
+    if(chave === "ocupacao") return {titulo:"Todas as posições (ocupadas + vazias)", linhas: linhasFiltradas()};
+    if(chave === "materiais") return {titulo:"Posições com material", linhas: linhasFiltradas().filter(r=>r[COLS.material]!=="<< vazio >>")};
+    if(chave.startsWith("un:")){
+      const u = chave.slice(3);
+      return {titulo:`Posições em ${u}`, linhas: linhasFiltradas().filter(r=>r[COLS.um]===u)};
+    }
+    if(chave.startsWith("cat:")){
+      const cat = chave.slice(4);
+      return {titulo:cat, linhas: DADOS.linhas.filter(r=> matchTC(r,f) && r[COLS.alerta]===cat)};
+    }
+    return {titulo:"Dados", linhas: []};
+  }
+  function valorCelulaModal(v){
+    return (v===null || v===undefined || v==="") ? "—" : (typeof v==="number" ? fmtInt.format(v) : v);
+  }
+  let modalLinhasAtuais = [];
+  const modalOverlay = document.getElementById("modal-overlay");
+  function abrirModal(titulo, linhas){
+    document.getElementById("modal-titulo").textContent = titulo;
+    document.getElementById("modal-contagem").textContent = `${fmtInt.format(linhas.length)} posições — todos os dados da LX03`;
+    const thead = document.querySelector("#modal-tabela thead");
+    const tbody = document.querySelector("#modal-tabela tbody");
+    thead.innerHTML = `<tr>${COLUNAS_COMPLETAS.map(([,lbl])=>`<th>${lbl}</th>`).join("")}</tr>`;
+    tbody.innerHTML = linhas.length ? linhas.map(r=>`<tr>${COLUNAS_COMPLETAS.map(([k])=>{
+      const cls = typeof r[COLS[k]] === "number" ? ' class="num"' : "";
+      return `<td${cls}>${valorCelulaModal(r[COLS[k]])}</td>`;
+    }).join("")}</tr>`).join("") : `<tr><td colspan="${COLUNAS_COMPLETAS.length}" class="desc">Nenhuma posição para este recorte.</td></tr>`;
+    modalLinhasAtuais = linhas;
+    modalOverlay.hidden = false;
+    document.body.style.overflow = "hidden";
+  }
+  function fecharModal(){ modalOverlay.hidden = true; document.body.style.overflow = ""; }
+  document.getElementById("modal-fechar").addEventListener("click", fecharModal);
+  modalOverlay.addEventListener("click", (e)=>{ if(e.target === modalOverlay) fecharModal(); });
+  document.addEventListener("keydown", (e)=>{ if(e.key === "Escape" && !modalOverlay.hidden) fecharModal(); });
+  document.getElementById("modal-exportar").addEventListener("click", ()=>{
+    const hoje = new Date().toISOString().slice(0,10);
+    exportarCsv(`lx03_dados_completos_${hoje}.csv`, modalLinhasAtuais);
+  });
+  document.addEventListener("click", (e)=>{
+    const kpiEl = e.target.closest(".kpi[data-modal-key]");
+    if(kpiEl){ const r = receitaModal(kpiEl.dataset.modalKey); abrirModal(r.titulo, r.linhas); return; }
+    const btnBaixar = e.target.closest(".row-download");
+    if(btnBaixar){
+      const r = receitaModal(`cat:${btnBaixar.dataset.cat}`);
+      const hoje = new Date().toISOString().slice(0,10);
+      exportarCsv(`lx03_${slug(btnBaixar.dataset.cat)}_${hoje}.csv`, r.linhas);
+    }
+  });
+  document.addEventListener("keydown", (e)=>{
+    if((e.key==="Enter" || e.key===" ") && e.target.matches(".kpi[data-modal-key]")){
+      e.preventDefault();
+      const r = receitaModal(e.target.dataset.modalKey);
+      abrirModal(r.titulo, r.linhas);
+    }
+  });
+
+  // ---- meta -----------------------------------------------------------
+  function atualizarMeta(){
+    document.getElementById("meta-atualizacao").textContent = DADOS.meta.ultima_atualizacao || "—";
+    document.getElementById("meta-arquivo").textContent = DADOS.meta.arquivo_origem || "—";
+    document.getElementById("meta-linhas").textContent = fmtInt.format(DADOS.linhas.length);
+  }
+
+  // ---- bar chart component (plain HTML/CSS bars) -----------------------
+  function renderBars(container, items, opts){
+    opts = opts || {};
+    container.innerHTML = "";
+    if(!items.length || items.every(i=>i.value===0)){
+      const p = document.createElement("p");
+      p.className = "bar-empty-note";
+      p.textContent = "Sem dados para os filtros selecionados.";
+      container.appendChild(p);
+      return;
+    }
+    const max = Math.max(...items.map(i=>i.value), 1);
+    items.forEach(it=>{
+      const row = document.createElement("div");
+      row.className = "bar-row" + (it.value===0 ? " empty" : "");
+      const pct = Math.max((it.value/max)*100, it.value>0?2:0);
+      row.innerHTML = `
+        <div class="lbl" title="${it.label}">${it.label}</div>
+        <div class="track"><div class="fill" style="width:${pct}%;background:${it.color}"></div></div>
+        <div class="val num">${opts.fmt ? opts.fmt(it.value) : fmtInt.format(it.value)}</div>`;
+      row.title = `${it.label}: ${opts.fmt ? opts.fmt(it.value) : fmtInt.format(it.value)}`;
+      container.appendChild(row);
+    });
+  }
+
+  // ---- Visão Geral --------------------------------------------------------
+  function renderGeral(){
+    const f = currentFilter();
+    const matchTCA = (r)=> matchTC(r,f) && f.alerta.has(r[COLS.alerta]);
+
+    const parts = [
+      resumoFiltro("Tipo", f.tipo, DADOS.tipos.length),
+      resumoFiltro("Centro", f.centro, DADOS.centros.length),
+      resumoFiltro("Alerta", f.alerta, ALERTAS_ORDEM.length),
+    ].filter(Boolean);
+    els.note.textContent = parts.length ? "Filtro ativo — " + parts.join(" · ") : "Nenhum filtro ativo — mostrando todo o armazém.";
+
+    // KPIs (respect all 3 filters)
+    const filtered = DADOS.linhas.filter(matchTCA);
+    let ocupadas=0, vazias=0;
+    const totalPorUnidade = {};
+    filtered.forEach(r=>{
+      if(r[COLS.alerta]==="VAZIA") vazias++; else ocupadas++;
+      const u = r[COLS.um];
+      if(u) totalPorUnidade[u] = (totalPorUnidade[u]||0) + r[COLS.peso];
+    });
+    const taxaOcup = (ocupadas+vazias)>0 ? ocupadas/(ocupadas+vazias) : 0;
+    const materiaisUnicos = new Set(filtered.filter(r=>r[COLS.material]!=="<< vazio >>").map(r=>r[COLS.material])).size;
+
+    // Cada unidade de medida que aparecer nos dados (KG, UN, CX ou qualquer
+    // outra) vira seu próprio cartão — nenhuma quantidade fica escondida ou
+    // somada com uma unidade diferente.
+    const ICONES_UNIDADE = ["box","grid","tag","layers"];
+    const unidadesOrdenadas = Object.keys(totalPorUnidade).sort((a,b)=> a==="KG"?-1 : b==="KG"?1 : a.localeCompare(b));
+    const kpisUnidade = unidadesOrdenadas.map((u,i)=>([
+      ICONES_UNIDADE[i % ICONES_UNIDADE.length], `Total (${u})`, fmtInt.format(Math.round(totalPorUnidade[u])), null, `un:${u}`,
+    ]));
+
+    const kpis = [
+      ...kpisUnidade,
+      ["check", "Posições ocupadas", fmtInt.format(ocupadas), null, "ocupadas"],
+      ["square", "Posições vazias", fmtInt.format(vazias), null, "vazias"],
+      ["percent", "Taxa de ocupação", fmtPct(taxaOcup), null, "ocupacao"],
+      ["tag", "Materiais únicos", fmtInt.format(materiaisUnicos), null, "materiais"],
+    ];
+    document.getElementById("kpi-grid").innerHTML = kpis.map(([ic,lbl,val,note,mk])=>kpiCard(ic,lbl,val,note,mk)).join("");
+
+    // Pontos de Atenção — conforme os filtros (Tipo/Centro sempre; Alerta decide quais categorias aparecem)
+    const rowsTC = DADOS.linhas.filter(r=>matchTC(r,f));
+    const totalKgTC = rowsTC.filter(r=>r[COLS.um]==="KG").reduce((s,r)=>s+r[COLS.peso],0);
+    const categoriasVisiveis = ALERTAS_RISCO.filter(cat=>f.alerta.has(cat));
+    const poaRows = categoriasVisiveis.map(cat=>{
+      const rowsCat = rowsTC.filter(r=>r[COLS.alerta]===cat);
+      const qtd = rowsCat.length;
+      const kg = rowsCat.filter(r=>r[COLS.um]==="KG").reduce((s,r)=>s+r[COLS.peso],0);
+      const pct = totalKgTC>0 ? kg/totalKgTC : 0;
+      const status = statusOf(cat);
+      return {cat, qtd, kg, pct, status};
+    });
+    document.getElementById("poa-body").innerHTML = poaRows.length ? poaRows.map(r=>`
+      <tr>
+        <td><b>${r.cat}</b></td>
+        <td class="desc">${DESCRICAO[r.cat]}</td>
+        <td class="num">${fmtInt.format(r.qtd)}</td>
+        <td class="num">${fmtInt.format(Math.round(r.kg))}</td>
+        <td class="num">${fmtPct(r.pct)}</td>
+        <td>${chip(r.qtd>0?r.status:'good', r.qtd>0?STATUS_LABEL[r.status]:'OK')}</td>
+        <td class="acao">${ACAO[r.cat]}</td>
+        <td><button type="button" class="row-download no-print" data-cat="${r.cat}" title="Baixar todos os dados desta categoria (CSV)">${icone("download")}</button></td>
+      </tr>
+    `).join("") : `<tr><td colspan="8" class="desc">Nenhuma categoria de risco selecionada no filtro Alerta.</td></tr>`;
+
+    // Chart: kg por Tipo de Depósito (filtro: centro + alerta; se o filtro de
+    // Tipo tiver uma seleção específica, o gráfico mostra só os tipos escolhidos)
+    const porTipo = {};
+    DADOS.linhas.filter(r=> f.centro.has(r[COLS.centro]) && f.alerta.has(r[COLS.alerta]) && r[COLS.um]==="KG")
+      .forEach(r=>{ porTipo[r[COLS.tipo]] = (porTipo[r[COLS.tipo]]||0) + r[COLS.peso]; });
+    const tipoTodos = f.tipo.size === DADOS.tipos.length;
+    let tipoEntradas = Object.entries(porTipo).filter(([tipo])=>f.tipo.has(tipo)).sort((a,b)=>b[1]-a[1]);
+    document.getElementById("chart-tipo-sub").textContent = tipoTodos
+      ? `Top 12 de ${DADOS.tipos.length} tipos` : `${Math.min(tipoEntradas.length, f.tipo.size)} tipo(s) selecionado(s)`;
+    if(tipoTodos) tipoEntradas = tipoEntradas.slice(0,12);
+    const tipoItems = tipoEntradas.map(([tipo,kg])=>({label:tipo, value:Math.round(kg), color:"var(--brand)"}));
+    renderBars(document.getElementById("chart-tipo"), tipoItems);
+
+    // Chart: posições por Alerta (filtro: tipo + centro; só mostra as
+    // categorias marcadas no filtro de Alerta)
+    const porAlerta = {};
+    ALERTAS_ORDEM.forEach(a=>porAlerta[a]=0);
+    rowsTC.forEach(r=>{ porAlerta[r[COLS.alerta]] = (porAlerta[r[COLS.alerta]]||0)+1; });
+    const alertaItems = ALERTAS_ORDEM.filter(a=>f.alerta.has(a)).map(a=>({label:a, value:porAlerta[a], color:STATUS_COLOR[statusOf(a)]}));
+    renderBars(document.getElementById("chart-alerta"), alertaItems);
+
+    // Chart: dias sem giro (faixas) — filtro tipo+centro+alerta
+    const faixasAging = [["0–30 dias",0,30],["31–60 dias",31,60],["61–90 dias",61,90],["91–180 dias",91,180],["181–365 dias",181,365],["> 365 dias",366,Infinity]];
+    const agingRows = filtered.filter(r=> r[COLS.alerta]!=="VAZIA" && r[COLS.duracao]!==null);
+    const agingItems = faixasAging.map(([label,ini,fim],i)=>({
+      label, value: agingRows.filter(r=>r[COLS.duracao]>=ini && r[COLS.duracao]<=fim).length, color: ORDINAL[i],
+    }));
+    renderBars(document.getElementById("chart-aging"), agingItems);
+
+    // Chart: vencimento (faixas) — filtro tipo+centro+alerta
+    const vencRows = filtered.filter(r=> r[COLS.alerta]!=="VAZIA");
+    const semData = vencRows.filter(r=> r[COLS.dias_venc]===null).length;
+    const comData = vencRows.filter(r=> r[COLS.dias_venc]!==null);
+    const faixasVenc = [["Vencido",-Infinity,-0.0001],["0–30 dias",0,30],["31–60 dias",31,60],["61–90 dias",61,90],["> 90 dias",91,Infinity]];
+    const vencItems = faixasVenc.map(([label,ini,fim],i)=>({
+      label, value: comData.filter(r=>r[COLS.dias_venc]>=ini && r[COLS.dias_venc]<=fim).length, color: ORDINAL[i],
+    }));
+    vencItems.push({label:"Sem data", value: semData, color:"var(--ink-muted)"});
+    renderBars(document.getElementById("chart-venc"), vencItems);
+
+    // Top 10 tables — filtro tipo+centro; some se a categoria não estiver
+    // marcada no filtro de Alerta
+    function top10(alertaAlvo, diasCol, diasSign){
+      if(!f.alerta.has(alertaAlvo)) return null;
+      return DADOS.linhas.filter(r=> matchTC(r,f) && r[COLS.alerta]===alertaAlvo && r[COLS.um]==="KG")
+        .sort((a,b)=>b[COLS.peso]-a[COLS.peso]).slice(0,10)
+        .map(r=>({ material:r[COLS.material], lote:r[COLS.lote]||"—", posicao:r[COLS.posicao], tipo:r[COLS.tipo],
+                   kg: Math.round(r[COLS.peso]), venc: r[COLS.vencimento]||"—",
+                   dias: r[diasCol]!==null ? Math.round(diasSign*r[diasCol]) : "—" }));
+    }
+    function fillTop(tableId, rows){
+      const tbody = document.querySelector(`#${tableId} tbody`);
+      if(rows === null){
+        tbody.innerHTML = `<tr><td colspan="7" class="desc">Categoria excluída pelo filtro de Alerta selecionado.</td></tr>`;
+      } else {
+        tbody.innerHTML = rows.length ? rows.map(r=>`
+          <tr><td>${r.material}</td><td>${r.lote}</td><td>${r.posicao}</td><td>${r.tipo}</td>
+              <td class="num">${fmtInt.format(r.kg)}</td><td>${r.venc}</td><td class="num">${r.dias}</td></tr>
+        `).join("") : `<tr><td colspan="7" class="desc">Nenhuma posição para os filtros selecionados.</td></tr>`;
+      }
+    }
+    fillTop("top-parado", top10("PARADO/SEM GIRO", COLS.duracao, 1));
+    fillTop("top-vencido", top10("VENCIDO", COLS.dias_venc, -1));
+  }
+
+  // ---- Painéis individuais por Alerta -------------------------------------
+  const PAGE_SIZE = 50;
+  const sortState = {};
+  const pageState = {};
+  ALERTAS_RISCO.forEach(c=>{ sortState[c] = {campo:"peso", dir:"desc"}; pageState[c] = 1; });
+
+  const CAMPO_PARA_COL = {
+    material:"material", lote:"lote", posicao:"posicao", tipo:"tipo", centro:"centro", um:"um",
+    peso:"peso", vencimento:"dias_venc", duracao:"duracao", dias_venc:"dias_venc",
+  };
+  function compararLinhas(a, b, campo, dir){
+    const i = COLS[CAMPO_PARA_COL[campo]];
+    let va = a[i], vb = b[i];
+    const vazioA = va===null || va==="", vazioB = vb===null || vb==="";
+    if(vazioA && vazioB) return 0;
+    if(vazioA) return 1;
+    if(vazioB) return -1;
+    if(typeof va === "string" || typeof vb === "string"){
+      va = String(va); vb = String(vb);
+      return dir==="asc" ? va.localeCompare(vb,"pt-BR") : vb.localeCompare(va,"pt-BR");
+    }
+    return dir==="asc" ? va-vb : vb-va;
+  }
+
+  function construirAbas(){
+    const nav = document.getElementById("tabs");
+    const container = document.getElementById("paineis-alerta");
+    nav.innerHTML = "";
+    container.innerHTML = "";
+
+    function addTabButton(key, label, accent){
+      const btn = document.createElement("button");
+      btn.type = "button"; btn.className = "tab-btn no-print"; btn.dataset.tab = key;
+      btn.innerHTML = accent ? `<span class="tab-dot" style="background:${accent}"></span>${label}` : label;
+      btn.addEventListener("click", ()=>mudarAba(key));
+      nav.appendChild(btn);
+    }
+    addTabButton("geral", "Visão Geral");
+    ALERTAS_RISCO.forEach(cat=> addTabButton(slug(cat), cat, STATUS_COLOR[statusOf(cat)]));
+
+    ALERTAS_RISCO.forEach(cat=>{
+      const s = slug(cat);
+      const div = document.createElement("div");
+      div.className = "tab-panel"; div.id = `painel-${s}`; div.hidden = true;
+      div.innerHTML = `
+        <div class="alerta-head" style="border-left:4px solid ${STATUS_COLOR[statusOf(cat)]}">
+          <div class="alerta-head-top"><h2>${cat}</h2>${chip(statusOf(cat), STATUS_LABEL[statusOf(cat)])}</div>
+          <p class="alerta-desc">${DESCRICAO[cat]}</p>
+          <p class="alerta-acao"><b>Ação recomendada:</b> ${ACAO[cat]}</p>
+        </div>
+        <div class="kpi-grid" id="kpi-${s}"></div>
+        <div class="table-scroll">
+          <table class="poa sortable" id="tabela-${s}">
+            <thead><tr>
+              <th data-key="material">Material</th><th data-key="lote">Lote</th><th data-key="posicao">Posição</th>
+              <th data-key="tipo">Tipo</th><th data-key="centro">Centro</th><th data-key="um">UM</th>
+              <th class="num" data-key="peso">Quantidade</th><th data-key="vencimento">Vencimento</th>
+              <th class="num" data-key="duracao">Dias sem giro</th><th class="num" data-key="dias_venc">Dias até vencer</th>
+            </tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="pag-${s}"></div>
+      `;
+      div.querySelectorAll("th[data-key]").forEach(th=>{
+        th.addEventListener("click", ()=>{
+          const campo = th.dataset.key;
+          const atual = sortState[cat];
+          if(atual.campo === campo) atual.dir = atual.dir==="asc" ? "desc" : "asc";
+          else { atual.campo = campo; atual.dir = "desc"; }
+          pageState[cat] = 1;
+          renderAlertaPanel(cat);
+        });
+      });
+      container.appendChild(div);
+    });
+  }
+
+  let abaAtiva = "geral";
+  function mudarAba(key){
+    abaAtiva = key;
+    document.querySelectorAll(".tab-btn").forEach(b=> b.classList.toggle("active", b.dataset.tab===key));
+    document.getElementById("tab-geral").hidden = key !== "geral";
+    ALERTAS_RISCO.forEach(cat=>{
+      document.getElementById(`painel-${slug(cat)}`).hidden = key !== slug(cat);
+    });
+  }
+
+  function atualizarSetaOrdenacao(s, campo, dir){
+    document.querySelectorAll(`#tabela-${s} th[data-key]`).forEach(th=>{
+      th.classList.remove("sort-asc","sort-desc");
+      if(th.dataset.key===campo) th.classList.add(dir==="asc"?"sort-asc":"sort-desc");
+    });
+  }
+
+  function renderPaginacao(container, cat, totalPaginas, totalLinhas){
+    const atual = pageState[cat];
+    container.innerHTML = `
+      <button type="button" data-act="prev" ${atual<=1?"disabled":""}>‹ Anterior</button>
+      <span>Página ${atual} de ${totalPaginas} (${fmtInt.format(totalLinhas)} posições)</span>
+      <button type="button" data-act="next" ${atual>=totalPaginas?"disabled":""}>Próxima ›</button>`;
+    const prev = container.querySelector('[data-act="prev"]');
+    const next = container.querySelector('[data-act="next"]');
+    if(prev) prev.addEventListener("click", ()=>{ pageState[cat]=Math.max(1,atual-1); renderAlertaPanel(cat); });
+    if(next) next.addEventListener("click", ()=>{ pageState[cat]=Math.min(totalPaginas,atual+1); renderAlertaPanel(cat); });
+  }
+
+  function renderAlertaPanel(cat){
+    const f = currentFilter();
+    const linhas = DADOS.linhas.filter(r=> matchTC(r,f) && r[COLS.alerta]===cat);
+    const qtd = linhas.length;
+    const s = slug(cat);
+    const mk = `cat:${cat}`;
+
+    const porUnidadeCat = {};
+    linhas.forEach(r=>{ const u=r[COLS.um]; if(u) porUnidadeCat[u]=(porUnidadeCat[u]||0)+r[COLS.peso]; });
+    const ICONES_UNIDADE = ["box","grid","tag","layers"];
+    const unidadesCat = Object.keys(porUnidadeCat).sort((a,b)=> a==="KG"?-1 : b==="KG"?1 : a.localeCompare(b));
+    const kpisUnidadeCat = unidadesCat.map((u,i)=>([ICONES_UNIDADE[i%ICONES_UNIDADE.length], `Total (${u})`, fmtInt.format(Math.round(porUnidadeCat[u]))]));
+
+    const kpisFinal = [["layers", "Posições", fmtInt.format(qtd)], ...kpisUnidadeCat];
+    if(porUnidadeCat["KG"]) kpisFinal.push(["bars", "Peso médio (kg/posição)", fmtInt.format(Math.round(porUnidadeCat["KG"]/qtd))]);
+    document.getElementById(`kpi-${s}`).innerHTML = kpisFinal.map(([ic,lbl,val])=>kpiCard(ic,lbl,val,null,mk)).join("");
+
+    const {campo, dir} = sortState[cat];
+    const ordenadas = [...linhas].sort((a,b)=>compararLinhas(a,b,campo,dir));
+    const totalPaginas = Math.max(1, Math.ceil(ordenadas.length / PAGE_SIZE));
+    if(pageState[cat] > totalPaginas) pageState[cat] = totalPaginas;
+    const pagina = ordenadas.slice((pageState[cat]-1)*PAGE_SIZE, pageState[cat]*PAGE_SIZE);
+
+    const tbody = document.querySelector(`#tabela-${s} tbody`);
+    tbody.innerHTML = pagina.length ? pagina.map(r=>`
+      <tr>
+        <td>${r[COLS.material]}</td><td>${r[COLS.lote]||"—"}</td><td>${r[COLS.posicao]}</td>
+        <td>${r[COLS.tipo]}</td><td>${r[COLS.centro]||"—"}</td><td>${r[COLS.um]||"—"}</td>
+        <td class="num">${fmtInt.format(Math.round(r[COLS.peso]))}</td>
+        <td>${r[COLS.vencimento]||"—"}</td>
+        <td class="num">${r[COLS.duracao]!==null ? fmtInt.format(Math.round(r[COLS.duracao])) : "—"}</td>
+        <td class="num">${r[COLS.dias_venc]!==null ? fmtInt.format(Math.round(r[COLS.dias_venc])) : "—"}</td>
+      </tr>
+    `).join("") : `<tr><td colspan="10" class="desc">Nenhuma posição para os filtros de Tipo/Centro selecionados.</td></tr>`;
+
+    renderPaginacao(document.getElementById(`pag-${s}`), cat, totalPaginas, ordenadas.length);
+    atualizarSetaOrdenacao(s, campo, dir);
+  }
+
+  function renderTudo(){
+    renderGeral();
+    ALERTAS_RISCO.forEach(cat=> renderAlertaPanel(cat));
+  }
+
+  // ---- tendência (independe dos filtros e do upload) --------------------
+  function renderizarTendencia(){
+    const t = DADOS.tendencia || [];
+    const textEl = document.getElementById("trend-text");
+    const ptsEl = document.getElementById("trend-points");
+    if(t.length <= 1){
+      textEl.textContent = "O acompanhamento de tendência começou na última atualização pelo script Python — a partir da 2ª carga diária, este espaço mostra a evolução dos pontos de atenção dia a dia.";
+    } else {
+      const first = t[0];
+      textEl.textContent = `Acompanhando desde ${first.data} — ${t.length} atualizações registradas.`;
+    }
+    ptsEl.innerHTML = t.slice(-14).map(p=>`
+      <div class="pt"><div class="dot-wrap"></div>${p.data.slice(5)}<br><b class="num">${fmtInt.format(Math.round(p.total_kg))}</b>kg</div>
+    `).join("");
+  }
+
+  // ---- upload de um novo relatório (processado só no navegador) ---------
+  const COLUNAS_ESPERADAS = [
+    "Tipo de depósito", "Posição no depósito", "Material", "Lote",
+    "Nº de quantos", "Tipo de estoque", "Unidade de depósito",
+    "Estoque disponível", "Último movimento", "Estoque total", "UM básica",
+    "Duração", "Inventário ativo", "Depósito", "Data do vencimento", "Centro",
+  ];
+
+  function calcularAlertaJs(campo, diasVenc, diasParado, diasAteVencer){
+    const material = campo("Material") || "";
+    if(material === "<< vazio >>") return "VAZIA";
+    const venc = campo("Data do vencimento");
+    if(venc instanceof Date){
+      if(diasAteVencer < 0) return "VENCIDO";
+      if(diasAteVencer <= diasVenc) return "PRÓX. VENCIMENTO";
+    }
+    const tipoEstoque = campo("Tipo de estoque");
+    if(tipoEstoque === "Q") return "QUALIDADE";
+    if(tipoEstoque === "S") return "BLOQUEADO";
+    if(tipoEstoque === "R") return "RESTRITO/DEVOLUÇÃO";
+    const deposito = campo("Depósito");
+    if(deposito === "QUAR" || deposito === "QRES") return "QUARENTENA";
+    const posicao = campo("Posição no depósito");
+    if(posicao === "DESCARTE" || posicao === "DEVOLUÇÃO") return "DESCARTE/DEVOLUÇÃO";
+    const lote = campo("Lote");
+    const um = campo("UM básica");
+    if(!lote && um) return "SEM LOTE";
+    const duracao = parseFloat(campo("Duração"));
+    if(!isNaN(duracao) && duracao >= diasParado) return "PARADO/SEM GIRO";
+    return "OK";
+  }
+
+  function processarUpload(bruto, nomeArquivo){
+    if(!bruto.length) throw new Error("Arquivo vazio.");
+    const cabecalho = bruto[0];
+    const idx = {};
+    cabecalho.forEach((h,i)=>{ if(h) idx[h]=i; });
+    const faltando = COLUNAS_ESPERADAS.filter(c=> !(c in idx));
+    if(faltando.length) throw new Error(`Não parece um export da LX03 — faltam as colunas: ${faltando.join(", ")}`);
+
+    const diasVenc = DADOS.meta.dias_prox_venc || 60;
+    const diasParado = DADOS.meta.dias_parado || 90;
+    const hoje = new Date(); hoje.setHours(0,0,0,0);
+    const novasLinhas = [];
+    const novosTipos = new Set(), novosCentros = new Set();
+
+    for(let r=1; r<bruto.length; r++){
+      const linha = bruto[r];
+      if(!linha || linha.every(v=>v===null || v==="")) continue;
+      const campo = (nome)=> linha[idx[nome]];
+      const tipo = campo("Tipo de depósito") || "";
+      const centro = campo("Centro") || "";
+      const um = campo("UM básica") || "";
+      const peso = Number(campo("Estoque total")) || 0;
+      const material = campo("Material") || "";
+      const lote = campo("Lote") || "";
+      const posicao = campo("Posição no depósito") || "";
+      const duracaoRaw = campo("Duração");
+      const duracao = (duracaoRaw!==null && duracaoRaw!=="" && !isNaN(parseFloat(duracaoRaw))) ? parseFloat(duracaoRaw) : null;
+      const venc = campo("Data do vencimento");
+      const vencDate = (venc instanceof Date) ? venc : null;
+      const diasAteVencer = vencDate ? Math.round((vencDate - hoje) / 86400000) : null;
+      const vencimentoTxt = vencDate ? vencDate.toLocaleDateString("pt-BR",{timeZone:"UTC"}) : "";
+      const alerta = calcularAlertaJs(campo, diasVenc, diasParado, diasAteVencer);
+
+      const nquantos = campo("Nº de quantos") ?? "";
+      const tipoEstoque = campo("Tipo de estoque") ?? "";
+      const unidadeDeposito = campo("Unidade de depósito") ?? "";
+      const estoqueDispRaw = campo("Estoque disponível");
+      const estoqueDisp = (typeof estoqueDispRaw === "number") ? estoqueDispRaw : (parseFloat(estoqueDispRaw) || null);
+      const ultimoMovRaw = campo("Último movimento");
+      const ultimoMovTxt = (ultimoMovRaw instanceof Date) ? ultimoMovRaw.toLocaleDateString("pt-BR",{timeZone:"UTC"}) : "";
+      const inventarioAtivo = campo("Inventário ativo") ?? "";
+      const deposito = campo("Depósito") ?? "";
+
+      if(tipo) novosTipos.add(tipo);
+      if(centro) novosCentros.add(centro);
+      novasLinhas.push([
+        tipo, centro, alerta, um, Math.round(peso*100)/100, duracao, diasAteVencer, material, lote, posicao, vencimentoTxt,
+        nquantos, tipoEstoque, unidadeDeposito, estoqueDisp, ultimoMovTxt, inventarioAtivo, deposito,
+      ]);
+    }
+
+    return {
+      meta: {
+        ultima_atualizacao: new Date().toLocaleString("pt-BR"),
+        arquivo_origem: `${nomeArquivo} (enviado no navegador)`,
+        dias_prox_venc: diasVenc, dias_parado: diasParado,
+      },
+      colunas: DADOS.colunas,
+      linhas: novasLinhas,
+      tipos: [...novosTipos].sort((a,b)=>a.localeCompare(b,"pt-BR")),
+      centros: [...novosCentros].sort((a,b)=>a.localeCompare(b,"pt-BR")),
+      tendencia: DADOS.tendencia,
+    };
+  }
+
+  const uploadBtn = document.getElementById("upload-btn");
+  const uploadInput = document.getElementById("upload-input");
+  const uploadStatus = document.getElementById("upload-status");
+  uploadBtn.addEventListener("click", ()=> uploadInput.click());
+  uploadInput.addEventListener("change", async (e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    uploadStatus.hidden = false;
+    uploadStatus.className = "active-note no-print";
+    uploadStatus.textContent = `Lendo ${file.name} ...`;
+    try{
+      if(typeof XLSX === "undefined") throw new Error("biblioteca de leitura de Excel não carregou (sem internet?).");
+      const buf = await file.arrayBuffer();
+      const wb = XLSX.read(buf, {type:"array", cellDates:true});
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const bruto = XLSX.utils.sheet_to_json(ws, {header:1, defval:null, raw:true});
+      const novoDados = processarUpload(bruto, file.name);
+      DADOS = novoDados;
+      criarFiltros();
+      atualizarMeta();
+      renderTudo();
+      uploadStatus.className = "active-note no-print ok";
+      uploadStatus.textContent = `✓ ${fmtInt.format(novoDados.linhas.length)} posições carregadas de "${file.name}". A aba Tendência continua mostrando o histórico salvo no servidor — este upload não grava histórico nem atualiza o Excel.`;
+    } catch(err){
+      uploadStatus.className = "active-note no-print erro";
+      uploadStatus.textContent = `Erro ao processar o arquivo: ${err.message}`;
+    } finally {
+      e.target.value = "";
+    }
+  });
+
+  // ---- inicialização ------------------------------------------------------
+  construirAbas();
+  criarFiltros();
+  atualizarMeta();
+  renderizarTendencia();
+  mudarAba("geral");
+  renderTudo();
+})();
+</script>
