@@ -1,6 +1,6 @@
 # Automação de Planilha
 
-Duas planilhas, ambas usando apenas fórmulas e formatação condicional do
+Três planilhas, todas usando apenas fórmulas e formatação condicional do
 próprio Excel — **sem servidor, add-in ou integração externa
 (e-mail/Slack/WhatsApp)**:
 
@@ -9,6 +9,10 @@ próprio Excel — **sem servidor, add-in ou integração externa
 2. [`planilhas/Painel_Programacao_Pendente_Setembro_2026.xlsx`](planilhas/Painel_Programacao_Pendente_Setembro_2026.xlsx)
    — painel de programação pendente (Gerar/Separar/Faturar/Faturado) x
    capacidade da escala de turnos. Ver seção própria mais abaixo.
+3. [`planilhas/Dados_Programacao_Correlacionados_Setembro_2026.xlsx`](planilhas/Dados_Programacao_Correlacionados_Setembro_2026.xlsx)
+   — planilha de dados: a mesma correlação sqvi/GM/VL06 do item 2, só que em
+   formato de tabela plana (uma linha por remessa), pronta para tabela
+   dinâmica/Power BI, com dicionário de dados. Ver seção própria mais abaixo.
 
 ## 1) Volume por Turno
 
@@ -128,3 +132,27 @@ fluxo: **Gerar → Separar → Faturar → Faturado**.
 - A capacidade efetiva de cada turno usa a média entre o mínimo e o máximo
   informados (35–40 t) escalada pelo pior entre presença de separadores e
   de operadores de empilhadeira — não modela produtividade individual.
+
+## 3) Planilha de Dados (Correlação sqvi/GM/VL06)
+
+Mesma correlação e mesmas regras de classificação do painel do item 2, mas
+entregue como tabela plana — uma linha por remessa — em vez de dashboard.
+Pensada para quem quer os dados "crus" já correlacionados para montar tabela
+dinâmica, gráfico próprio ou carregar num Power BI.
+
+### Abas do arquivo
+
+- **Resumo** — totais por Estágio e por mês de embarque (fórmulas
+  `COUNTIFS`/`SUMIFS` sobre a aba Dados).
+- **Dados** — a tabela (9.953 remessas), com Estágio, Situação Temporal,
+  Dias em Atraso, Peso e Peso Válido/Pendente já calculados, em formato de
+  Tabela do Excel (filtro automático, cabeçalho fixo).
+- **Dicionário** — o que é cada coluna e a regra de classificação do
+  Estágio (mesma regra do painel do item 2).
+
+### Como usar
+
+- Filtrar/ordenar a aba Dados diretamente, ou copiar como intervalo para
+  uma tabela dinâmica.
+- Para usar num Power BI: importar a aba Dados como fonte de dados (Get
+  Data → Excel) — já vem uma linha por remessa, sem células mescladas.
