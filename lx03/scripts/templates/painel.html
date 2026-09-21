@@ -1,60 +1,75 @@
 <title>Painel LX03</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{
     color-scheme:light;
-    --surface:#faf7f2; --surface-card:#ffffff; --surface-sunken:#f1ece3;
-    --ink-primary:#2a1810; --ink-secondary:#5c4a3d; --ink-muted:#948676;
+    --surface:#eef1f5; --surface-card:#ffffff; --surface-sunken:#e3e8ee;
+    --ink-primary:#131a24; --ink-secondary:#4b5768; --ink-muted:#87909c;
     --brand:#6e1423; --brand-strong:#4a0d18; --gold:#8f6a2c;
-    --border:rgba(42,24,16,.12); --border-strong:rgba(42,24,16,.22);
+    --border:rgba(19,26,36,.10); --border-strong:rgba(19,26,36,.20);
     --good:#0ca30c; --warning:#c98500; --serious:#c15a34; --critical:#d03b3b;
     --ord-1:#d99aa7; --ord-2:#c77c8c; --ord-3:#ac5468; --ord-4:#8a2f45; --ord-5:#651226; --ord-6:#450a19;
-    --shadow: 0 1px 2px rgba(42,24,16,.06), 0 8px 24px -12px rgba(42,24,16,.18);
+    --topbar-bg:#12161f; --topbar-fg:#f2f4f7; --topbar-fg-muted:#a7b0bd; --topbar-accent:#d9a75c;
+    --shadow: 0 1px 2px rgba(19,26,36,.06), 0 8px 24px -12px rgba(19,26,36,.16);
   }
   @media (prefers-color-scheme:dark){
     :root:not([data-theme="light"]){
       color-scheme:dark;
-      --surface:#1a1613; --surface-card:#242019; --surface-sunken:#161310;
-      --ink-primary:#f5efe8; --ink-secondary:#cbb9ab; --ink-muted:#8f8072;
+      --surface:#12151b; --surface-card:#1b1f27; --surface-sunken:#0d1015;
+      --ink-primary:#eef1f5; --ink-secondary:#a9b2bf; --ink-muted:#717a86;
       --brand:#e2a3b1; --brand-strong:#f0c8d0; --gold:#d9a75c;
-      --border:rgba(245,239,232,.14); --border-strong:rgba(245,239,232,.24);
+      --border:rgba(238,241,245,.12); --border-strong:rgba(238,241,245,.22);
       --good:#0ca30c; --warning:#fab219; --serious:#ec835a; --critical:#e66767;
       --ord-1:#f0c8d0; --ord-2:#e2a3b1; --ord-3:#cf7d8f; --ord-4:#b25569; --ord-5:#984262; --ord-6:#823348;
+      --topbar-bg:#05070a; --topbar-fg:#eef1f5; --topbar-fg-muted:#7c8794; --topbar-accent:#d9a75c;
       --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.5);
     }
   }
   :root[data-theme="dark"]{
     color-scheme:dark;
-    --surface:#1a1613; --surface-card:#242019; --surface-sunken:#161310;
-    --ink-primary:#f5efe8; --ink-secondary:#cbb9ab; --ink-muted:#8f8072;
+    --surface:#12151b; --surface-card:#1b1f27; --surface-sunken:#0d1015;
+    --ink-primary:#eef1f5; --ink-secondary:#a9b2bf; --ink-muted:#717a86;
     --brand:#e2a3b1; --brand-strong:#f0c8d0; --gold:#d9a75c;
-    --border:rgba(245,239,232,.14); --border-strong:rgba(245,239,232,.24);
+    --border:rgba(238,241,245,.12); --border-strong:rgba(238,241,245,.22);
     --good:#0ca30c; --warning:#fab219; --serious:#ec835a; --critical:#e66767;
     --ord-1:#f0c8d0; --ord-2:#e2a3b1; --ord-3:#cf7d8f; --ord-4:#b25569; --ord-5:#984262; --ord-6:#823348;
+    --topbar-bg:#05070a; --topbar-fg:#eef1f5; --topbar-fg-muted:#7c8794; --topbar-accent:#d9a75c;
     --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.5);
   }
 
   *{box-sizing:border-box;}
   body{
     background:var(--surface); color:var(--ink-primary);
-    font-family:"Source Sans 3",system-ui,-apple-system,"Segoe UI",sans-serif;
-    margin:0; padding-inline:16px; -webkit-font-smoothing:antialiased;
+    font-family:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+    margin:0; padding:0; -webkit-font-smoothing:antialiased;
   }
-  h1,h2,h3,.display{ font-family:"Fraunces",Georgia,serif; text-wrap:balance; }
-  .wrap{ max-width:1180px; margin:0 auto; }
+  h1,h2,h3,.display{ font-family:"Inter",system-ui,sans-serif; text-wrap:balance; letter-spacing:-.01em; }
+  .wrap{ max-width:1220px; margin:0 auto; padding-inline:16px; }
   .num{ font-variant-numeric:tabular-nums; }
+  svg.icon{ width:1em; height:1em; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; flex:none; vertical-align:-2px; }
 
-  header.top{ padding-block:28px 20px; border-bottom:1px solid var(--border); }
-  header.top .eyebrow{
-    font-size:.72rem; letter-spacing:.14em; text-transform:uppercase; color:var(--gold);
-    font-weight:700; margin:0 0 6px;
+  header.topbar{ background:var(--topbar-bg); color:var(--topbar-fg); }
+  .topbar-inner{ padding-block:22px 18px; }
+  .topbar-row{ display:flex; align-items:flex-start; justify-content:space-between; gap:20px; flex-wrap:wrap; }
+  .topbar-brand{ display:flex; align-items:center; gap:14px; }
+  .topbar-mark{
+    width:44px; height:44px; border-radius:10px; flex:none; display:flex; align-items:center; justify-content:center;
+    background:color-mix(in srgb, var(--topbar-accent) 22%, transparent); color:var(--topbar-accent);
   }
-  header.top h1{ margin:0; font-size:clamp(1.6rem,3.4vw,2.4rem); font-weight:600; color:var(--brand-strong); }
-  header.top p.sub{ margin:8px 0 0; color:var(--ink-secondary); max-width:62ch; line-height:1.5; }
-  header.top .meta{ margin-top:14px; font-size:.82rem; color:var(--ink-muted); display:flex; gap:18px; flex-wrap:wrap; }
-  header.top .meta b{ color:var(--ink-secondary); font-weight:600; }
+  .topbar-mark svg{ width:24px; height:24px; }
+  .topbar-eyebrow{
+    margin:0 0 4px; font-size:.72rem; letter-spacing:.12em; text-transform:uppercase; color:var(--topbar-accent); font-weight:700;
+  }
+  header.topbar h1{ margin:0; font-size:clamp(1.35rem,2.6vw,1.85rem); font-weight:700; color:var(--topbar-fg); }
+  .topbar-meta{ display:flex; gap:8px; flex-wrap:wrap; }
+  .meta-pill{
+    display:inline-flex; align-items:center; gap:6px; font-size:.78rem; color:var(--topbar-fg-muted);
+    background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); border-radius:999px; padding:6px 12px; white-space:nowrap;
+  }
+  .meta-pill b{ color:var(--topbar-fg); font-weight:600; }
+  .topbar-sub{ margin:14px 0 0; color:var(--topbar-fg-muted); max-width:70ch; line-height:1.5; font-size:.92rem; }
 
   .filterbar{
     position:sticky; top:env(safe-area-inset-top,0px); z-index:20;
@@ -64,6 +79,7 @@
   .filterbar .row{ display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
   .filterbar label{ font-size:.78rem; color:var(--ink-muted); display:flex; flex-direction:column; gap:4px; font-weight:600; }
   .filterbar .reset, .filterbar .btn{
+    display:inline-flex; align-items:center; gap:6px;
     font-size:.82rem; color:var(--brand); background:none; border:1px solid var(--border-strong);
     border-radius:8px; padding:8px 12px; cursor:pointer; font-weight:600; align-self:flex-end;
     font-family:inherit;
@@ -116,6 +132,7 @@
   }
   .tab-btn:hover{ background:var(--surface-sunken); color:var(--ink-primary); }
   .tab-btn.active{ color:var(--brand-strong); border-bottom-color:var(--brand); background:var(--surface-sunken); }
+  .tab-dot{ display:inline-block; width:7px; height:7px; border-radius:50%; margin-right:7px; vertical-align:1px; }
 
   @media print{
     .filterbar, .tabs{ position:static; }
@@ -129,19 +146,27 @@
   section > h2{ font-size:1.15rem; font-weight:600; color:var(--brand-strong); margin:0 0 4px; }
   section > .section-sub{ font-size:.85rem; color:var(--ink-muted); margin:0 0 16px; }
 
-  .kpi-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin-bottom:24px; }
+  .kpi-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:10px; margin-bottom:24px; }
   .kpi{
-    background:var(--surface-card); border:1px solid var(--border); border-radius:12px;
+    display:flex; align-items:flex-start; gap:12px;
+    background:var(--surface-card); border:1px solid var(--border); border-left:3px solid var(--brand); border-radius:10px;
     padding:14px 16px; box-shadow:var(--shadow);
   }
+  .kpi .icon-badge{
+    width:34px; height:34px; border-radius:8px; flex:none; display:flex; align-items:center; justify-content:center;
+    background:color-mix(in srgb, var(--brand) 12%, transparent); color:var(--brand-strong);
+  }
+  .kpi .icon-badge svg{ width:18px; height:18px; }
+  .kpi .body{ min-width:0; }
   .kpi .label{ font-size:.72rem; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-muted); font-weight:700; }
-  .kpi .value{ font-family:"Fraunces",serif; font-size:1.7rem; font-weight:600; color:var(--brand-strong); margin-top:4px; }
-  .kpi .value small{ font-size:.95rem; font-weight:500; color:var(--ink-secondary); }
+  .kpi .value{ font-family:"Inter",sans-serif; font-size:1.55rem; font-weight:700; color:var(--ink-primary); margin-top:2px; }
+  .kpi .value small{ font-size:.9rem; font-weight:500; color:var(--ink-secondary); }
 
-  table.poa{ width:100%; border-collapse:collapse; background:var(--surface-card); border-radius:12px; overflow:hidden; box-shadow:var(--shadow); }
-  .table-scroll{ overflow-x:auto; border-radius:12px; }
-  table.poa th, table.poa td{ padding:11px 12px; text-align:left; border-bottom:1px solid var(--border); font-size:.88rem; vertical-align:top; }
-  table.poa th{ font-size:.72rem; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-muted); background:var(--surface-sunken); white-space:nowrap; }
+  table.poa{ width:100%; border-collapse:collapse; background:var(--surface-card); border-radius:10px; overflow:hidden; box-shadow:var(--shadow); }
+  .table-scroll{ overflow-x:auto; overflow-y:auto; max-height:560px; border-radius:10px; border:1px solid var(--border); }
+  table.poa th, table.poa td{ padding:10px 12px; text-align:left; border-bottom:1px solid var(--border); font-size:.86rem; vertical-align:top; }
+  table.poa th{ font-size:.7rem; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-muted); background:var(--surface-sunken); white-space:nowrap; position:sticky; top:0; z-index:1; }
+  table.poa tbody tr:nth-child(even){ background:color-mix(in srgb, var(--surface-sunken) 45%, transparent); }
   table.poa tr:last-child td{ border-bottom:none; }
   table.poa td.num{ text-align:right; white-space:nowrap; }
   table.poa td.desc{ color:var(--ink-secondary); min-width:180px; }
@@ -152,15 +177,12 @@
   table.poa.sortable th.sort-desc::after{ content:" ▼"; }
 
   .chip{ display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:999px; font-size:.78rem; font-weight:700; white-space:nowrap; }
-  .chip .dot{ width:8px; height:8px; border-radius:50%; flex:none; }
+  .chip svg{ width:13px; height:13px; }
   .chip.good{ color:var(--good); background:color-mix(in srgb, var(--good) 14%, transparent); }
-  .chip.good .dot{ background:var(--good); }
   .chip.warning{ color:var(--warning); background:color-mix(in srgb, var(--warning) 16%, transparent); }
-  .chip.warning .dot{ background:var(--warning); }
   .chip.serious{ color:var(--serious); background:color-mix(in srgb, var(--serious) 16%, transparent); }
-  .chip.serious .dot{ background:var(--serious); }
   .chip.critical{ color:var(--critical); background:color-mix(in srgb, var(--critical) 16%, transparent); }
-  .chip.critical .dot{ background:var(--critical); }
+  .chip.neutral{ color:var(--ink-muted); background:color-mix(in srgb, var(--ink-muted) 14%, transparent); }
 
   .chart-grid{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }
   @media (max-width:820px){ .chart-grid{ grid-template-columns:1fr; } }
@@ -215,29 +237,38 @@
   }
 </style>
 
-<div class="wrap">
-  <header class="top">
-    <p class="eyebrow">Barry Callebaut · Estoque LX03</p>
-    <h1>Painel de Estoque — LX03</h1>
-    <p class="sub">Fornecimento por posição no depósito, com os pontos que carecem de monitoramento já destacados. Os filtros abaixo recalculam cartões, gráficos, abas por alerta e as tabelas de Top&nbsp;10 na hora.</p>
-    <div class="meta">
-      <span>Última atualização: <b id="meta-atualizacao">—</b></span>
-      <span>Arquivo de origem: <b id="meta-arquivo">—</b></span>
-      <span><b id="meta-linhas">—</b> posições carregadas</span>
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <div class="topbar-row">
+      <div class="topbar-brand">
+        <span class="topbar-mark" aria-hidden="true"><svg class="icon" viewBox="0 0 24 24"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4a2 2 0 0 0 1-1.73V8z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg></span>
+        <div>
+          <p class="topbar-eyebrow">Barry Callebaut · Logística de Armazém</p>
+          <h1>Controle de Estoque — LX03</h1>
+        </div>
+      </div>
+      <div class="topbar-meta">
+        <span class="meta-pill"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> Atualizado <b id="meta-atualizacao">—</b></span>
+        <span class="meta-pill"><svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg> <b id="meta-arquivo">—</b></span>
+        <span class="meta-pill"><svg class="icon" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg> <b id="meta-linhas">—</b> posições</span>
+      </div>
     </div>
-  </header>
+    <p class="topbar-sub">Fornecimento por posição no depósito, com os pontos que carecem de monitoramento já destacados. Os filtros abaixo recalculam cartões, gráficos, abas por alerta e as tabelas de Top&nbsp;10 na hora.</p>
+  </div>
+</header>
 
+<div class="wrap">
   <div class="filterbar">
     <div class="row">
       <div class="msel" id="msel-tipo" data-label="Tipo de Depósito"></div>
       <div class="msel" id="msel-centro" data-label="Centro"></div>
       <div class="msel" id="msel-alerta" data-label="Alerta"></div>
-      <button class="reset" id="f-reset" type="button">Limpar filtros</button>
+      <button class="reset" id="f-reset" type="button"><svg class="icon" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg> Limpar filtros</button>
       <span class="spacer no-print"></span>
-      <button class="btn gold no-print" id="upload-btn" type="button">📤 Enviar novo relatório</button>
+      <button class="btn gold no-print" id="upload-btn" type="button"><svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg> Enviar novo relatório</button>
       <input type="file" id="upload-input" accept=".xlsx" hidden>
-      <button class="btn no-print" id="f-export-csv" type="button">⬇ Exportar dados filtrados (CSV)</button>
-      <button class="btn primary no-print" id="f-print" type="button">🖶 Imprimir / Salvar PDF</button>
+      <button class="btn no-print" id="f-export-csv" type="button"><svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> Exportar dados filtrados (CSV)</button>
+      <button class="btn primary no-print" id="f-print" type="button"><svg class="icon" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg> Imprimir / Salvar PDF</button>
     </div>
     <p class="active-note" id="active-note"></p>
     <p class="active-note no-print" id="upload-status" hidden></p>
@@ -371,6 +402,28 @@
 
   const ORDINAL = ["var(--ord-1)","var(--ord-2)","var(--ord-3)","var(--ord-4)","var(--ord-5)","var(--ord-6)"];
   const STATUS_COLOR = {good:"var(--good)",warning:"var(--warning)",serious:"var(--serious)",critical:"var(--critical)",neutral:"var(--ink-muted)"};
+
+  // ---- ícones (SVG inline, sem depender de fonte de ícone externa) ------
+  const ICON_PATHS = {
+    box: '<path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4a2 2 0 0 0 1-1.73V8z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line>',
+    grid: '<rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect>',
+    check: '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline>',
+    square: '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>',
+    percent: '<line x1="19" y1="5" x2="5" y2="19"></line><circle cx="6.5" cy="6.5" r="2.5"></circle><circle cx="17.5" cy="17.5" r="2.5"></circle>',
+    tag: '<path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>',
+    layers: '<polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline>',
+    bars: '<line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line>',
+    alertCircle: '<circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line>',
+    alertTriangle: '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line>',
+    alertOctagon: '<polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"></polygon><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line>',
+    circle: '<circle cx="12" cy="12" r="10"></circle>',
+  };
+  function icone(nome){ return `<svg class="icon" viewBox="0 0 24 24">${ICON_PATHS[nome]}</svg>`; }
+  const STATUS_ICON = {good:"check", warning:"alertCircle", serious:"alertTriangle", critical:"alertOctagon", neutral:"circle"};
+  function chip(status, label){ return `<span class="chip ${status}">${icone(STATUS_ICON[status])}${label}</span>`; }
+  function kpiCard(iconName, label, value, note){
+    return `<div class="kpi"><span class="icon-badge">${icone(iconName)}</span><div class="body"><div class="label">${label}</div><div class="value num">${value}${note?` <small>(${note})</small>`:""}</div></div></div>`;
+  }
 
   function slug(s){ return s.replace(/[^a-zA-Z0-9]/g,"_"); }
   function matchTC(r, f){
@@ -546,16 +599,14 @@
     const materiaisUnicos = new Set(filtered.filter(r=>r[COLS.material]!=="<< vazio >>").map(r=>r[COLS.material])).size;
 
     const kpis = [
-      ["Total em KG", fmtInt.format(Math.round(totalKg))],
-      ["Total em UN", fmtInt.format(Math.round(totalUn))],
-      ["Posições ocupadas", fmtInt.format(ocupadas)],
-      ["Posições vazias", fmtInt.format(vazias)],
-      ["Taxa de ocupação", fmtPct(taxaOcup)],
-      ["Materiais únicos", fmtInt.format(materiaisUnicos)],
+      ["box", "Total em KG", fmtInt.format(Math.round(totalKg))],
+      ["grid", "Total em UN", fmtInt.format(Math.round(totalUn))],
+      ["check", "Posições ocupadas", fmtInt.format(ocupadas)],
+      ["square", "Posições vazias", fmtInt.format(vazias)],
+      ["percent", "Taxa de ocupação", fmtPct(taxaOcup)],
+      ["tag", "Materiais únicos", fmtInt.format(materiaisUnicos)],
     ];
-    document.getElementById("kpi-grid").innerHTML = kpis.map(([lbl,val,note])=>`
-      <div class="kpi"><div class="label">${lbl}</div><div class="value num">${val}${note?` <small>(${note})</small>`:""}</div></div>
-    `).join("");
+    document.getElementById("kpi-grid").innerHTML = kpis.map(([ic,lbl,val])=>kpiCard(ic,lbl,val)).join("");
 
     // Pontos de Atenção — conforme os filtros (Tipo/Centro sempre; Alerta decide quais categorias aparecem)
     const rowsTC = DADOS.linhas.filter(r=>matchTC(r,f));
@@ -576,7 +627,7 @@
         <td class="num">${fmtInt.format(r.qtd)}</td>
         <td class="num">${fmtInt.format(Math.round(r.kg))}</td>
         <td class="num">${fmtPct(r.pct)}</td>
-        <td><span class="chip ${r.qtd>0?r.status:'good'}"><span class="dot"></span>${r.qtd>0?STATUS_LABEL[r.status]:'OK'}</span></td>
+        <td>${chip(r.qtd>0?r.status:'good', r.qtd>0?STATUS_LABEL[r.status]:'OK')}</td>
         <td class="acao">${ACAO[r.cat]}</td>
       </tr>
     `).join("") : `<tr><td colspan="7" class="desc">Nenhuma categoria de risco selecionada no filtro Alerta.</td></tr>`;
@@ -676,23 +727,23 @@
     nav.innerHTML = "";
     container.innerHTML = "";
 
-    function addTabButton(key, label){
+    function addTabButton(key, label, accent){
       const btn = document.createElement("button");
       btn.type = "button"; btn.className = "tab-btn no-print"; btn.dataset.tab = key;
-      btn.textContent = label;
+      btn.innerHTML = accent ? `<span class="tab-dot" style="background:${accent}"></span>${label}` : label;
       btn.addEventListener("click", ()=>mudarAba(key));
       nav.appendChild(btn);
     }
     addTabButton("geral", "Visão Geral");
-    ALERTAS_RISCO.forEach(cat=> addTabButton(slug(cat), cat));
+    ALERTAS_RISCO.forEach(cat=> addTabButton(slug(cat), cat, STATUS_COLOR[statusOf(cat)]));
 
     ALERTAS_RISCO.forEach(cat=>{
       const s = slug(cat);
       const div = document.createElement("div");
       div.className = "tab-panel"; div.id = `painel-${s}`; div.hidden = true;
       div.innerHTML = `
-        <div class="alerta-head">
-          <div class="alerta-head-top"><h2>${cat}</h2><span class="chip ${statusOf(cat)}"><span class="dot"></span>${STATUS_LABEL[statusOf(cat)]}</span></div>
+        <div class="alerta-head" style="border-left:4px solid ${STATUS_COLOR[statusOf(cat)]}">
+          <div class="alerta-head-top"><h2>${cat}</h2>${chip(statusOf(cat), STATUS_LABEL[statusOf(cat)])}</div>
           <p class="alerta-desc">${DESCRICAO[cat]}</p>
           <p class="alerta-acao"><b>Ação recomendada:</b> ${ACAO[cat]}</p>
         </div>
@@ -762,11 +813,11 @@
     const s = slug(cat);
 
     document.getElementById(`kpi-${s}`).innerHTML = [
-      ["Posições", fmtInt.format(qtd)],
-      ["Peso total (kg)", fmtInt.format(Math.round(totalKg))],
-      ["Total em UN", fmtInt.format(Math.round(totalUn))],
-      ["Peso médio (kg/posição)", qtd ? fmtInt.format(Math.round(totalKg/qtd)) : "—"],
-    ].map(([lbl,val])=>`<div class="kpi"><div class="label">${lbl}</div><div class="value num">${val}</div></div>`).join("");
+      ["layers", "Posições", fmtInt.format(qtd)],
+      ["box", "Peso total (kg)", fmtInt.format(Math.round(totalKg))],
+      ["grid", "Total em UN", fmtInt.format(Math.round(totalUn))],
+      ["bars", "Peso médio (kg/posição)", qtd ? fmtInt.format(Math.round(totalKg/qtd)) : "—"],
+    ].map(([ic,lbl,val])=>kpiCard(ic,lbl,val)).join("");
 
     const {campo, dir} = sortState[cat];
     const ordenadas = [...linhas].sort((a,b)=>compararLinhas(a,b,campo,dir));

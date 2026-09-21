@@ -82,6 +82,12 @@ duplo clique e abre em qualquer navegador. É uma fotografia estática da
 atualizam na próxima rodada do script) — para compartilhar, é só enviar o
 arquivo `.html` (não precisa de servidor).
 
+Layout no estilo "torre de controle" de logística: barra escura no topo com
+o resumo da carga (data, arquivo de origem, total de posições), cartões de
+indicador com ícone, e as categorias de alerta com um ponto colorido na aba
+e uma faixa lateral colorida no cabeçalho do painel, seguindo a mesma escala
+de severidade das tabelas (crítico/atenção/ok).
+
 Os três filtros do topo (**Tipo de Depósito**, **Centro**, **Alerta**) são de
 **seleção múltipla** — clique no campo pra abrir a lista de caixinhas,
 marque quantos itens quiser (ou "Selecionar todos"/"Limpar"). Tudo na
