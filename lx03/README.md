@@ -157,6 +157,23 @@ que é mais útil para combinar categorias na Visão Geral).
   (filtros e botões somem automaticamente do resultado); escolher "Salvar
   como PDF" no destino gera um PDF da página como está, com o filtro atual
   aplicado.
+- **✉ Compartilhar por e-mail** — abre o programa de e-mail padrão com
+  assunto e corpo já preenchidos (data da última atualização e total de
+  posições). Se houver um link publicado do painel (ver "Compartilhar por
+  link", abaixo), ele entra automaticamente na mensagem; sem link, o texto
+  só lembra de anexar o arquivo `Painel_LX03.html` antes de enviar.
+
+### Compartilhar por link
+
+Além de mandar o arquivo `.html` direto (por e-mail, Teams, WhatsApp), dá
+pra publicar o painel como uma página com link, sem precisar de servidor
+próprio — é o que o botão "Compartilhar por e-mail" usa quando há um link
+configurado. Duas ressalvas de quem só abre pelo link (não valem para quem
+abre o arquivo `.html`):
+- É um link **privado** por padrão — só quem tiver acesso liberado consegue
+  abrir.
+- Os botões de **exportar/baixar dados não funcionam** nesse modo (só no
+  arquivo `.html`) — o link serve para consulta rápida, não para exportação.
 
 ### Atualizar sem rodar o script
 

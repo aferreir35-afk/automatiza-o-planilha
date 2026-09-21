@@ -301,6 +301,7 @@
       <input type="file" id="upload-input" accept=".xlsx" hidden>
       <button class="btn no-print" id="f-export-csv" type="button"><svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> Exportar dados filtrados (CSV)</button>
       <button class="btn primary no-print" id="f-print" type="button"><svg class="icon" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg> Imprimir / Salvar PDF</button>
+      <button class="btn no-print" id="f-email" type="button"><svg class="icon" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22 6 12 13 2 6"></polyline></svg> Compartilhar por e-mail</button>
     </div>
     <p class="active-note" id="active-note"></p>
     <p class="active-note no-print" id="upload-status" hidden></p>
@@ -609,6 +610,31 @@
     exportarCsv(`lx03_dados_completos_${hoje}.csv`, linhasFiltradas());
   });
   document.getElementById("f-print").addEventListener("click", ()=> window.print());
+
+  // ---- compartilhar por e-mail -------------------------------------------
+  // Atualize este link sempre que publicar uma nova versão do painel como
+  // Artifact (mesma URL a cada republicação pelo mesmo caminho de arquivo).
+  // Deixe "" se não houver link publicado — o e-mail então só lembra de
+  // anexar o arquivo .html.
+  const LINK_PAINEL = "https://claude.ai/artifact/TGAK8YT1znTvo3e2Yn9ZrZ";
+  document.getElementById("f-email").addEventListener("click", ()=>{
+    const assunto = `Painel de Estoque LX03 — Barry Callebaut (${DADOS.meta.ultima_atualizacao || "atualização"})`;
+    const linhas = [
+      "Segue o Painel de Estoque LX03 (Barry Callebaut).",
+      "",
+      `Atualizado em: ${DADOS.meta.ultima_atualizacao || "—"}`,
+      `Total de posições: ${fmtInt.format(DADOS.linhas.length)}`,
+      "",
+    ];
+    if(LINK_PAINEL){
+      linhas.push("Acesse o painel interativo pelo link abaixo:", LINK_PAINEL, "",
+        "(Esse link não baixa arquivo nenhum, só abre o painel no navegador de quem receber. Se preferir, também é possível anexar o arquivo Painel_LX03.html a este e-mail antes de enviar.)");
+    } else {
+      linhas.push("Antes de enviar, anexe o arquivo Painel_LX03.html a este e-mail — quem receber abre com duplo clique em qualquer navegador, sem precisar de internet.");
+    }
+    const corpo = linhas.join("\n");
+    window.location.href = `mailto:?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`;
+  });
 
   // ---- tela de detalhe ("ver todos os dados da LX03") -------------------
   // Um mesmo "modal" serve para qualquer recorte: clicar num cartão de
