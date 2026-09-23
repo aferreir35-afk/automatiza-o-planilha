@@ -2,7 +2,7 @@
 
 Uso:  python scripts/migrar_csv.py  (gera dados/base_migrada.json)
 
-Correções aplicadas (todas registradas em LOG_ALTERAÇÕES da planilha):
+Correções aplicadas (todas listadas em dados/correcoes_migracao.csv):
   * datas com dia/mês invertidos (ex.: 08/01/2026 entre 01/08 e 02/08) e ano com 2 dígitos;
   * números em formatos mistos (43127 / 28.054,00 / 24,039) -> toneladas;
   * turno em minúsculo, programação/medida/transportadora fora do padrão;
@@ -232,6 +232,12 @@ def main():
         })
 
     OUT.write_text(json.dumps({"registros": recs, "log": log}, ensure_ascii=False, indent=0))
+    line2id = {rec["linha_csv"]: f"TT-{i + 1:05d}" for i, rec in enumerate(recs)}
+    with open(ROOT / "dados" / "correcoes_migracao.csv", "w", newline="", encoding="utf-8-sig") as f:
+        w = csv.writer(f, delimiter=";")
+        w.writerow(["LINHA DO CSV ORIGINAL", "ID NA PLANILHA", "CAMPO", "VALOR ORIGINAL", "VALOR CORRIGIDO"])
+        for line, campo, de, para in log:
+            w.writerow([line or "", line2id.get(line, ""), campo, de, para])
     print(f"{len(recs)} registros migrados, {len(log)} correções registradas -> {OUT}")
 
 
