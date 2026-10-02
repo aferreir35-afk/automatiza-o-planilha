@@ -95,3 +95,11 @@ Regra usada: no 2008, valores negativos são transferências para o ZBR
 depois disso são estornos. Saldo calculado = Entradas − Saídas; Diferença =
 Estoque atual − Saldo calculado. Diferenças positivas costumam indicar
 estoque anterior a 09/09 (fora do período das abas).
+
+## Painel interativo
+
+[`painel/painel-zbr.html`](painel/painel-zbr.html) — painel (HTML, abre no
+navegador) com filtros por produto, lote, período, unidade e tipo de
+movimentação; indicadores de Entrou / Saiu / Deveria ter / Estoque físico /
+Diferença, gráfico diário, ranking de diferenças e abas Cruzamento,
+Lançamentos e Estoque físico.
