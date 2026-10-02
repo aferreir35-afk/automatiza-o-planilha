@@ -81,6 +81,11 @@ Material + Lote, só com fórmulas (`SUMIFS`/`COUNTIF`).
 - **Cruzamento por Material** e **Cruzamento por Lote**: Recebido no 2008,
   Entradas no ZBR, Saídas, Saldo calculado, Estoque atual, **Diferença**,
   Status e possível causa — ordenados da maior para a menor diferença.
+- **Consulta**: filtros de Data inicial/final, Material (lista) e Lote
+  (`*` = todos) com totais por UM e tabela por material no período escolhido.
+- **Movimentações**: entradas e saídas numa tabela única do Excel (com
+  botões de filtro) — Data de lançamento, Tipo, Material, Descrição, Lote,
+  Depósito, Quantidade, Entrada/Saída ZBR, Doc., Cliente e Usuário.
 
 Regra usada: no 2008, valores negativos são transferências para o ZBR
 (entradas); positivos até 15/09/2026 são chegadas da importação e positivos
