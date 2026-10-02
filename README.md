@@ -76,15 +76,17 @@ Cruza as abas **Entrada** (movimentos no depósito 2008), **Saida** (movimento
 601) e **Estoque atual** (depósitos 9999/0355/9991) por Material e por
 Material + Lote, só com fórmulas (`SUMIFS`/`COUNTIF`).
 
-- **Painel** (primeira aba, mesmo visual do painel HTML): filtros de
-  Produto, Lote, Data inicial/final, Unidade e Movimentação; quadros de
-  Entrou no ZBR, Saiu, Deveria ter, Estoque físico, Diferença e situação;
-  gráficos de movimentação por dia e maiores diferenças; tabela de
-  cruzamento que acompanha os filtros.
-- **Cruzamento**, **Lançamentos** e **Estoque físico**: as mesmas abas do
-  painel (uma linha por produto, cada movimento e cada posição no depósito).
-- Abas cinza (**Resumo**, **Cruzamento por Material/Lote**, **Entrada**,
-  **Saida**): detalhe técnico e dados de origem.
+Todas as abas trazem **SKU** e **Lote** lado a lado.
+
+- **Painel**: filtros em lista (SKU, Lote — só os lotes do SKU escolhido —,
+  Data inicial/final, Unidade, Movimentação), quadros Entrou / Saiu /
+  Deveria ter / Estoque físico / Diferença, contagem de SKU·lote que
+  conferem, sobram ou faltam, gráficos e tabela por SKU + lote.
+- **Cruzamento**: uma linha por SKU + lote, com Situação e O que fazer.
+- **Lançamentos**: cada movimento (Entrada, Saída, Recebido no 2008, Estorno).
+- **Estoque físico**: cada posição no depósito.
+- **Entrada** e **Saida** (cinza): dados originais do SAP.
+- Abas ocultas (Resumo, Cruzamento por Material/Lote): cálculos de apoio.
 
 Regra usada: no 2008, valores negativos são transferências para o ZBR
 (entradas); positivos até 15/09/2026 são chegadas da importação e positivos
