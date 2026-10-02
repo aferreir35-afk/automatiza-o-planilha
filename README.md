@@ -5,7 +5,12 @@ Arquivo principal: [`planilhas/ZBR_Importado_Relatorio_Gestao.xlsx`](planilhas/Z
 conciliação, plano de ação e dicionário de dados. Detalhes em
 [`docs/RELATORIO_GESTAO.md`](docs/RELATORIO_GESTAO.md).
 
-Gerar de novo: `python scripts/gerar_relatorio.py [origem.xlsx] [saida.xlsx]`.
+**Versão simples (para quem não é da área):** [`planilhas/ZBR_Importado_Versao_Simples.xlsx`](planilhas/ZBR_Importado_Versao_Simples.xlsx)
+— 5 abas (Comece Aqui, Produtos, O Que Fazer, Depósito 2008, Palavras), linguagem do dia a dia,
+mesmos números do relatório completo.
+
+Gerar de novo: `python scripts/gerar_relatorio.py [origem.xlsx] [saida.xlsx]` e depois
+`python scripts/gerar_versao_simples.py` (após recalcular o relatório completo).
 
 ---
 
