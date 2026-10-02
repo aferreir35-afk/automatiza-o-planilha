@@ -128,6 +128,7 @@ wsT.auto_filter.ref = f'A1:P{lastT}'
 wsT.freeze_panes = 'C2'
 
 # ranges
+SI = lambda col: f"SaldoInicial!${col}$2:${col}${MAXR}"  # noqa: E731
 E_MAT, E_LOT, E_Q, E_CL, E_ZBR = (f"Entrada!$B$2:$B${MAXR}", f"Entrada!$C$2:$C${MAXR}",
                                    f"Entrada!$G$2:$G${MAXR}", f"Entrada!${cK}$2:${cK}${MAXR}",
                                    f"Entrada!${cL}$2:${cL}${MAXR}")
@@ -168,7 +169,7 @@ def mdif(m):
 mats.sort(key=lambda m: (-round(abs(mdif(m)), 4), m))
 
 COLS = ['Recebido importação (2008)', 'Entradas ZBR (2008 → ZBR)', 'Saídas (601)',
-        'Saldo calculado (Entradas − Saídas)', 'Estoque atual', 'Diferença (Estoque − Calculado)',
+        'Saldo calculado (Saldo inicial + Entradas − Saídas)', 'Estoque atual', 'Diferença (Estoque − Calculado)',
         'Status', 'Possível causa', 'Recebido no 2008 ainda não transferido (Recebido − Entradas ZBR)']
 
 
@@ -191,19 +192,21 @@ def cross_sheet(ws, title, rows, by_lot):
             m, l = k
             vals = [m, l, um[k]]
             crit_e = f'{E_MAT},$A{r},{E_LOT},$B{r}'
+            crit_i = f'{SI("A")},$A{r},{SI("B")},$B{r}'
             crit_s = f'{S_MAT},$A{r},{S_LOT},$B{r}'
             crit_t = f'{T_MAT},$A{r},{T_LOT},$B{r}'
         else:
             m = k
             vals = [m, next(u for (mm, _), u in um.items() if mm == m)]
             crit_e, crit_s, crit_t = f'{E_MAT},$A{r}', f'{S_MAT},$A{r}', f'{T_MAT},$A{r}'
+            crit_i = f'{SI("A")},$A{r}'
         for c, v in enumerate(vals, 1):
             ws.cell(row=r, column=c, value=v).font = BASE
         f = {
             1: f'=SUMIFS({E_Q},{crit_e},{E_CL},"Recebido no 2008")',
             2: f'=SUMIFS({E_ZBR},{crit_e})',
             3: f'=SUMIFS({S_Q},{crit_s})',
-            4: f'={L(2)}{r}-{L(3)}{r}',
+            4: f'=SUMIFS({SI("E")},{crit_i})-SUMIFS({SI("E")},{crit_i},{SI("C")},"2008")+{L(2)}{r}-{L(3)}{r}',
             5: f'=SUMIFS({T_Q},{crit_t})',
             6: f'=ROUND({L(5)}{r}-{L(4)}{r},3)',
             7: (f'=IF(ABS({L(6)}{r})<=Resumo!$C$7,"OK",IF({L(6)}{r}>0,'
@@ -554,7 +557,7 @@ for j, (lab, key, fill, tx) in enumerate(CARD):
         cc.alignment = Alignment(horizontal='left', vertical='center', indent=1)
 wsA.row_dimensions[10].height = 34
 AH = ['SKU', 'Lote', 'Descrição', 'UM', 'Entrou', 'Saiu', 'Deveria ter', 'Estoque físico', 'Diferença',
-      'Situação', 'Motivo da diferença', 'Solução de ajuste (sugestão)', 'Estoque antigo (antes de 09/09)',
+      'Situação', 'Motivo da diferença', 'Solução de ajuste (sugestão)', 'Estoque antigo (antes de 09/09, além do saldo inicial)',
       'Em doca / chão / transferência', 'Diferença sem explicação', 'Saídas pelo depósito 0355']
 header(wsA, HR, AH, [20, 13, 30, 6, 12, 12, 13, 14, 12, 12, 66, 80, 15, 15, 15, 15])
 LV = lambda col: f"'Lançamentos'!${col}$2:${col}${lastV}"  # noqa: E731
@@ -572,11 +575,11 @@ for r, (m, lt) in enumerate(lots_ord, HR + 1):
     crit = f'{cl("A")},$A{r},{cl("B")},$B{r}'
     wsA.cell(row=r, column=5, value=f'=SUMIFS({cl("E")},{crit})')
     wsA.cell(row=r, column=6, value=f'=SUMIFS({cl("F")},{crit})')
-    wsA.cell(row=r, column=7, value=f'=E{r}-F{r}')
+    wsA.cell(row=r, column=7, value=f'=U{r}+E{r}-F{r}')
     wsA.cell(row=r, column=8, value=f'=SUMIFS({cl("H")},{crit})')
     wsA.cell(row=r, column=9, value=f'=ROUND(H{r}-G{r},2)')
     wsA.cell(row=r, column=10, value=f'=IF(ABS(I{r})<=Resumo!$C$7,"Confere",IF(I{r}>0,"Sobrando","Faltando"))')
-    wsA.cell(row=r, column=13, value=f'=SUMIFS({ES("J")},{ES("A")},$A{r},{ES("B")},$B{r},{ES("I")},"<"&DATE(2026,9,9))')
+    wsA.cell(row=r, column=13, value=f'=MAX(0,SUMIFS({ES("J")},{ES("A")},$A{r},{ES("B")},$B{r},{ES("I")},"<"&DATE(2026,9,9))-U{r})')
     wsA.cell(row=r, column=14, value=(f'=SUMPRODUCT(({ES("A")}=$A{r})*({ES("B")}=$B{r})*({ES("I")}>=DATE(2026,9,9))'
                                       f'*ISNUMBER(MATCH({ES("C")},{{"DCK","TRF","922","FLR","DIF"}},0))*{ES("J")})'))
     troca = (f'AND(J{r}<>"Confere",SUMPRODUCT(($A${L0}:$A${L1}=$A{r})*($B${L0}:$B${L1}<>$B{r})'
@@ -594,7 +597,7 @@ for r, (m, lt) in enumerate(lots_ord, HR + 1):
         f'IF(AND(F{r}>0,ABS(I{r}-M{r}-N{r}-F{r})<={tol}),IF(M{r}+N{r}>0,"Estoque antigo/doca + saídas do período que","Saídas do período que")&" não baixaram o estoque físico",'
         f'IF(AND(P{r}>0,ABS(I{r}-M{r}-N{r}-P{r})<={tol}),IF(M{r}+N{r}>0,"Estoque antigo/doca + saídas","Saídas")&" pelo depósito 0355 que não baixaram o estoque físico",'
         f'IF(M{r}+N{r}>0,"Explica em parte: estoque antigo "&FIXED(M{r},1)&" + doca/transferência "&FIXED(N{r},1)&"; faltam "&FIXED(I{r}-M{r}-N{r},1)&" a explicar",'
-        f'IF(F{r}>E{r},"Saiu mais do que entrou: havia estoque antes de 09/09 que não está no arquivo",'
+        f'IF(F{r}>E{r}+U{r},"Saiu mais do que entrou: havia estoque antes de 09/09 que não está no arquivo",'
         f'"Estoque acima do esperado: entrada não lançada ou saldo anterior ao período"))))))))))))'))
     wsA.cell(row=r, column=16, value=f'=SUMIFS({SB(cSq)},{SB("B")},$A{r},{SB("C")},$B{r},{SB("E")},"0355")')
     q = lambda x: f'FIXED(ABS({x}),1)&" "&D{r}'  # noqa: E731
@@ -721,7 +724,8 @@ for r, (m, lt) in enumerate(master, M0):
     wsP[f'W{r}'] = f'=SUMIFS({EB(cL)},{ce})'
     wsP[f'X{r}'] = f'=SUMIFS({SB(cSq)},{cs})'
     wsP[f'Y{r}'] = f'=SUMIFS({T_Q},{T_MAT},$T{r},{T_LOT},$AG{r})'
-    wsP[f'Z{r}'] = f'=ROUND(Y{r}-(W{r}-X{r}),3)'
+    wsP[f'BH{r}'] = f'=SUMIFS({SI("E")},{SI("A")},$T{r},{SI("B")},$AG{r})-SUMIFS({SI("E")},{SI("A")},$T{r},{SI("B")},$AG{r},{SI("C")},"2008")'
+    wsP[f'Z{r}'] = f'=ROUND(Y{r}-(BH{r}+W{r}-X{r}),3)'
     wsP[f'AA{r}'] = (f'=IF(AND(U{r}=$R$3,OR($R$1="*",T{r}=$R$1),OR($R$2="*",AG{r}=$R$2),OR($R$6="*",AC{r}=$R$6),'
                      f'ABS(V{r})+ABS(W{r})+ABS(X{r})+ABS(Y{r})>0),1,0)')
     wsP[f'BE{r}'] = f"='Cruzamento'!Q{HR + 1 + r - M0}"
@@ -800,14 +804,14 @@ for a in ('F5', 'H5'):
     wsP[a].number_format = 'DD/MM/YYYY'
 for a in ('A5', 'D5', 'F5', 'H5', 'J5', 'K5'):
     wsP[a].fill = PatternFill('solid', fgColor=ZEBRA)
-for col in ['R', 'S'] + [get_column_letter(i) for i in range(20, 60)]:
+for col in ['R', 'S'] + [get_column_letter(i) for i in range(20, 61)]:
     wsP.column_dimensions[col].hidden = True
 
 
 # --- quadros (linhas 9-11) ---
 TILES = [('A', 'B', '="ENTROU · "&$R$3', f'=SUMPRODUCT({MR("AA")},{MR("W")})', 'transferido do 2008 para o ZBR', C_ENT),
          ('C', 'E', '="SAIU · "&$R$3', f'=SUMPRODUCT({MR("AA")},{MR("X")})', 'vendas e entregas', C_SAI),
-         ('F', 'G', '="DEVERIA TER · "&$R$3', '=A10-C10', 'entrou − saiu', None),
+         ('F', 'G', '="DEVERIA TER · "&$R$3', f'=SUMPRODUCT({MR("AA")},{MR("BH")})+A10-C10', 'saldo inicial + entrou − saiu', None),
          ('H', 'I', '="ESTOQUE FÍSICO · "&$R$3', f'=SUMPRODUCT({MR("AA")},{MR("Y")})', 'o que tem no depósito hoje', None),
          ('J', 'K', '="DIFERENÇA · "&$R$3', '=ROUND(H10-F10,3)',
           '=IF(OR(F5<>DATE(2026,9,9),H5<>DATE(2026,10,1)),"período parcial: compare com cuidado",'
@@ -844,7 +848,7 @@ for rr in (9, 10, 11):
 
 # --- tabela por SKU e lote: cabeçalho congelado e com filtro ---
 T0 = 13
-PH = ['SKU', 'Lote', 'UM', 'Recebido 2008', 'Entrou', 'Saiu', 'Deveria ter', 'Estoque físico', 'Diferença',
+PH = ['SKU', 'Lote', 'UM', 'Saldo inicial 08/09', 'Entrou', 'Saiu', 'Deveria ter', 'Estoque físico', 'Diferença',
       'Situação', 'Lançamentos', '1º lançamento', 'Último lançamento', 'Motivo da diferença', 'Solução de ajuste (sugestão)']
 for i, h in enumerate(PH, 1):
     cell = wsP.cell(row=T0, column=i, value=h.upper())
@@ -858,9 +862,9 @@ for k in range(1, len(master) + 1):
     r = T0 + k
     idx = f'IFERROR(MATCH({k},{MR("AB")},0),0)'
     g = lambda col: f'=IF({idx}=0,"",INDEX({MR(col)},{idx}))'  # noqa: E731
-    for col, src in zip('ABCDEF', ('T', 'AG', 'U', 'V', 'W', 'X')):
+    for col, src in zip('ABCDEF', ('T', 'AG', 'U', 'BH', 'W', 'X')):
         wsP[f'{col}{r}'] = g(src)
-    wsP[f'G{r}'] = f'=IF(A{r}="","",E{r}-F{r})'
+    wsP[f'G{r}'] = f'=IF(A{r}="","",D{r}+E{r}-F{r})'
     wsP[f'H{r}'], wsP[f'I{r}'], wsP[f'J{r}'], wsP[f'K{r}'] = g('Y'), g('Z'), g('AC'), g('AD')
     wsP[f'L{r}'] = f'=IF({idx}=0,"",IF(INDEX({MR("BB")},{idx})>=99999,"",INDEX({MR("BB")},{idx})))'
     wsP[f'M{r}'] = f'=IF({idx}=0,"",IF(INDEX({MR("BC")},{idx})=0,"",INDEX({MR("BC")},{idx})))'
@@ -1032,7 +1036,8 @@ for r, (m, lt) in enumerate(pairs8, Q0):
     w8[f'V{r}'] = f'=SUMIFS({EN("G")},{c},{EN(cK)},"Recebido no 2008")'
     w8[f'W{r}'] = f'=-SUMIFS({EN("G")},{c},{EN(cK)},"Entrada")'
     w8[f'X{r}'] = f'=SUMIFS({EN("G")},{c},{EN(cK)},"Estorno")'
-    w8[f'Y{r}'] = f'=ROUND(V{r}-W{r}+X{r},3)'
+    w8[f'BA{r}'] = f'=SUMIFS({SI("E")},{SI("A")},$T{r},{SI("B")},$AG{r},{SI("C")},"2008")'
+    w8[f'Y{r}'] = f'=ROUND(BA{r}+V{r}-W{r}+X{r},3)'
     w8[f'AB{r}'] = (f'=IF(ABS(Y{r})<=$R$5,"{SIT8[1]}",IF(Y{r}>0,"{SIT8[0]}","{SIT8[2]}"))')
     w8[f'Z{r}'] = (f'=IF(AND(U{r}=$R$3,OR($R$1="*",T{r}=$R$1),OR($R$2="*",AG{r}=$R$2),'
                    f'OR($K$5="Todas",AB{r}=$K$5),ABS(V{r})+ABS(W{r})+ABS(X{r})>0),1,0)')
@@ -1090,7 +1095,7 @@ for col in ['R', 'S'] + [get_column_letter(i) for i in range(20, 53)]:
 T8 = [('A', 'B', '="RECEBIDO NO 2008 · "&$R$3', f'=SUMPRODUCT({Q("Z")},{Q("V")})', 'chegada da importação', C_REC),
       ('C', 'E', '="TRANSFERIDO AO ZBR · "&$R$3', f'=SUMPRODUCT({Q("Z")},{Q("W")})', 'saiu do 2008 para venda', C_ENT),
       ('F', 'G', '="ESTORNOS · "&$R$3', f'=SUMPRODUCT({Q("Z")},{Q("X")})', 'voltou para o 2008', None),
-      ('H', 'I', '="SALDO NO 2008 · "&$R$3', '=ROUND(A10-C10+F10,3)', 'recebido − transferido + estornos', None),
+      ('H', 'I', '="SALDO NO 2008 · "&$R$3', f'=ROUND(SUMPRODUCT({Q("Z")},{Q("BA")})+A10-C10+F10,3)', 'saldo inicial + recebido − transferido + estornos', None),
       ('J', 'K', 'LANÇAMENTOS', f'=SUMPRODUCT({Q("Z")},{Q("AC")})', 'movimentos no 2008', None)]
 for a, b, lab, val, hint, mk in T8:
     card8(9, ord(a) - 64, 11, ord(b) - 64)
@@ -1380,7 +1385,7 @@ for n, (orig, (m, lt)) in enumerate(occ, 1):
         wpA[f'F{r}'] = f'="Importação recebida no 2008 aguardando transferência: "&FIXED(I{r},1)&" "&E{r}'
         wpA[f'G{r}'] = 'Recebido no depósito 2008 e ainda não transferido para o ZBR (saldo pelo movimento do período)'
         wpA[f'H{r}'] = f'=IF(I{r}<={TOLR},"Nada a fazer: saldo zerado","Transferir "&FIXED(I{r},1)&" "&E{r}&" do 2008 para o ZBR (verificar OT aberta)")'
-        wpA[f'I{r}'] = f'=SUMIFS({EB("G")},{EB("B")},C{r},{EB("C")},D{r})'
+        wpA[f'I{r}'] = f'=SUMIFS({EB("G")},{EB("B")},C{r},{EB("C")},D{r})+SUMIFS({SI("E")},{SI("A")},C{r},{SI("B")},D{r},{SI("C")},"2008")'
         wpA[f'J{r}'] = f'=IF(I{r}<={TOLR},"Baixa",IF(I{r}>={P_2008},"Alta","Média"))'
     wpA[f'K{r}'] = 'Pendente de preenchimento'
     wpA[f'L{r}'] = f'={P_DATA}'
@@ -1503,7 +1508,7 @@ wd.conditional_formatting.add('I9', FormulaRule(formula=['$I$9<0.7'], font=Font(
 cell(wd, 'A12', '="QUANTIDADES · "&Painel!$R$3', size=11, bold=True, color=CORP)
 kpi(wd, 13, 'A', 'C', 'ENTROU NO ZBR', f'=SUMPRODUCT({PF("AA")},{PF("W")})', 'transferido do 2008')
 kpi(wd, 13, 'D', 'F', 'SAIU', f'=SUMPRODUCT({PF("AA")},{PF("X")})', 'vendas e entregas (601)')
-kpi(wd, 13, 'G', 'I', 'DEVERIA TER', '=A14-D14', 'entrou − saiu')
+kpi(wd, 13, 'G', 'I', 'DEVERIA TER', f'=SUMPRODUCT({PF("AA")},{PF("BH")})+A14-D14', 'saldo inicial + entrou − saiu')
 kpi(wd, 13, 'J', 'L', 'ESTOQUE FÍSICO', f'=SUMPRODUCT({PF("AA")},{PF("Y")})', 'posição atual no depósito')
 kpi(wd, 13, 'M', 'N', 'DIFERENÇA', '=ROUND(J14-G14,3)', 'físico − deveria ter', fmt='+#,##0.0;-#,##0.0;0', accent=ATT_C)
 kpi(wd, 13, 'O', 'P', 'AGUARDANDO NO 2008',
@@ -1715,7 +1720,7 @@ CONC = [
     f'="Maior ocorrência: SKU "&B{r_top}&" lote "&C{r_top}&", "&FIXED(F{r_top},1)&" "&D{r_top}&" sem explicação ("&G{r_top}&")."',
     f'="Depósito 2008: "&FIXED(C{r_08 + 5},1)&" KG de importação aguardam transferência para o ZBR em "&C{r_08 + 4}&" lotes."',
     f'="Plano de ação: "&(C{r_pl}-C{r_pl + 3})&" ações em aberto; "&C{r_pl + 6}&" sem responsável definido."',
-    'As sobras podem incluir estoque anterior a 09/09, que não consta no arquivo de origem: confirmar o saldo inicial no SAP antes de lançar ajustes.']
+    f'=IF(SUM({SI("E")})=0,"Saldo inicial de 08/09 ainda não informado: as sobras podem ser estoque anterior a 09/09. Preencha a aba 3 Base Saldo Inicial 08-09 (ou carregue pelo Power Query) para refinar as diferenças.","Saldo inicial de 08/09 informado ("&FIXED(SUM({SI("E")}),1)&") e já considerado no Deveria ter.")']
 for t in CONC:
     c = cell(wr, f'B{row}', t, size=10, color=INK)
     wr.merge_cells(f'B{row}:I{row}')
@@ -1764,7 +1769,9 @@ SHEETS_DOC = [
     ('4 Análise Depósito 2008', 'Recebido, transferido, estornos e saldo do 2008 por SKU + lote, situação e próximo passo; gráficos do 2008 abaixo da tabela.', '3 Base Entrada 2008'),
     ('5 Conciliação', 'Conciliação do período completo por SKU + lote: diferença, motivo, solução, componentes da explicação, categoria e criticidade.', 'Bases (via abas auxiliares ocultas)'),
     ('6 Plano de Ação', 'Ocorrências com causa, ação, prioridade, responsável, prazos, status e alertas de vencimento.', '5 Conciliação + 3 Base Entrada 2008 + preenchimento manual'),
+    ('3 Base Saldo Inicial 08-09', 'Estoque de 08/09 por SKU + lote + depósito (tabela tbSaldoInicial). Vazia até ser preenchida; quando preenchida entra no Deveria ter (ZBR) e no saldo do 2008.', 'Extração SAP de estoque por data (ex.: MB5B) ou consulta qSaldoInicial'),
     ('7 Dicionário de Dados', 'Este documento.', '—'),
+    ('8 Atualizar Dados', 'Passo a passo e código das consultas Power Query para importar a extração SAP com Dados > Atualizar Tudo.', 'Pasta powerquery/ do repositório'),
     ('Parâmetros', 'Data-limite de recebimento, tolerância, limites de criticidade, data do relatório e data de referência. Conferência de totais.', 'Edição manual'),
     ('aux Conciliação Material / aux Conciliação Lote (ocultas)', 'Cálculos intermediários da conciliação (SUMIFS direto nas bases).', 'Bases')]
 dsec('1. Mapa das abas', ['Aba', 'Finalidade', 'Origem dos dados'], [(a, b, c) for a, b, c in SHEETS_DOC])
@@ -1775,7 +1782,8 @@ FIELDS = [
     ('3 Base Entrada 2008', 'Movimentação', 'Recebido no 2008 (positivo até a data-limite), Entrada (negativo = transferência para o ZBR) ou Estorno (positivo após a data-limite).', 'Fórmula; data-limite em Parâmetros!C6'),
     ('3 Base Entrada 2008', 'Entrou no ZBR', 'Quantidade que entrou no ZBR: −Quantidade, exceto recebimentos (0). Estornos entram negativos.', 'Fórmula'),
     ('3 Base Saídas', 'Saiu', 'Quantidade positiva da saída 601 (−Quantidade).', 'Fórmula'),
-    ('4 Análise ZBR / 5 Conciliação', 'Entrou / Saiu / Deveria ter', 'Entrou no ZBR, saídas 601 e Deveria ter = Entrou − Saiu.', 'SUMIFS nas bases'),
+    ('4 Análise ZBR / 5 Conciliação', 'Entrou / Saiu / Deveria ter', 'Entrou no ZBR, saídas 601 e Deveria ter = Saldo inicial 08/09 (ZBR) + Entrou − Saiu.', 'SUMIFS nas bases'),
+    ('4 Análise ZBR / 5 Conciliação', 'Saldo inicial 08/09', 'Estoque de 08/09 nos depósitos do ZBR (todos menos o 2008), da aba 3 Base Saldo Inicial.', 'SUMIFS; zero enquanto a base estiver vazia'),
     ('4 Análise ZBR / 5 Conciliação', 'Estoque físico', 'Soma do estoque total das posições do SKU + lote (inclui doca e transferência).', 'SUMIFS na base de estoque'),
     ('4 Análise ZBR / 5 Conciliação', 'Diferença', 'Estoque físico − Deveria ter. Zero (± tolerância) = Confere; positivo = Sobrando; negativo = Faltando.', 'Tolerância em Parâmetros!C7'),
     ('5 Conciliação', 'Estoque antigo (antes de 09/09)', 'Estoque em posições cujo último movimento é anterior a 09/09/2026.', 'SUMIFS por data do último movimento'),
@@ -1803,15 +1811,16 @@ CRIT_DOC = [
     ('Baixa', 'Diferença totalmente explicada pelos dados (ex.: troca de lote, estoque antigo, doca).', '—', 'PROPOSTA — validar com a gestão')]
 dsec('4. Critérios de criticidade (proposta para validação)', ['Nível', 'Critério', 'Parâmetro', 'Status'], CRIT_DOC)
 UPD = [
-    ('1', 'Exporte do SAP as três listas (Entrada do 2008, Saídas 601, Estoque atual) com as mesmas colunas.', '', ''),
-    ('2', 'Cole os dados nas abas 3 Base (a partir da linha 2), mantendo a ordem das colunas. As fórmulas cobrem até a linha 5.000.', 'Copie também as fórmulas das colunas calculadas (Movimentação, Entrou no ZBR, Saiu) para as linhas novas.', ''),
-    ('3', 'Os indicadores, a conciliação e o plano se recalculam sozinhos para os SKU·lote já existentes.', '', ''),
-    ('4', 'SKU·lote novos só aparecem nas tabelas de análise depois de gerar o relatório de novo com o script scripts/gerar_relatorio.py do repositório.', 'Comando: python scripts/gerar_relatorio.py arquivo_sap.xlsx saida.xlsx', ''),
-    ('5', 'Atualize os parâmetros (data-limite, limites de criticidade, data do relatório) se necessário.', '', '')]
+    ('1', 'Recomendado: Power Query. Siga a aba 8 Atualizar Dados (uma vez); depois, a cada extração, Dados > Atualizar Tudo.', 'Código em powerquery/*.pq', ''),
+    ('2', 'Inclua na extração do SAP a aba "Saldo inicial" com o estoque de 08/09 por material, lote e depósito.', 'Sem ela, a análise funciona, mas sobras podem ser saldo inicial.', ''),
+    ('3', 'Sem Power Query: cole os dados nas abas 3 Base a partir da linha 2, mesma ordem de colunas, e copie as fórmulas das colunas calculadas.', 'As fórmulas cobrem até a linha 5.000.', ''),
+    ('4', 'Indicadores, conciliação e plano se recalculam sozinhos para os SKU·lote existentes.', '', ''),
+    ('5', 'SKU·lote novos entram nas análises ao gerar o relatório de novo: python scripts/gerar_relatorio.py arquivo_sap.xlsx saida.xlsx', '', '')]
 dsec('5. Como atualizar a base', ['Passo', 'O que fazer', 'Observação', ''], UPD)
 LIM = [
-    ('Saldo inicial', 'O arquivo de origem não traz o estoque antes de 09/09 nem a foto do estoque do 2008. Sobras podem ser saldo inicial.', 'Recomendação: incluir a posição de estoque de 08/09 na próxima extração.', ''),
-    ('Linhas de análise', 'As listas de SKU·lote das análises são geradas pelo script. Novos SKU·lote exigem gerar o relatório de novo.', 'Recomendação: migrar a importação para Power Query.', ''),
+    ('Saldo inicial', 'A extração atual não traz o estoque de 08/09. A aba 3 Base Saldo Inicial 08-09 já está pronta e integrada aos cálculos; falta preenchê-la.', 'Incluir a aba "Saldo inicial" na próxima extração do SAP (consulta qSaldoInicial).', ''),
+    ('Linhas de análise', 'As listas de SKU·lote das análises são geradas pelo script. Novos SKU·lote exigem gerar o relatório de novo.', 'A importação já tem consultas Power Query prontas (aba 8 Atualizar Dados).', ''),
+    ('Power Query', 'As consultas foram escritas e revisadas, mas não puderam ser executadas aqui (o Power Query só roda no Excel). Teste na primeira carga.', '', ''),
     ('Tabela/Gráfico Dinâmico', 'Não foram usados Tabelas Dinâmicas nem segmentações (slicers): a geração automática não as suporta de forma confiável. Os filtros são listas suspensas ligadas a fórmulas.', 'Os gráficos acompanham os filtros do Dashboard.', ''),
     ('Responsável', 'O filtro por responsável está disponível no cabeçalho da tabela do Plano de Ação (não há responsável nos dados do SAP).', '', ''),
     ('Armazém', 'A análise considera o centro BR01 e os depósitos ZBR (9999/0355) juntos; não há filtro por depósito.', '', ''),
@@ -1857,12 +1866,150 @@ for r in range(2, lastE + 1):
 for r in range(2, lastS + 1):
     wsS[f'{cSq}{r}'].font = Font(name=F, size=10, color=CORP)
 
+# ---------- SALDO INICIAL 08/09 (base para preencher com a extração do SAP) ----------
+wsI = wb.create_sheet('SaldoInicial')
+wsI.sheet_view.showGridLines = False
+for i, (h, w) in enumerate(zip(['SKU', 'LOTE', 'DEPÓSITO', 'UM', 'QUANTIDADE', 'OBSERVAÇÃO'], [20, 14, 11, 7, 14, 30]), 1):
+    hdr(wsI, 1, i, h)
+    wsI.column_dimensions[get_column_letter(i)].width = w
+for c in range(1, 7):
+    wsI.cell(row=2, column=c).font = Font(name=F, size=10, color=INK)
+wsI['E2'].number_format = NUM
+tI = XTable(displayName='tbSaldoInicial', ref='A1:F2')
+tI.tableStyleInfo = XStyle(name='TableStyleLight1', showRowStripes=False)
+wsI.add_table(tI)
+wsI.freeze_panes = 'A2'
+wsI.column_dimensions['H'].width = 80
+for i, t in enumerate([
+        'COMO PREENCHER',
+        'Cole aqui o estoque de cada SKU + lote + depósito em 08/09/2026 (dia anterior ao primeiro movimento).',
+        'Fonte sugerida no SAP: estoque por data (ex.: MB5B) por material, lote e depósito, ou carregue pela consulta qSaldoInicial (aba 8 Atualizar Dados).',
+        'Depósito 2008 → entra no saldo do 4 Análise Depósito 2008. Demais depósitos (9999, 0355…) → entram no Deveria ter do ZBR.',
+        'Enquanto estiver vazia, a análise funciona como antes (sem saldo inicial).',
+        '="Saldo inicial informado: "&FIXED(SUM(E2:E5000),1)&" (somando todas as unidades) em "&COUNTA(A2:A5000)&" linhas."'], 1):
+    c = wsI.cell(row=i, column=8, value=t)
+    c.font = Font(name=F, size=10 if i > 1 else 11, bold=(i in (1, 6)), color=CORP if i in (1, 6) else INK)
+    c.alignment = Alignment(wrap_text=True, vertical='top')
+
+# ---------- parâmetros para o Power Query ----------
+cell(res, 'J13', 'Caminho completo do arquivo SAP (usado pelo Power Query)')
+cP = cell(res, 'K13', 'COLE AQUI O CAMINHO DO ARQUIVO SAP', bold=True, color=CORP, fill=INPUT)
+cP.border = INBOX
+res.column_dimensions['K'].width = 46
+wb.defined_names['CaminhoSAP'] = DefinedName('CaminhoSAP', attr_text='Resumo!$K$13')
+wb.defined_names['DataLimiteRecebimento'] = DefinedName('DataLimiteRecebimento', attr_text='Resumo!$C$6')
+
+# ---------- consultas Power Query (M) ----------
+PQ_HEAD = '''    Caminho = Excel.CurrentWorkbook(){[Name = "CaminhoSAP"]}[Content]{0}[Column1],
+    Fonte = Excel.Workbook(File.Contents(Caminho), null, true),'''
+PQ = {
+ 'qEntrada2008': ('3 Base Entrada 2008', 'Entrada ', f'''let
+{PQ_HEAD}
+    DataLimite = Date.From(Excel.CurrentWorkbook(){{[Name = "DataLimiteRecebimento"]}}[Content]{{0}}[Column1]),
+    Aba = Fonte{{[Item = "Entrada ", Kind = "Sheet"]}}[Data],
+    Cabecalho = Table.PromoteHeaders(Aba, [PromoteAllScalars = true]),
+    Tipos = Table.TransformColumnTypes(Cabecalho, {{{{"Doc.material", type text}}, {{"Material", type text}}, {{"Lote", type text}}, {{"Depósito", type text}}, {{"Centro", type text}}, {{"Data de lançamento", type date}}, {{"Quantidade", type number}}, {{"UM básica", type text}}, {{"Data de entrada", type date}}, {{"Hora do registro", type time}}}}),
+    SemTotais = Table.SelectRows(Tipos, each [Material] <> null and [Material] <> ""),
+    Movimentacao = Table.AddColumn(SemTotais, "Movimentação", each if [Quantidade] > 0 and [Data de lançamento] <= DataLimite then "Recebido no 2008" else if [Quantidade] < 0 then "Entrada" else "Estorno", type text),
+    EntrouZBR = Table.AddColumn(Movimentacao, "Entrou no ZBR", each if [Movimentação] = "Recebido no 2008" then 0 else -[Quantidade], type number),
+    Final = Table.RenameColumns(EntrouZBR, {{{{"Material", "SKU"}}, {{"UM básica", "UM"}}}})
+in
+    Final'''),
+ 'qSaidas': ('3 Base Saídas', 'Saida', f'''let
+{PQ_HEAD}
+    Aba = Fonte{{[Item = "Saida", Kind = "Sheet"]}}[Data],
+    Cabecalho = Table.PromoteHeaders(Aba, [PromoteAllScalars = true]),
+    Tipos = Table.TransformColumnTypes(Cabecalho, {{{{"Doc.material", type text}}, {{"Material", type text}}, {{"Lote", type text}}, {{"Depósito", type text}}, {{"Centro", type text}}, {{"Data de lançamento", type date}}, {{"Quantidade", type number}}, {{"Data de entrada", type date}}, {{"Tipo de movimento", type text}}, {{"Referência", type text}}, {{"Cliente", type text}}}}),
+    SemTotais = Table.SelectRows(Tipos, each [Material] <> null and [Material] <> ""),
+    Saiu = Table.AddColumn(SemTotais, "Saiu", each -[Quantidade], type number),
+    Final = Table.RenameColumns(Saiu, {{{{"Material", "SKU"}}, {{"Texto breve de material", "Descrição"}}, {{"UM básica", "UM"}}}})
+in
+    Final'''),
+ 'qEstoque': ('3 Base Estoque Físico', 'Estoque atual', f'''let
+{PQ_HEAD}
+    Aba = Fonte{{[Item = "Estoque atual", Kind = "Sheet"]}}[Data],
+    Cabecalho = Table.PromoteHeaders(Aba, [PromoteAllScalars = true]),
+    Tipos = Table.TransformColumnTypes(Cabecalho, {{{{"Material", type text}}, {{"Lote", type text}}, {{"Tipo de depósito", type text}}, {{"Posição no depósito", type text}}, {{"Estoque total", type number}}, {{"Último movimento", type date}}, {{"Depósito", type text}}, {{"Data do vencimento", type date}}}}),
+    SemVazia = Table.RemoveColumns(Tipos, {{"Inventário ativo"}}, MissingField.Ignore),
+    Primeiras = {{"Material", "Lote", "Tipo de depósito", "Posição no depósito"}},
+    Ordenado = Table.ReorderColumns(SemVazia, Primeiras & List.RemoveItems(Table.ColumnNames(SemVazia), Primeiras)),
+    Final = Table.RenameColumns(Ordenado, {{{{"Material", "SKU"}}, {{"Estoque total", "Estoque físico"}}, {{"UM básica", "UM"}}}})
+in
+    Final'''),
+ 'qSaldoInicial': ('3 Base Saldo Inicial 08-09', 'Saldo inicial', f'''let
+{PQ_HEAD}
+    Aba = Fonte{{[Item = "Saldo inicial", Kind = "Sheet"]}}[Data],
+    Cabecalho = Table.PromoteHeaders(Aba, [PromoteAllScalars = true]),
+    Colunas = Table.SelectColumns(Cabecalho, {{"Material", "Lote", "Depósito", "UM básica", "Quantidade"}}),
+    Tipos = Table.TransformColumnTypes(Colunas, {{{{"Material", type text}}, {{"Lote", type text}}, {{"Depósito", type text}}, {{"UM básica", type text}}, {{"Quantidade", type number}}}}),
+    SemVazias = Table.SelectRows(Tipos, each [Material] <> null and [Material] <> ""),
+    Obs = Table.AddColumn(SemVazias, "Observação", each "SAP 08/09", type text),
+    Final = Table.RenameColumns(Obs, {{{{"Material", "SKU"}}, {{"UM básica", "UM"}}}})
+in
+    Final'''),
+}
+PQ_DIR = RAIZ / 'powerquery'
+PQ_DIR.mkdir(exist_ok=True)
+for qn, (_, _, code) in PQ.items():
+    (PQ_DIR / f'{qn}.pq').write_text(code + '\n', encoding='utf-8')
+
+wq = wb.create_sheet('Atualizar')
+wq.sheet_view.showGridLines = False
+wq.column_dimensions['A'].width = 4
+wq.column_dimensions['B'].width = 150
+title_block(wq, 'Atualizar Dados (Power Query)', 'Importação da extração do SAP com 1 clique: Dados > Atualizar Tudo', 2)
+STEPS = ['PASSO A PASSO (fazer uma vez)',
+         '1. Na aba Parâmetros, cole em K13 o caminho completo do arquivo exportado do SAP (ex.: pasta de rede + nome do arquivo .xlsx).',
+         '2. O arquivo SAP deve ter as abas "Entrada " (com espaço no fim, como hoje), "Saida", "Estoque atual" e, se houver, "Saldo inicial" (estoque de 08/09).',
+         '3. Excel: Dados > Obter Dados > De Outras Fontes > Consulta Nula. Na consulta: Página Inicial > Editor Avançado > apague tudo e cole o código abaixo.',
+         '4. Dê à consulta o nome indicado (ex.: qEntrada2008) e clique em Fechar e Carregar Para… > Tabela > Planilha existente > célula A1 da aba indicada.',
+         '   Antes de carregar, limpe o conteúdo da tabela antiga da aba (selecione as células e tecle Delete; não exclua colunas).',
+         '5. Repita para as 4 consultas. Depois, a cada nova extração: substitua o arquivo SAP e clique em Dados > Atualizar Tudo.',
+         'OBSERVAÇÕES',
+         '• As colunas calculadas (Movimentação, Entrou no ZBR, Saiu) já saem prontas da consulta; a ordem das colunas é a mesma das abas atuais, então todas as fórmulas continuam valendo.',
+         '• Valores de SKU·lote já existentes se atualizam sozinhos. SKU·lote novos aparecem nas bases, mas entram nas abas de análise ao gerar o relatório de novo (scripts/gerar_relatorio.py).',
+         '• Os códigos também estão no repositório, pasta powerquery/. Foram escritos para o Excel 365/2019 e devem ser testados na primeira carga.']
+r = 4
+for t in STEPS:
+    c = cell(wq, f'B{r}', t, size=11 if t.isupper() else 10, bold=t.isupper(), color=CORP if t.isupper() else INK)
+    r += 1
+r += 1
+for qn, (dest, aba, code) in PQ.items():
+    cell(wq, f'B{r}', f'Consulta {qn}  →  carregar em "{dest}"!A1   (aba do arquivo SAP: "{aba}")', size=11, bold=True, color='FFFFFF', fill=NAVF)
+    r += 1
+    for ln in code.split('\n'):
+        c = wq.cell(row=r, column=2, value=ln if ln.strip() else ' ')
+        c.font = Font(name='Consolas', size=9, color=INK)
+        c.fill = ZEBF
+        r += 1
+    r += 1
+
+# ---------- conciliação: saldo inicial e visão simples ----------
+hdr(wsA, HR, 21, 'SALDO INICIAL 08/09 (ZBR)')
+wsA.column_dimensions['U'].width = 14
+for r in range(L0, L1 + 1):
+    wsA[f'U{r}'] = (f'=SUMIFS({SI("E")},{SI("A")},$A{r},{SI("B")},$B{r})'
+                    f'-SUMIFS({SI("E")},{SI("A")},$A{r},{SI("B")},$B{r},{SI("C")},"2008")')
+    wsA[f'U{r}'].number_format = NUM
+    wsA[f'U{r}'].font = Font(name=F, size=10, color=INK)
+    wsA[f'U{r}'].border = BOX
+wsA.cell(row=HR, column=7).value = 'DEVERIA TER (INICIAL + ENTROU − SAIU)'
+wsA.column_dimensions.group('M', 'P', hidden=True, outline_level=1)
+wsA.column_dimensions.group('S', 'T', hidden=True, outline_level=1)
+wsA.sheet_properties.outlinePr.summaryRight = False
+wsA['A11'] = 'Visão simples: colunas técnicas (estoque antigo, doca, sem explicação, saídas 0355) ficam recolhidas — clique no "+" acima das colunas para ver.'
+wsA['A11'].font = Font(name=F, size=9, color=INK3, italic=True)
+wsA.auto_filter.ref = f'A{HR}:U{lastA}'
+wsP.column_dimensions['BH'].hidden = True
+w8.column_dimensions['BA'].hidden = True
+
 # ---------- renomear abas (atualiza fórmulas, nomes, validações, gráficos, links) ----------
 RENAME = {'Painel': '4 Análise ZBR', 'Depósito 2008': '4 Análise Depósito 2008', 'Cruzamento': '5 Conciliação',
           'Lançamentos': '3 Base Movimentos', 'Estoque físico': '3 Base Estoque Físico', 'Entrada': '3 Base Entrada 2008',
           'Saida': '3 Base Saídas', 'Resumo': 'Parâmetros', 'Cruzamento por Material': 'aux Conciliação Material',
           'Cruzamento por Lote': 'aux Conciliação Lote', 'Plano': '6 Plano de Ação', 'Dashboard': '1 Dashboard',
-          'ResumoG': '2 Resumo Gerencial', 'Dicionario': '7 Dicionário de Dados'}
+          'ResumoG': '2 Resumo Gerencial', 'Dicionario': '7 Dicionário de Dados',
+          'SaldoInicial': '3 Base Saldo Inicial 08-09', 'Atualizar': '8 Atualizar Dados'}
 _olds = sorted(RENAME, key=len, reverse=True)
 
 
@@ -1914,9 +2061,9 @@ res['A1'] = 'Parâmetros e conferência de totais'
 # ---------- MENU ----------
 wm = wb.create_sheet('MENU', 0)
 wm.sheet_view.showGridLines = False
-for col, w in zip('ABCDE', [3, 34, 74, 14, 3]):
+for col, w in zip('ABCDE', [3, 34, 80, 14, 3]):
     wm.column_dimensions[col].width = w
-for r in range(1, 45):
+for r in range(1, 60):
     for col in range(1, 6):
         wm.cell(row=r, column=col).fill = WHF
 for r in range(2, 6):
@@ -1928,58 +2075,86 @@ cell(wm, 'B4', 'Entradas, saídas, estoque físico, conciliação e plano de aç
 wm.row_dimensions[3].height = 36
 INFO = [('Fonte dos dados', 'Exportação SAP "Analise_ZBR_importado.XLSX" (abas Entrada, Saida, Estoque atual)'),
         ('Período dos movimentos', '09/09/2026 a 01/10/2026'),
-        ('Gerado em', "='Parâmetros'!K9"),
-        ('Versão anterior (backup)', 'planilhas/backup/Analise_ZBR_Cruzamento_backup_2026-10-02.xlsx')]
+        ('Gerado em', "='Parâmetros'!K9")]
 for i, (a, b) in enumerate(INFO, 7):
     cell(wm, f'B{i}', a, bold=True, color=INK3)
     cell(wm, f'C{i}', b, color=INK)
 wm['C9'].number_format = 'DD/MM/YYYY'
 wm['C9'].alignment = Alignment(horizontal='left')
-cell(wm, 'B12', 'NAVEGAÇÃO', size=13, bold=True, color=CORP)
-hdr(wm, 13, 2, 'ABA')
-hdr(wm, 13, 3, 'PARA QUE SERVE')
-hdr(wm, 13, 4, 'ABRIR', align='center')
-NAV = [('1 Dashboard', 'Visão executiva: KPIs, gráficos e filtros únicos'),
-       ('2 Resumo Gerencial', 'Síntese, principais ocorrências e conclusões'),
-       ('3 Base Entrada 2008', 'Movimentos do depósito 2008 (SAP)'),
-       ('3 Base Saídas', 'Saídas 601 (SAP)'),
-       ('3 Base Estoque Físico', 'Posições de estoque (SAP)'),
-       ('3 Base Movimentos', 'Entradas e saídas consolidadas'),
-       ('4 Análise ZBR', 'SKU·lote: entrou, saiu, estoque, diferença, motivo, solução'),
+RG = "'2 Resumo Gerencial'"
+SIF = "'3 Base Saldo Inicial 08-09'!$E$2:$E$5000"
+row = 11
+cell(wm, f'B{row}', 'RESULTADO EM 1 MINUTO', size=13, bold=True, color=CORP)
+row += 1
+ONE = [
+    (f'="Conferem: "&{RG}!D{TOTROW}&" de "&{RG}!C{TOTROW}&" SKU·lote ("&FIXED({RG}!F{TOTROW}*100,1)&"%)."', G_BG, G_TX),
+    (f'="Com diferença: "&{RG}!E{TOTROW}&" SKU·lote — "&{RG}!C{r_crit}&" críticos, tratar primeiro (ver 6 Plano de Ação)."', R_BG, R_TX),
+    (f'="Parado no depósito 2008: "&FIXED({RG}!C{r_08 + 5},1)&" KG de importação em "&{RG}!C{r_08 + 4}&" lotes, aguardando transferência."', W_BG, W_TX),
+    (f'=IF(SUM({SIF})=0,"Saldo inicial de 08/09: ainda não informado — preencha a aba 3 Base Saldo Inicial (ou use o Power Query).","Saldo inicial de 08/09: informado e já considerado nas diferenças.")', LIGHT, CORP),
+    (f'="Plano de ação: "&({RG}!C{r_pl}-{RG}!C{r_pl + 3})&" ações em aberto, "&{RG}!C{r_pl + 6}&" sem responsável."', ZEBRA, DARK)]
+for t, bg, tx in ONE:
+    c = cell(wm, f'B{row}', t, size=11, bold=True, color=tx, fill=PatternFill('solid', fgColor=bg))
+    wm.merge_cells(f'B{row}:D{row}')
+    wm.row_dimensions[row].height = 20
+    row += 1
+row += 1
+cell(wm, f'B{row}', 'NAVEGAÇÃO', size=13, bold=True, color=CORP)
+row += 1
+hdr(wm, row, 2, 'ABA')
+hdr(wm, row, 3, 'PARA QUE SERVE')
+hdr(wm, row, 4, 'ABRIR', align='center')
+row += 1
+NAV = [('1 Dashboard', 'Visão executiva: indicadores, gráficos e filtros'),
+       ('2 Resumo Gerencial', 'O que aconteceu, em poucas linhas e números'),
+       ('3 Base Entrada 2008', 'Dados do SAP: movimentos do depósito 2008'),
+       ('3 Base Saídas', 'Dados do SAP: saídas 601'),
+       ('3 Base Estoque Físico', 'Dados do SAP: posições de estoque'),
+       ('3 Base Saldo Inicial 08-09', 'Estoque de 08/09 (preencher) — melhora a precisão das diferenças'),
+       ('3 Base Movimentos', 'Entradas e saídas juntas, para consulta'),
+       ('4 Análise ZBR', 'Por SKU·lote: deveria ter × tem, diferença, motivo e solução'),
        ('4 Análise Depósito 2008', 'Importação recebida, transferida e parada no 2008'),
-       ('5 Conciliação', 'Diferenças, motivos, categorias e criticidade'),
-       ('6 Plano de Ação', 'Ocorrências, responsáveis, prazos e status'),
-       ('7 Dicionário de Dados', 'Campos, regras, critérios, atualização e limitações'),
-       ('Parâmetros', 'Data-limite, tolerância, limites e datas')]
-for i, (sh, desc_) in enumerate(NAV, 14):
-    cell(wm, f'B{i}', sh, bold=True, color=NAVY)
-    cell(wm, f'C{i}', desc_, color=INK)
-    c = cell(wm, f'D{i}', 'Abrir →', bold=True, color=CORP, align='center')
+       ('5 Conciliação', 'Todas as diferenças com motivo, categoria e criticidade'),
+       ('6 Plano de Ação', 'O que fazer, quem, até quando e status'),
+       ('7 Dicionário de Dados', 'Como cada número é calculado'),
+       ('8 Atualizar Dados', 'Importar nova extração do SAP pelo Power Query'),
+       ('Parâmetros', 'Datas, tolerância, limites e caminho do arquivo SAP')]
+for sh, desc_ in NAV:
+    cell(wm, f'B{row}', sh, bold=True, color=NAVY)
+    cell(wm, f'C{row}', desc_, color=INK)
+    c = cell(wm, f'D{row}', 'Abrir →', bold=True, color=CORP, align='center')
     c.hyperlink = f"#'{sh}'!A1"
     for col in 'BCD':
-        wm[f'{col}{i}'].border = Border(bottom=Side(style='thin', color='E3E8EF'))
-        if i % 2 == 0:
-            wm[f'{col}{i}'].fill = ZEBF
-cell(wm, 'B28', 'LEGENDA DE CORES', size=13, bold=True, color=CORP)
-for i, (txt, bg, tx) in enumerate((('Regular / concluído', G_BG, G_TX), ('Atenção / em andamento', W_BG, W_TX),
-                                   ('Crítico / vencido / divergente', R_BG, R_TX), ('Não iniciado / sem informação', ZEBRA, INK3),
-                                   ('Célula editável (filtro ou preenchimento)', LIGHT, CORP)), 29):
-    cell(wm, f'B{i}', txt, bold=True, color=tx, fill=PatternFill('solid', fgColor=bg))
-cell(wm, 'B35', 'COMO USAR', size=13, bold=True, color=CORP)
-for i, t in enumerate(['1. Abra o 1 Dashboard e escolha período, SKU, lote, unidade, movimentação e status nas células azul-claras.',
-                       '2. Veja o detalhe por SKU·lote em 4 Análise ZBR e as causas em 5 Conciliação.',
-                       '3. Registre responsável, prazo, status e evidência no 6 Plano de Ação.',
-                       '4. Para atualizar a base, siga o passo a passo do 7 Dicionário de Dados.'], 36):
-    cell(wm, f'B{i}', t, color=INK)
-    wm.merge_cells(f'B{i}:D{i}')
+        wm[f'{col}{row}'].border = Border(bottom=Side(style='thin', color='E3E8EF'))
+        if row % 2 == 0:
+            wm[f'{col}{row}'].fill = ZEBF
+    row += 1
+row += 1
+cell(wm, f'B{row}', 'COMO USAR', size=13, bold=True, color=CORP)
+row += 1
+for t in ['1. Leia o "Resultado em 1 minuto" acima.',
+          '2. No 1 Dashboard, escolha período, SKU, lote, unidade e status nas células azul-claras (seta ▼).',
+          '3. Para saber o porquê de uma diferença, veja Motivo e Solução no 4 Análise ZBR.',
+          '4. Registre responsável, prazo e status no 6 Plano de Ação.',
+          '5. Nova extração do SAP: aba 8 Atualizar Dados (Power Query) — inclua o saldo de 08/09.']:
+    cell(wm, f'B{row}', t, color=INK)
+    wm.merge_cells(f'B{row}:D{row}')
+    row += 1
+row += 1
+cell(wm, f'B{row}', 'CORES', size=13, bold=True, color=CORP)
+row += 1
+for txt, bg, tx in (('Verde: confere / concluído', G_BG, G_TX), ('Amarelo: atenção / em andamento', W_BG, W_TX),
+                    ('Vermelho: crítico / vencido / faltando', R_BG, R_TX), ('Cinza: não iniciado / sem informação', ZEBRA, INK3),
+                    ('Azul-claro: célula para escolher ou preencher', LIGHT, CORP)):
+    cell(wm, f'B{row}', txt, bold=True, color=tx, fill=PatternFill('solid', fgColor=bg))
+    row += 1
 
 # ---------- ordem, cores das abas, link de volta ao menu, impressão ----------
 order = ['MENU', '1 Dashboard', '2 Resumo Gerencial', '3 Base Entrada 2008', '3 Base Saídas', '3 Base Estoque Físico',
-         '3 Base Movimentos', '4 Análise ZBR', '4 Análise Depósito 2008', '5 Conciliação', '6 Plano de Ação',
-         '7 Dicionário de Dados', 'Parâmetros', 'aux Conciliação Material', 'aux Conciliação Lote']
+         '3 Base Saldo Inicial 08-09', '3 Base Movimentos', '4 Análise ZBR', '4 Análise Depósito 2008', '5 Conciliação', '6 Plano de Ação', '7 Dicionário de Dados', '8 Atualizar Dados', 'Parâmetros',
+         'aux Conciliação Material', 'aux Conciliação Lote']
 wb._sheets = [wb[n] for n in order]
 TABC = {'MENU': NAVY, '1 Dashboard': NAVY, '2 Resumo Gerencial': CORP, '4 Análise ZBR': CORP, '4 Análise Depósito 2008': CORP,
-        '5 Conciliação': CORP, '6 Plano de Ação': ATT_C, '7 Dicionário de Dados': DARK, 'Parâmetros': DARK}
+        '5 Conciliação': CORP, '6 Plano de Ação': ATT_C, '7 Dicionário de Dados': DARK, '8 Atualizar Dados': DARK, 'Parâmetros': DARK}
 for ws in wb.worksheets:
     ws.sheet_view.showGridLines = False
     ws.sheet_properties.tabColor = TABC.get(ws.title, '9DB9D6')
@@ -1988,7 +2163,7 @@ for ws in wb.worksheets:
     else:
         ws.sheet_state = 'visible'
 MENU_LINK = {'1 Dashboard': 'P1', '2 Resumo Gerencial': 'I1', '4 Análise ZBR': 'O1', '4 Análise Depósito 2008': 'O1',
-             '5 Conciliação': 'L1', '6 Plano de Ação': 'Q1', '7 Dicionário de Dados': 'D1', 'Parâmetros': 'K1'}
+             '5 Conciliação': 'L1', '6 Plano de Ação': 'Q1', '7 Dicionário de Dados': 'D1', 'Parâmetros': 'K1', '8 Atualizar Dados': 'C1'}
 for sh, ref in MENU_LINK.items():
     c = cell(wb[sh], ref, '◄ MENU', size=10, bold=True, color=CORP, align='right')
     c.hyperlink = "#'MENU'!A1"
@@ -2010,7 +2185,7 @@ for ws in wb.worksheets:
     ws.oddFooter.right.text = 'Página &P de &N'
     ws.oddFooter.right.size = 8
     ws.print_options.horizontalCentered = True
-for sh, rows_ in (('3 Base Entrada 2008', '1:1'), ('3 Base Saídas', '1:1'), ('3 Base Estoque Físico', '1:1'),
+for sh, rows_ in (('3 Base Saldo Inicial 08-09', '1:1'), ('3 Base Entrada 2008', '1:1'), ('3 Base Saídas', '1:1'), ('3 Base Estoque Físico', '1:1'),
                   ('3 Base Movimentos', '1:1'), ('5 Conciliação', f'{HR}:{HR}'), ('6 Plano de Ação', f'{PR0}:{PR0}')):
     wb[sh].print_title_rows = rows_
 wb['1 Dashboard'].print_area = 'A1:P90'
