@@ -109,6 +109,12 @@ td.pos{color:var(--ink)}
 .pill.ok{background:var(--good-bg);color:var(--good)}
 .pill.sobra{background:var(--warn-bg);color:var(--warn)}
 .pill.falta{background:var(--crit-bg);color:var(--crit)}
+[hidden]{display:none!important}
+.pill.neu{background:var(--surface-2);color:var(--ink-2)}
+.views{display:flex;gap:6px;flex-wrap:wrap}
+.vbtn{font:inherit;font-weight:600;font-size:14px;border:1px solid var(--line);background:var(--surface);color:var(--ink-2);border-radius:999px;padding:7px 16px;cursor:pointer}
+.vbtn[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.vbtn small{font-weight:400;opacity:.75;margin-left:6px}
 .tp{font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:6px;color:var(--ink)}
 .tp i{width:8px;height:8px;border-radius:2px;display:inline-block}
 tfoot td{font-weight:600;background:var(--surface-2);border-top:1px solid var(--line)}
@@ -131,6 +137,11 @@ tfoot td{font-weight:600;background:var(--surface-2);border-top:1px solid var(--
     <div class="stamp">Movimentos de 09/09 a 01/10/2026<br>Estoque físico: posição atual do arquivo</div>
   </header>
 
+  <nav class="views" aria-label="Visão">
+    <button type="button" class="vbtn" id="v-zbr" aria-pressed="true">ZBR · venda<small>entradas, saídas e estoque físico</small></button>
+    <button type="button" class="vbtn" id="v-2008" aria-pressed="false">Depósito 2008<small>importação recebida e transferida</small></button>
+  </nav>
+
   <section class="filters" aria-label="Filtros">
     <div class="f"><label class="label" for="fProd">SKU</label><select id="fProd"></select></div>
     <div class="f"><label class="label" for="fLote">Lote</label><select id="fLote"></select></div>
@@ -142,6 +153,7 @@ tfoot td{font-weight:600;background:var(--surface-2);border-top:1px solid var(--
     <div class="active" id="active"></div>
   </section>
 
+  <div id="vZBR">
   <section class="kpis" id="kpis" aria-label="Indicadores"></section>
 
   <section class="charts">
@@ -171,6 +183,35 @@ tfoot td{font-weight:600;background:var(--surface-2);border-top:1px solid var(--
     <div class="pager" id="pager"></div>
   </section>
 
+  </div>
+
+  <div id="v2008" hidden>
+  <section class="kpis" id="kpis8" aria-label="Indicadores do depósito 2008"></section>
+  <section class="charts">
+    <div class="card">
+      <h2>Movimento por dia no 2008</h2>
+      <div class="legend"><span><i style="background:var(--receb)"></i>Recebido no 2008</span><span><i style="background:var(--entrada)"></i>Transferido ao ZBR (líquido)</span><span id="c8u" style="color:var(--ink-3)"></span></div>
+      <div id="c8a"></div>
+    </div>
+    <div class="card">
+      <h2>Aguardando transferência no 2008</h2>
+      <p class="note">Saldo recebido e ainda não transferido para o ZBR. Clique numa barra para filtrar.</p>
+      <div id="c8b"></div>
+    </div>
+  </section>
+  <section class="card" style="gap:12px">
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" id="t8-lot" aria-selected="true" type="button">Por SKU e lote<span class="n" id="n8-lot"></span></button>
+      <button class="tab" role="tab" id="t8-mov" aria-selected="false" type="button">Lançamentos do 2008<span class="n" id="n8-mov"></span></button>
+    </div>
+    <div class="tools">
+      <input type="search" id="q8" placeholder="Buscar SKU, lote ou documento" aria-label="Buscar no depósito 2008">
+      <span class="note" id="tabnote8" style="font-size:12px;color:var(--ink-3)"></span>
+    </div>
+    <div class="tablebox" id="tbl8"></div>
+  </section>
+  </div>
+
   <div class="foot">
     <span>Entrada = transferência do depósito 2008 para o ZBR (estornos já descontados). Saída = movimento 601. Recebido no 2008 = chegada da importação até 15/09, ainda fora do ZBR.</span>
     <span>As sobras grandes podem ser estoque que já existia antes de 09/09: o arquivo não traz o saldo inicial.</span>
@@ -196,7 +237,7 @@ const sitOf = d => Math.abs(d) <= TOL ? 'ok' : d > 0 ? 'sobra' : 'falta';
 const SITN = {ok:'Confere',sobra:'Sobrando',falta:'Faltando'};
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
-const S = {prod:'', lote:'', de:DMIN, ate:DMAX, um:'KG', tipos:new Set(['E','S','R','X']), sit:'', tab:'cruz', q:'', page:0, sort:{cruz:['dif',-1], mov:['d',1], est:['p',1]}};
+const S = {view:'zbr', sit8:'', tab8:'lot', q8:'', prod:'', lote:'', de:DMIN, ate:DMAX, um:'KG', tipos:new Set(['E','S','R','X']), sit:'', tab:'cruz', q:'', page:0, sort:{cruz:['dif',-1], mov:['d',1], est:['p',1]}};
 try { const t = localStorage.getItem('zbr-tab'); if (t) S.tab = t; } catch(e) {}
 
 const $ = id => document.getElementById(id);
@@ -212,8 +253,12 @@ function buildFilters(){
   $('fAte').onchange = e => { S.ate = e.target.value || DMAX; S.page = 0; render(); };
   $('fTipo').onclick = e => { const b = e.target.closest('.chip'); if (!b) return; const t = b.dataset.t; S.tipos.has(t) ? S.tipos.delete(t) : S.tipos.add(t); S.page = 0; render(); };
   $('fUm').onclick = e => { const b = e.target.closest('button'); if (!b) return; S.um = b.dataset.u; if (S.prod && UMOF[S.prod] !== S.um) { S.prod = ''; S.lote = ''; } S.page = 0; render(); };
-  $('clear').onclick = () => { Object.assign(S,{prod:'',lote:'',de:DMIN,ate:DMAX,um:'KG',sit:'',q:'',page:0}); S.tipos = new Set(['E','S','R','X']); $('q').value=''; render(); };
+  $('clear').onclick = () => { Object.assign(S,{prod:'',lote:'',de:DMIN,ate:DMAX,um:'KG',sit:'',sit8:'',q:'',q8:'',page:0}); $('q8').value=''; S.tipos = new Set(['E','S','R','X']); $('q').value=''; render(); };
   $('q').oninput = e => { S.q = e.target.value.trim().toLowerCase(); S.page = 0; renderTable(); };
+  $('v-zbr').onclick = () => { S.view = 'zbr'; S.lote = ''; render(); };
+  $('v-2008').onclick = () => { S.view = '2008'; S.lote = ''; render(); };
+  ['lot','mov'].forEach(t => $('t8-'+t).onclick = () => { S.tab8 = t; renderTable8(); });
+  $('q8').oninput = e => { S.q8 = e.target.value.trim().toLowerCase(); renderTable8(); };
   ['cruz','mov','est'].forEach(t => $('t-'+t).onclick = () => { S.tab = t; S.page = 0; try { localStorage.setItem('zbr-tab', t); } catch(e) {} renderTable(); });
 }
 
@@ -264,7 +309,11 @@ function motivo(o, rows){
 
 function renderFilters(){
   $('fProd').value = S.prod;
-  const lotes = [...new Set([...MOV,...EST].filter(r => (!S.prod || r.p === S.prod) && r.u === S.um).map(r => r.l))].sort();
+  const src = S.view === '2008' ? MOV.filter(r => r.dep === '2008') : [...MOV,...EST];
+  const lotes = [...new Set(src.filter(r => (!S.prod || r.p === S.prod) && r.u === S.um).map(r => r.l))].sort();
+  document.querySelector('.f.mv').hidden = S.view === '2008';
+  $('v-zbr').setAttribute('aria-pressed', S.view === 'zbr'); $('v-2008').setAttribute('aria-pressed', S.view === '2008');
+  $('vZBR').hidden = S.view === '2008'; $('v2008').hidden = S.view !== '2008';
   $('fLote').innerHTML = '<option value="">Todos os lotes</option>' + lotes.map(l => `<option>${esc(l)}</option>`).join('');
   $('fLote').value = S.lote;
   $('fDe').value = S.de; $('fAte').value = S.ate;
@@ -408,6 +457,108 @@ function renderTable(){
 }
 function sum(a,k){ return a.reduce((s,o) => s + o[k], 0); }
 
-function render(){ compute(); renderFilters(); renderKpis(); renderDaily(); renderDiff(); renderTable(); }
+const SIT8N = {aguard:'Aguardando transferência', t100:'Transferido 100%', ant:'Saiu saldo anterior a 09/09'};
+const SIT8C = {aguard:'sobra', t100:'ok', ant:'neu'};
+let CUR8 = {};
+function compute8(){
+  const inS = r => r.dep === '2008' && r.u === S.um && (!S.prod || r.p === S.prod) && (!S.lote || r.l === S.lote) && r.d >= S.de && r.d <= S.ate;
+  const base = MOV.filter(inS);
+  const G = new Map();
+  base.forEach(r => {
+    const k = r.p + '|' + r.l;
+    if (!G.has(k)) G.set(k, {k, p:r.p, l:r.l, u:r.u, rec:0, tr:0, es:0, n:0, d1:r.d, d2:r.d});
+    const o = G.get(k);
+    if (r.t === 'R') o.rec += r.q; else if (r.t === 'E') o.tr += r.q; else if (r.t === 'X') o.es += -r.q;
+    o.n++; if (r.d < o.d1) o.d1 = r.d; if (r.d > o.d2) o.d2 = r.d;
+  });
+  let rows = [...G.values()].map(o => {
+    o.sal = Math.round((o.rec - o.tr + o.es) * 1000) / 1000;
+    o.sit = Math.abs(o.sal) <= TOL ? 't100' : o.sal > 0 ? 'aguard' : 'ant';
+    o.pct = o.rec > 0 ? (o.tr - o.es) / o.rec : null;
+    o.passo = o.sit === 'aguard' ? `Transferir ${fmt(o.sal)} ${o.u} do 2008 para o ZBR (verificar se já há OT aberta)`
+      : o.sit === 't100' ? 'Nada a fazer' : `Sem ação: saíram ${fmt(-o.sal)} ${o.u} que já estavam no 2008 antes de 09/09`;
+    return o;
+  });
+  const counts = {aguard:0, t100:0, ant:0}; rows.forEach(o => counts[o.sit]++);
+  if (S.sit8) rows = rows.filter(o => o.sit === S.sit8);
+  const keep = new Set(rows.map(o => o.k));
+  const mov = base.filter(r => keep.has(r.p + '|' + r.l));
+  const T = rows.reduce((a, o) => { a.rec += o.rec; a.tr += o.tr; a.es += o.es; a.n += o.n; return a; }, {rec:0, tr:0, es:0, n:0});
+  T.sal = T.rec - T.tr + T.es;
+  CUR8 = {rows, counts, mov, T};
+}
+function renderKpis8(){
+  const {T, counts} = CUR8, u = `<small>${S.um}</small>`;
+  $('kpis8').innerHTML = `
+    <div class="kpi"><span class="label"><i class="mk" style="background:var(--receb)"></i>Recebido no 2008</span><span class="v">${fmt(T.rec)}${u}</span><span class="h">chegada da importação</span></div>
+    <div class="kpi"><span class="label"><i class="mk" style="background:var(--entrada)"></i>Transferido ao ZBR</span><span class="v">${fmt(T.tr)}${u}</span><span class="h">saiu do 2008 para venda</span></div>
+    <div class="kpi"><span class="label">Estornos</span><span class="v">${fmt(T.es)}${u}</span><span class="h">voltou para o 2008</span></div>
+    <div class="kpi dif ${T.sal > TOL ? 'sobra' : 'ok'}"><span class="label">Saldo no 2008</span><span class="v">${sgn(T.sal)}${u}</span><span class="h">recebido − transferido + estornos</span></div>
+    <div class="kpi"><span class="label">Lançamentos</span><span class="v">${T.n}</span><span class="h">movimentos no depósito 2008</span></div>
+    <div class="kpi"><span class="label">SKU·lote por situação</span><div class="sit">
+      ${[['aguard','sobra'],['t100','ok'],['ant','neu']].map(([k,c]) => `<button type="button" class="sitbtn ${c === 'neu' ? '' : c}" style="${c === 'neu' ? 'background:var(--surface-2)' : ''}" data-s="${k}" aria-pressed="${S.sit8 === k}">${SIT8N[k]}<b>${counts[k]}</b></button>`).join('')}</div></div>`;
+  $('kpis8').querySelectorAll('.sitbtn').forEach(b => b.onclick = () => { S.sit8 = S.sit8 === b.dataset.s ? '' : b.dataset.s; render(); });
+}
+function renderDaily8(){
+  const days = []; for (let d = new Date(S.de + 'T12:00:00'); d <= new Date(S.ate + 'T12:00:00'); d.setDate(d.getDate()+1)) days.push(d.toISOString().slice(0,10));
+  const by = new Map(days.map(d => [d, {R:0, T:0}]));
+  CUR8.mov.forEach(r => { const o = by.get(r.d); if (!o) return; if (r.t === 'R') o.R += r.q; else o.T += r.q; });
+  $('c8u').textContent = S.um + ' por dia';
+  const vals = [...by.values()], up = Math.max(0, ...vals.map(o => o.R)), dn = Math.max(0, ...vals.map(o => o.T));
+  if (!vals.length || (up === 0 && dn === 0)) { $('c8a').innerHTML = '<div class="empty">Nenhum movimento no 2008 com esses filtros.</div>'; return; }
+  const W = 720, L = 56, Rr = 8, T0 = 10, H = 250, B = 26, upM = up ? niceMax(up) : 0, dnM = dn ? niceMax(dn) : 0, tot = (upM + dnM) || 1;
+  const ph = H - T0 - B, zy = T0 + ph * upM / tot, sc = ph / tot, bw = (W - L - Rr) / days.length, gap = Math.max(1, Math.min(4, bw * .18));
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Movimento diário do depósito 2008">`;
+  [upM, upM/2, -dnM].filter(v => v).forEach(v => { const y = zy - v * sc; s += `<line x1="${L}" x2="${W-Rr}" y1="${y}" y2="${y}" stroke="var(--grid)"/><text x="${L-6}" y="${y+4}" text-anchor="end">${(v < 0 ? '−' : '') + nf0.format(Math.abs(v))}</text>`; });
+  days.forEach((d, i) => {
+    const o = by.get(d), x = L + i * bw;
+    if (o.R > .001) { const h = o.R * sc; s += `<rect x="${x+gap/2}" y="${zy-h}" width="${bw-gap}" height="${Math.max(1,h)}" rx="2" fill="var(--receb)"/>`; }
+    if (Math.abs(o.T) > .001) { const h = Math.abs(o.T) * sc; s += `<rect x="${x+gap/2}" y="${o.T > 0 ? zy : zy - h}" width="${bw-gap}" height="${Math.max(1,h)}" rx="2" fill="var(--entrada)"/>`; }
+    s += `<rect class="hit" x="${x}" y="${T0}" width="${bw}" height="${ph}" data-tip="${esc(`<b>${fdate(d)}</b><br>Recebido: ${fmt(o.R)} ${S.um}<br>Transferido: ${fmt(o.T)} ${S.um}`)}"/>`;
+    if (i % Math.ceil(days.length / 12) === 0) s += `<text x="${x + bw/2}" y="${H-8}" text-anchor="middle">${d.slice(8,10)}/${d.slice(5,7)}</text>`;
+  });
+  s += `<line x1="${L}" x2="${W-Rr}" y1="${zy}" y2="${zy}" stroke="var(--axis)"/></svg>`;
+  $('c8a').innerHTML = s; bindTips($('c8a'));
+}
+function renderTop8(){
+  const rows = CUR8.rows.filter(o => o.sit === 'aguard').sort((a, b) => b.sal - a.sal).slice(0, 10);
+  if (!rows.length) { $('c8b').innerHTML = '<div class="empty">Nada aguardando transferência com esses filtros.</div>'; return; }
+  const W = 600, LW = 230, rh = 26, H = rows.length * rh + 8, mx = Math.max(...rows.map(o => o.sal)), sc = (W - LW - 80) / mx;
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="SKU e lote aguardando transferência no 2008">`;
+  rows.forEach((o, i) => {
+    const y = 4 + i * rh, w = Math.max(2, o.sal * sc), name = o.p + ' · ' + o.l;
+    s += `<g class="bar" data-p="${esc(o.p)}" data-l="${esc(o.l)}"><rect x="0" y="${y}" width="${W}" height="${rh}" fill="transparent" style="cursor:pointer" data-tip="${esc(`<b>${name}</b><br>Recebido ${fmt(o.rec)} · Transferido ${fmt(o.tr)}<br>Aguardando ${fmt(o.sal)} ${o.u}`)}"/>`;
+    s += `<text x="${LW-8}" y="${y+17}" text-anchor="end" style="fill:var(--ink);pointer-events:none">${esc(name)}</text>`;
+    s += `<rect x="${LW}" y="${y+6}" width="${w}" height="${rh-12}" rx="2" fill="var(--warn-bar)" style="pointer-events:none"/>`;
+    s += `<text class="val" x="${LW + w + 6}" y="${y+17}" style="pointer-events:none">${fmt(o.sal)}</text></g>`;
+  });
+  s += `<line x1="${LW}" x2="${LW}" y1="0" y2="${H}" stroke="var(--axis)"/></svg>`;
+  $('c8b').innerHTML = s; bindTips($('c8b'));
+  $('c8b').querySelectorAll('.bar').forEach(g => g.onclick = () => { hideTip(); S.prod = g.dataset.p; S.lote = g.dataset.l; S.um = UMOF[S.prod]; render(); });
+}
+function renderTable8(){
+  ['lot','mov'].forEach(t => $('t8-'+t).setAttribute('aria-selected', S.tab8 === t));
+  const q = S.q8; let html = '', note = '';
+  if (S.tab8 === 'lot') {
+    const rows = CUR8.rows.filter(o => !q || (o.p + ' ' + o.l).toLowerCase().includes(q)).sort((a, b) => b.sal - a.sal);
+    note = 'Saldo no 2008 = recebido − transferido + estornos, pelo movimento do período. Clique numa linha para filtrar.';
+    html = rows.length ? `<table><thead><tr><th>SKU</th><th>Lote</th><th class="n">Recebido</th><th class="n">Transferido</th><th class="n">Estornos</th><th class="n">Saldo no 2008</th><th class="n">% transf.</th><th>Situação</th><th class="n">Lanç.</th><th>1º mov.</th><th>Último mov.</th><th>Próximo passo</th></tr></thead><tbody>` +
+      rows.map(o => `<tr class="click" data-p="${esc(o.p)}" data-l="${esc(o.l)}"><td><b>${esc(o.p)}</b></td><td><b>${esc(o.l)}</b></td><td class="n">${fmt(o.rec)}</td><td class="n">${fmt(o.tr)}</td><td class="n">${fmt(o.es)}</td><td class="n"><b>${sgn(o.sal)}</b></td><td class="n">${o.pct === null ? '' : Math.round(o.pct*100) + '%'}</td><td><span class="pill ${SIT8C[o.sit]}">${SIT8N[o.sit]}</span></td><td class="n">${o.n}</td><td>${fdate(o.d1)}</td><td>${fdate(o.d2)}</td><td class="mot">${esc(o.passo)}</td></tr>`).join('') +
+      `</tbody><tfoot><tr><td colspan="2">Total (${S.um})</td><td class="n">${fmt(sum(rows,'rec'))}</td><td class="n">${fmt(sum(rows,'tr'))}</td><td class="n">${fmt(sum(rows,'es'))}</td><td class="n">${sgn(sum(rows,'sal'))}</td><td colspan="6"></td></tr></tfoot></table>` : '<div class="empty">Nada encontrado com esses filtros.</div>';
+  } else {
+    const TN = {R:'Recebido no 2008', E:'Transferido ao ZBR', X:'Estorno'};
+    const rows = CUR8.mov.filter(r => !q || (r.p + ' ' + r.l + ' ' + r.doc).toLowerCase().includes(q)).slice().sort((a, b) => a.d < b.d ? -1 : a.d > b.d ? 1 : 0);
+    note = 'Quantidade vista pelo depósito 2008: + entra no 2008, − sai do 2008.';
+    html = rows.length ? `<table><thead><tr><th>Data</th><th>Movimentação</th><th>SKU</th><th>Lote</th><th class="n">Quantidade</th><th>UM</th><th>Documento</th></tr></thead><tbody>` +
+      rows.map(r => { const v = r.t === 'R' ? r.q : -r.q; return `<tr><td>${fdate(r.d)}</td><td><span class="tp"><i style="background:${TIPOS[r.t].c}"></i>${TN[r.t]}</span></td><td>${esc(r.p)}</td><td>${esc(r.l)}</td><td class="n ${v < 0 ? 'neg' : ''}">${sgn(v)}</td><td>${r.u}</td><td style="font-family:var(--mono);font-size:12px">${esc(r.doc)}</td></tr>`; }).join('') + '</tbody></table>' : '<div class="empty">Nada encontrado com esses filtros.</div>';
+  }
+  $('tbl8').innerHTML = html; $('tabnote8').textContent = note;
+  $('n8-lot').textContent = CUR8.rows.length; $('n8-mov').textContent = CUR8.mov.length;
+  $('tbl8').querySelectorAll('tr.click').forEach(tr => tr.onclick = () => { S.prod = tr.dataset.p; S.lote = tr.dataset.l; S.um = UMOF[S.prod]; render(); });
+}
+function render(){
+  if (S.view === '2008') { compute8(); renderFilters(); renderKpis8(); renderDaily8(); renderTop8(); renderTable8(); return; }
+  compute(); renderFilters(); renderKpis(); renderDaily(); renderDiff(); renderTable();
+}
 buildFilters(); render();
 </script>

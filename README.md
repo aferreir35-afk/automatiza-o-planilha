@@ -89,6 +89,13 @@ Todas as abas trazem **SKU** e **Lote** lado a lado.
 - **Gráficos**: gráficos simples que seguem os filtros do Painel (Entrou ×
   Saiu × Deveria ter × Estoque físico, situação dos SKU·lote, maiores
   diferenças e movimentação por dia).
+- **Depósito 2008**: consulta do depósito 2008 com filtros (SKU, lote —
+  dependente do SKU —, datas, unidade, situação), quadros de Recebido /
+  Transferido ao ZBR / Estornos / Saldo no 2008 / Lançamentos e tabela por
+  SKU + lote (cabeçalho congelado e com filtro) com % transferido, situação
+  (Aguardando transferência / Transferido 100% / Saiu saldo anterior a 09/09)
+  e próximo passo.
+- **Dash 2008**: gráficos que seguem os filtros da aba Depósito 2008.
 - **Cruzamento**: uma linha por SKU + lote, com Diferença, Situação, **Motivo
   da diferença** e O que fazer. O motivo é calculado pelos dados: estoque
   antigo (posições sem movimento desde antes de 09/09), doca/chão/
@@ -112,4 +119,5 @@ estoque anterior a 09/09 (fora do período das abas).
 navegador) com filtros por produto, lote, período, unidade e tipo de
 movimentação; indicadores de Entrou / Saiu / Deveria ter / Estoque físico /
 Diferença, gráfico diário, ranking de diferenças e abas Cruzamento,
-Lançamentos e Estoque físico.
+Lançamentos e Estoque físico. Botão "Depósito 2008" no topo abre a visão do
+depósito 2008 (quadros, gráfico diário, aguardando transferência e tabelas).
