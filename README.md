@@ -76,6 +76,9 @@ Cruza as abas **Entrada** (movimentos no depósito 2008), **Saida** (movimento
 601) e **Estoque atual** (depósitos 9999/0355/9991) por Material e por
 Material + Lote, só com fórmulas (`SUMIFS`/`COUNTIF`).
 
+- **Análise Simples** (primeira aba, verde): uma linha por produto com
+  Entrou, Saiu, Deveria ter, Tem no estoque, Diferença, Situação
+  (Confere / Sobrando / Faltando) e O que fazer, em linguagem direta.
 - **Resumo**: parâmetros editáveis (data-limite dos recebimentos de importação
   e tolerância), contagem OK / Sobra / Falta e totais por UM (KG, UN, CX).
 - **Cruzamento por Material** e **Cruzamento por Lote**: Recebido no 2008,
