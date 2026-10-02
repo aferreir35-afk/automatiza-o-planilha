@@ -1,3 +1,14 @@
+# Relatório de Gestão — ZBR Importado (versão atual)
+
+Arquivo principal: [`planilhas/ZBR_Importado_Relatorio_Gestao.xlsx`](planilhas/ZBR_Importado_Relatorio_Gestao.xlsx)
+— dashboard executivo, resumo gerencial, bases SAP estruturadas, análises,
+conciliação, plano de ação e dicionário de dados. Detalhes em
+[`docs/RELATORIO_GESTAO.md`](docs/RELATORIO_GESTAO.md).
+
+Gerar de novo: `python scripts/gerar_relatorio.py [origem.xlsx] [saida.xlsx]`.
+
+---
+
 # Automação de Planilha — Volume por Turno
 
 Planilha de controle de volume de carga por turno/divisão, com o **Painel**
