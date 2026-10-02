@@ -65,3 +65,25 @@ Arquivo: [`planilhas/Volume_por_Turno_Setembro_2026.xlsx`](planilhas/Volume_por_
   móvel nem desvio-padrão.
 - O ranking de maiores desvios não trata empates de forma especial (pode
   repetir uma divisão quando o Saldo é igual).
+
+---
+
+# Análise ZBR Importado — Entradas × Saídas × Estoque
+
+Arquivo: [`planilhas/Analise_ZBR_Cruzamento_Entrada_Saida_Estoque.xlsx`](planilhas/Analise_ZBR_Cruzamento_Entrada_Saida_Estoque.xlsx)
+
+Cruza as abas **Entrada** (movimentos no depósito 2008), **Saida** (movimento
+601) e **Estoque atual** (depósitos 9999/0355/9991) por Material e por
+Material + Lote, só com fórmulas (`SUMIFS`/`COUNTIF`).
+
+- **Resumo**: parâmetros editáveis (data-limite dos recebimentos de importação
+  e tolerância), contagem OK / Sobra / Falta e totais por UM (KG, UN, CX).
+- **Cruzamento por Material** e **Cruzamento por Lote**: Recebido no 2008,
+  Entradas no ZBR, Saídas, Saldo calculado, Estoque atual, **Diferença**,
+  Status e possível causa — ordenados da maior para a menor diferença.
+
+Regra usada: no 2008, valores negativos são transferências para o ZBR
+(entradas); positivos até 15/09/2026 são chegadas da importação e positivos
+depois disso são estornos. Saldo calculado = Entradas − Saídas; Diferença =
+Estoque atual − Saldo calculado. Diferenças positivas costumam indicar
+estoque anterior a 09/09 (fora do período das abas).
