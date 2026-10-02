@@ -82,6 +82,13 @@ Todas as abas trazem **SKU** e **Lote** lado a lado.
   Data inicial/final, Unidade, Movimentação), quadros Entrou / Saiu /
   Deveria ter / Estoque físico / Diferença, contagem de SKU·lote que
   conferem, sobram ou faltam, gráficos e tabela por SKU + lote.
+- **Painel**: o cabeçalho da tabela (SKU, Lote, … Motivo, Solução) fica
+  congelado e tem filtro; colunas de 1º e último lançamento e **Solução de
+  ajuste (sugestão)**. Cores em tons de chocolate (paleta inspirada na
+  Barry Callebaut).
+- **Gráficos**: gráficos simples que seguem os filtros do Painel (Entrou ×
+  Saiu × Deveria ter × Estoque físico, situação dos SKU·lote, maiores
+  diferenças e movimentação por dia).
 - **Cruzamento**: uma linha por SKU + lote, com Diferença, Situação, **Motivo
   da diferença** e O que fazer. O motivo é calculado pelos dados: estoque
   antigo (posições sem movimento desde antes de 09/09), doca/chão/
