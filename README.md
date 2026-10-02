@@ -82,7 +82,12 @@ Todas as abas trazem **SKU** e **Lote** lado a lado.
   Data inicial/final, Unidade, Movimentação), quadros Entrou / Saiu /
   Deveria ter / Estoque físico / Diferença, contagem de SKU·lote que
   conferem, sobram ou faltam, gráficos e tabela por SKU + lote.
-- **Cruzamento**: uma linha por SKU + lote, com Situação e O que fazer.
+- **Cruzamento**: uma linha por SKU + lote, com Diferença, Situação, **Motivo
+  da diferença** e O que fazer. O motivo é calculado pelos dados: estoque
+  antigo (posições sem movimento desde antes de 09/09), doca/chão/
+  transferência (DCK, TRF, 922, FLR, DIF), troca de lote, saídas que não
+  baixaram o estoque (inclusive pelo depósito 0355) ou saída não lançada.
+  A coluna "Diferença sem explicação" mostra o que sobra para conferir.
 - **Lançamentos**: cada movimento (Entrada, Saída, Recebido no 2008, Estorno).
 - **Estoque físico**: cada posição no depósito.
 - **Entrada** e **Saida** (cinza): dados originais do SAP.

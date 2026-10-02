@@ -99,6 +99,7 @@ th.s:hover{color:var(--ink)}
 th .ar{color:var(--accent)}
 td{padding:7px 10px;border-bottom:1px solid var(--grid);white-space:nowrap}
 td.n,th.n{text-align:right;font-family:var(--mono);font-size:12.5px}
+td.mot{white-space:normal;min-width:300px;max-width:440px;font-size:12.5px;color:var(--ink)}
 td.desc{white-space:normal;min-width:180px;color:var(--ink-2);font-size:12px}
 tr.click{cursor:pointer}
 tr.click:hover td{background:var(--surface-2)}
@@ -125,13 +126,13 @@ tfoot td{font-weight:600;background:var(--surface-2);border-top:1px solid var(--
   <header>
     <div>
       <h1>Painel ZBR Importado</h1>
-      <p class="sub">Entradas, saídas e estoque físico por produto e lote · centro BR01</p>
+      <p class="sub">Entradas, saídas e estoque físico por SKU e lote · centro BR01</p>
     </div>
     <div class="stamp">Movimentos de 09/09 a 01/10/2026<br>Estoque físico: posição atual do arquivo</div>
   </header>
 
   <section class="filters" aria-label="Filtros">
-    <div class="f"><label class="label" for="fProd">Produto</label><select id="fProd"></select></div>
+    <div class="f"><label class="label" for="fProd">SKU</label><select id="fProd"></select></div>
     <div class="f"><label class="label" for="fLote">Lote</label><select id="fLote"></select></div>
     <div class="f per"><span class="label">Período</span>
       <div class="dates"><input type="date" id="fDe" aria-label="Data inicial"><span style="color:var(--ink-3)">a</span><input type="date" id="fAte" aria-label="Data final"></div></div>
@@ -163,7 +164,7 @@ tfoot td{font-weight:600;background:var(--surface-2);border-top:1px solid var(--
       <button class="tab" role="tab" id="t-est" aria-selected="false" type="button">Estoque físico<span class="n" id="n-est"></span></button>
     </div>
     <div class="tools">
-      <input type="search" id="q" placeholder="Buscar produto, lote, documento ou cliente" aria-label="Buscar na tabela">
+      <input type="search" id="q" placeholder="Buscar SKU, lote, motivo, documento ou cliente" aria-label="Buscar na tabela">
       <span class="note" id="tabnote" style="font-size:12px;color:var(--ink-3)"></span>
     </div>
     <div class="tablebox" id="tbl"></div>
@@ -201,7 +202,7 @@ try { const t = localStorage.getItem('zbr-tab'); if (t) S.tab = t; } catch(e) {}
 const $ = id => document.getElementById(id);
 
 function buildFilters(){
-  $('fProd').innerHTML = '<option value="">Todos os produtos</option>' + PRODS.map(p => `<option value="${esc(p)}">${esc(p)}${DESC[p] ? ' · ' + esc(DESC[p].slice(0,28)) : ''}</option>`).join('');
+  $('fProd').innerHTML = '<option value="">Todos os SKUs</option>' + PRODS.map(p => `<option value="${esc(p)}">${esc(p)}${DESC[p] ? ' · ' + esc(DESC[p].slice(0,28)) : ''}</option>`).join('');
   $('fDe').min = $('fAte').min = DMIN; $('fDe').max = $('fAte').max = DMAX;
   $('fTipo').innerHTML = Object.entries(TIPOS).map(([k,v]) => `<button type="button" class="chip" data-t="${k}" aria-pressed="true"><i style="background:${v.c}"></i>${v.n}</button>`).join('');
   $('fUm').innerHTML = ['KG','UN','CX'].map(u => `<button type="button" data-u="${u}" aria-pressed="false">${u}</button>`).join('');
@@ -218,17 +219,18 @@ function buildFilters(){
 
 let CUR = {};
 function compute(){
-  const byLote = !!S.prod;
-  const keyOf = r => byLote ? r.p + '|' + r.l : r.p;
+  const byLote = true;
+  const keyOf = r => r.p + '|' + r.l;
   const inScope = r => r.u === S.um && (!S.prod || r.p === S.prod) && (!S.lote || r.l === S.lote);
   const base = MOV.filter(r => inScope(r) && r.d >= S.de && r.d <= S.ate);
   const est = EST.filter(inScope);
   const G = new Map();
-  const g = (r) => { const k = keyOf(r); if (!G.has(k)) G.set(k,{k, p:r.p, l:byLote ? r.l : '', u:r.u, rec:0, ent:0, sai:0, est:0}); return G.get(k); };
-  base.forEach(r => { const o = g(r); if (r.t === 'R') o.rec += r.q; else if (r.t === 'S') o.sai += r.q; else o.ent += r.q; });
-  est.forEach(r => { g(r).est += r.q; });
+  const g = (r) => { const k = keyOf(r); if (!G.has(k)) G.set(k,{k, p:r.p, l:r.l, u:r.u, rec:0, ent:0, sai:0, est:0, ant:0, doca:0, s0355:0}); return G.get(k); };
+  base.forEach(r => { const o = g(r); if (r.t === 'R') o.rec += r.q; else if (r.t === 'S') { o.sai += r.q; if (r.dep === '0355') o.s0355 += r.q; } else o.ent += r.q; });
+  est.forEach(r => { const o = g(r); o.est += r.q; if (r.ult && r.ult < DMIN) o.ant += r.q; else if (DOCA.has(r.td)) o.doca += r.q; });
   let rows = [...G.values()].map(o => { o.dev = o.ent - o.sai; o.dif = Math.round((o.est - o.dev)*1000)/1000; o.sit = sitOf(o.dif); return o; })
     .filter(o => Math.abs(o.rec)+Math.abs(o.ent)+Math.abs(o.sai)+Math.abs(o.est) > 0.0001);
+  rows.forEach(o => { o.mot = motivo(o, rows); o.resto = Math.round(o.mot.resto*100)/100; });
   const counts = {ok:0,sobra:0,falta:0}; rows.forEach(o => counts[o.sit]++);
   if (S.sit) rows = rows.filter(o => o.sit === S.sit);
   const keep = new Set(rows.map(o => o.k));
@@ -238,6 +240,26 @@ function compute(){
   const T = rows.reduce((a,o) => { a.rec+=o.rec; a.ent+=o.ent; a.sai+=o.sai; a.est+=o.est; return a; }, {rec:0,ent:0,sai:0,est:0});
   T.dev = T.ent - T.sai; T.dif = Math.round((T.est - T.dev)*1000)/1000;
   CUR = {byLote, rows, counts, view, est:estK, T};
+}
+
+const DOCA = new Set(['DCK','TRF','922','FLR','DIF']);
+const f1 = v => nf1.format(Math.round(v*10)/10);
+function motivo(o, rows){
+  const d = o.dif, near = (a,b) => Math.abs(a-b) <= TOL;
+  if (o.sit === 'ok') return {t:'Sem diferença', resto:0};
+  if (rows.some(x => x !== o && x.p === o.p && x.l !== o.l && Math.abs(x.dif + d) <= TOL)) return {t:'Troca de lote: a mesma quantidade aparece com sinal oposto em outro lote deste SKU', resto:0};
+  if (d < 0 && o.est === 0 && o.sai === 0) return {t:'Entrou no ZBR, mas não está no estoque físico: não chegou ou foi guardado em outro lote', resto:d};
+  if (d < 0) return {t:'Estoque físico menor que o esperado: saída, ajuste ou perda não lançada no período', resto:d};
+  if (near(d, o.ant)) return {t:'Estoque antigo: toda a sobra está em posições sem movimento desde antes de 09/09', resto:0};
+  if (o.sai > 0 && near(d, o.sai)) return {t:'As saídas do período não baixaram o estoque físico', resto:0};
+  if (near(d, o.doca)) return {t:'Quantidade parada em doca, chão ou transferência: entrega ou devolução não baixada', resto:0};
+  if (near(d, o.ant + o.doca)) return {t:'Estoque antigo + quantidade em doca/chão/transferência', resto:0};
+  const pre = (o.ant + o.doca) > 0 ? 'Estoque antigo/doca + saídas' : 'Saídas';
+  if (o.sai > 0 && near(d - o.ant - o.doca, o.sai)) return {t:pre + ' do período que não baixaram o estoque físico', resto:0};
+  if (o.s0355 > 0 && near(d - o.ant - o.doca, o.s0355)) return {t:pre + ' pelo depósito 0355 que não baixaram o estoque físico', resto:0};
+  if (o.ant + o.doca > 0) { const r = d - o.ant - o.doca; return {t:`Explica em parte: estoque antigo ${f1(o.ant)} + doca/transferência ${f1(o.doca)}; faltam ${f1(r)} a explicar`, resto:Math.max(0,r)}; }
+  if (o.sai > o.ent) return {t:'Saiu mais do que entrou: havia estoque antes de 09/09 que não está no arquivo', resto:d};
+  return {t:'Estoque acima do esperado: entrada não lançada ou saldo anterior ao período', resto:d};
 }
 
 function renderFilters(){
@@ -250,12 +272,12 @@ function renderFilters(){
   const nP = u => PRODS.filter(p => UMOF[p] === u).length;
   $('fUm').querySelectorAll('button').forEach(b => { b.setAttribute('aria-pressed', b.dataset.u === S.um); b.title = nP(b.dataset.u) + ' produtos em ' + b.dataset.u; });
   const parts = [];
-  if (S.prod) parts.push(`produto <b>${esc(S.prod)}</b>`);
+  if (S.prod) parts.push(`SKU <b>${esc(S.prod)}</b>`);
   if (S.lote) parts.push(`lote <b>${esc(S.lote)}</b>`);
   if (S.de !== DMIN || S.ate !== DMAX) parts.push(`período <b>${fdate(S.de)} a ${fdate(S.ate)}</b>`);
   if (S.sit) parts.push(`situação <b>${SITN[S.sit]}</b>`);
   if (S.tipos.size < 4) parts.push(`movimentação <b>${[...S.tipos].map(t => TIPOS[t].n).join(', ') || 'nenhuma'}</b>`);
-  $('active').innerHTML = parts.length ? 'Filtrando por ' + parts.join(' · ') + ` · unidade <b>${S.um}</b>` : `Mostrando tudo em <b>${S.um}</b>. Escolha produto, lote, período ou tipo de movimentação para filtrar.`;
+  $('active').innerHTML = parts.length ? 'Filtrando por ' + parts.join(' · ') + ` · unidade <b>${S.um}</b>` : `Mostrando tudo em <b>${S.um}</b>. Escolha SKU, lote, período ou tipo de movimentação para filtrar.`;
 }
 
 function renderKpis(){
@@ -268,7 +290,7 @@ function renderKpis(){
     <div class="kpi"><span class="label">Deveria ter</span><span class="v">${fmt(T.dev)}${u}</span><span class="h">entrou − saiu</span></div>
     <div class="kpi"><span class="label">Estoque físico</span><span class="v">${fmt(T.est)}${u}</span><span class="h">${CUR.est.length} posições no depósito</span></div>
     <div class="kpi dif ${ds}"><span class="label">Diferença</span><span class="v" style="color:var(--${ds === 'ok' ? 'good' : ds === 'sobra' ? 'warn' : 'crit'})">${sgn(T.dif)}${u}</span>${partial}</div>
-    <div class="kpi"><span class="label">${CUR.byLote ? 'Lotes' : 'Produtos'} por situação</span><div class="sit">
+    <div class="kpi"><span class="label">SKU·lote por situação</span><div class="sit">
       ${['ok','sobra','falta'].map(k => `<button type="button" class="sitbtn ${k}" data-s="${k}" aria-pressed="${S.sit === k}">${SITN[k]}<b>${counts[k]}</b></button>`).join('')}</div></div>`;
   $('kpis').querySelectorAll('.sitbtn').forEach(b => b.onclick = () => { S.sit = S.sit === b.dataset.s ? '' : b.dataset.s; S.page = 0; render(); });
 }
@@ -320,19 +342,19 @@ function renderDaily(){
 
 function renderDiff(){
   const rows = CUR.rows.filter(o => o.sit !== 'ok').sort((a,b) => Math.abs(b.dif) - Math.abs(a.dif)).slice(0, 12);
-  $('c2t').textContent = CUR.byLote ? `Maiores diferenças por lote de ${S.prod}` : 'Maiores diferenças por produto';
+  $('c2t').textContent = 'Maiores diferenças por SKU e lote';
   if (!rows.length) { $('c2').innerHTML = `<div class="empty">Nenhuma diferença: ${CUR.rows.length ? 'tudo confere' : 'sem dados'} com esses filtros.</div>`; return; }
-  const W = 520, LW = 150, RW = 64, rh = 26, T0 = 4, H = T0 + rows.length * rh + 4;
+  const W = 600, LW = 230, RW = 64, rh = 26, T0 = 4, H = T0 + rows.length * rh + 4;
   const maxP = Math.max(0, ...rows.map(o => o.dif)), maxN = Math.max(0, ...rows.map(o => -o.dif));
   const plot = W - LW - RW - (maxN ? 56 : 0); const sc = plot / ((maxP + maxN) || 1); const zx = LW + (maxN ? 56 : 0) + maxN * sc;
   let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Maiores diferenças entre estoque físico e saldo esperado">`;
   rows.forEach((o,i) => {
     const y = T0 + i * rh, w = Math.max(2, Math.abs(o.dif) * sc), x = o.dif >= 0 ? zx : zx - w;
-    const name = CUR.byLote ? o.l : o.p;
+    const name = o.p + ' · ' + o.l;
     const c = o.dif > 0 ? 'var(--warn-bar)' : 'var(--crit)';
-    s += `<g class="bar" data-k="${esc(CUR.byLote ? o.l : o.p)}">`;
-    s += `<rect class="rowhit" x="0" y="${y}" width="${W}" height="${rh}" fill="transparent" style="cursor:pointer" data-tip="${esc(`<b>${name}</b><br>Entrou ${fmt(o.ent)} · Saiu ${fmt(o.sai)}<br>Deveria ter ${fmt(o.dev)} · Físico ${fmt(o.est)}<br>Diferença ${sgn(o.dif)} ${o.u}`)}"/>`;
-    s += `<text x="${LW - 8}" y="${y + 17}" text-anchor="end" style="fill:var(--ink);pointer-events:none">${esc(name.length > 22 ? name.slice(0,21)+'…' : name)}</text>`;
+    s += `<g class="bar" data-p="${esc(o.p)}" data-l="${esc(o.l)}">`;
+    s += `<rect class="rowhit" x="0" y="${y}" width="${W}" height="${rh}" fill="transparent" style="cursor:pointer" data-tip="${esc(`<b>${name}</b><br>Entrou ${fmt(o.ent)} · Saiu ${fmt(o.sai)}<br>Deveria ter ${fmt(o.dev)} · Físico ${fmt(o.est)}<br>Diferença ${sgn(o.dif)} ${o.u}<br>Motivo: ${o.mot.t}`)}"/>`;
+    s += `<text x="${LW - 8}" y="${y + 17}" text-anchor="end" style="fill:var(--ink);pointer-events:none">${esc(name.length > 34 ? name.slice(0,33)+'…' : name)}</text>`;
     s += `<rect x="${x}" y="${y + 6}" width="${w}" height="${rh - 12}" rx="2" fill="${c}" style="pointer-events:none"/>`;
     const tx = o.dif >= 0 ? x + w + 6 : x - 6;
     s += `<text class="val" x="${tx}" y="${y + 17}" text-anchor="${o.dif >= 0 ? 'start' : 'end'}" style="pointer-events:none">${sgn(o.dif)}</text></g>`;
@@ -340,7 +362,7 @@ function renderDiff(){
   s += `<line x1="${zx}" x2="${zx}" y1="${T0}" y2="${H-4}" stroke="var(--axis)"/></svg>`;
   s += `<div class="legend"><span><i style="background:var(--warn-bar)"></i>Sobrando</span><span><i style="background:var(--crit)"></i>Faltando</span><span style="color:var(--ink-3)">${S.um} · ${rows.length} de ${CUR.rows.filter(o => o.sit !== 'ok').length} com diferença</span></div>`;
   $('c2').innerHTML = s; bindTips($('c2'));
-  $('c2').querySelectorAll('.bar').forEach(g => g.onclick = () => { hideTip(); if (CUR.byLote) S.lote = g.dataset.k; else { S.prod = g.dataset.k; S.lote = ''; } S.page = 0; render(); });
+  $('c2').querySelectorAll('.bar').forEach(g => g.onclick = () => { hideTip(); S.prod = g.dataset.p; S.lote = g.dataset.l; S.um = UMOF[S.prod]; S.page = 0; render(); });
 }
 
 function sortBy(arr, key, dir){ return arr.sort((a,b) => { const x = a[key], y = b[key]; return (typeof x === 'number' ? x - y : String(x).localeCompare(String(y),'pt-BR')) * dir; }); }
@@ -352,13 +374,12 @@ function renderTable(){
   const q = S.q;
   let html = '', total = 0, note = '';
   if (S.tab === 'cruz') {
-    let rows = CUR.rows.filter(o => !q || (o.p + ' ' + o.l + ' ' + (DESC[o.p]||'')).toLowerCase().includes(q));
+    let rows = CUR.rows.filter(o => !q || (o.p + ' ' + o.l + ' ' + (DESC[o.p]||'') + ' ' + o.mot.t).toLowerCase().includes(q));
     const [k,d] = S.sort.cruz; sortBy(rows, k, d); total = rows.length;
-    const lot = CUR.byLote;
-    note = lot ? `Um lote por linha do produto ${S.prod}. Clique num lote para filtrar.` : 'Um produto por linha. Clique numa linha para ver os lotes do produto.';
-    html = `<table><thead><tr>${th('cruz', lot ? 'l' : 'p', lot ? 'Lote' : 'Produto')}${lot ? '' : '<th>Descrição</th>'}${th('cruz','rec','Recebido 2008',1)}${th('cruz','ent','Entrou',1)}${th('cruz','sai','Saiu',1)}${th('cruz','dev','Deveria ter',1)}${th('cruz','est','Estoque físico',1)}${th('cruz','dif','Diferença',1)}${th('cruz','sit','Situação')}</tr></thead><tbody>` +
-      rows.map(o => `<tr class="click" data-k="${esc(lot ? o.l : o.p)}"><td><b>${esc(lot ? o.l : o.p)}</b></td>${lot ? '' : `<td class="desc">${esc(DESC[o.p] || '')}</td>`}<td class="n">${fmt(o.rec)}</td><td class="n">${fmt(o.ent)}</td><td class="n">${fmt(o.sai)}</td><td class="n">${fmt(o.dev)}</td><td class="n">${fmt(o.est)}</td><td class="n ${o.dif < -TOL ? 'neg' : ''}"><b>${sgn(o.dif)}</b></td><td><span class="pill ${o.sit}">${SITN[o.sit]}</span></td></tr>`).join('') +
-      `</tbody><tfoot><tr><td>Total (${S.um})</td>${lot ? '' : '<td></td>'}<td class="n">${fmt(sum(rows,'rec'))}</td><td class="n">${fmt(sum(rows,'ent'))}</td><td class="n">${fmt(sum(rows,'sai'))}</td><td class="n">${fmt(sum(rows,'dev'))}</td><td class="n">${fmt(sum(rows,'est'))}</td><td class="n">${sgn(sum(rows,'dif'))}</td><td></td></tr></tfoot></table>`;
+    note = 'Uma linha por SKU + lote. O motivo explica a diferença com os próprios dados. Clique numa linha para filtrar.';
+    html = `<table><thead><tr>${th('cruz','p','SKU')}${th('cruz','l','Lote')}${th('cruz','ent','Entrou',1)}${th('cruz','sai','Saiu',1)}${th('cruz','dev','Deveria ter',1)}${th('cruz','est','Estoque físico',1)}${th('cruz','dif','Diferença',1)}${th('cruz','sit','Situação')}<th>Motivo da diferença</th>${th('cruz','resto','Sem explicação',1)}</tr></thead><tbody>` +
+      rows.map(o => `<tr class="click" data-p="${esc(o.p)}" data-l="${esc(o.l)}"><td><b>${esc(o.p)}</b></td><td><b>${esc(o.l)}</b></td><td class="n">${fmt(o.ent)}</td><td class="n">${fmt(o.sai)}</td><td class="n">${fmt(o.dev)}</td><td class="n">${fmt(o.est)}</td><td class="n ${o.dif < -TOL ? 'neg' : ''}"><b>${sgn(o.dif)}</b></td><td><span class="pill ${o.sit}">${SITN[o.sit]}</span></td><td class="mot">${esc(o.mot.t)}</td><td class="n ${Math.abs(o.resto) > TOL ? 'neg' : ''}">${sgn(o.resto)}</td></tr>`).join('') +
+      `</tbody><tfoot><tr><td colspan="2">Total (${S.um})</td><td class="n">${fmt(sum(rows,'ent'))}</td><td class="n">${fmt(sum(rows,'sai'))}</td><td class="n">${fmt(sum(rows,'dev'))}</td><td class="n">${fmt(sum(rows,'est'))}</td><td class="n">${sgn(sum(rows,'dif'))}</td><td></td><td></td><td class="n">${sgn(sum(rows,'resto'))}</td></tr></tfoot></table>`;
     $('pager').innerHTML = '';
   } else if (S.tab === 'mov') {
     let rows = CUR.view.filter(r => !q || (r.p + ' ' + r.l + ' ' + r.doc + ' ' + r.cli + ' ' + r.dep).toLowerCase().includes(q));
@@ -366,7 +387,7 @@ function renderTable(){
     const pages = Math.max(1, Math.ceil(total / PAGE)); S.page = Math.min(S.page, pages - 1);
     const slice = rows.slice(S.page * PAGE, S.page * PAGE + PAGE);
     note = 'Quantidade com sinal: + entra no ZBR, − sai. Recebido no 2008 ainda não está no ZBR.';
-    html = `<table><thead><tr>${th('mov','d','Data')}${th('mov','t','Movimentação')}${th('mov','p','Produto')}${th('mov','l','Lote')}${th('mov','dep','Depósito')}${th('mov','q','Quantidade',1)}<th>UM</th>${th('mov','doc','Documento')}${th('mov','cli','Cliente')}</tr></thead><tbody>` +
+    html = `<table><thead><tr>${th('mov','d','Data')}${th('mov','t','Movimentação')}${th('mov','p','SKU')}${th('mov','l','Lote')}${th('mov','dep','Depósito')}${th('mov','q','Quantidade',1)}<th>UM</th>${th('mov','doc','Documento')}${th('mov','cli','Cliente')}</tr></thead><tbody>` +
       slice.map(r => { const v = r.t === 'S' ? -r.q : r.q; return `<tr><td>${fdate(r.d)}</td><td><span class="tp"><i style="background:${TIPOS[r.t].c}"></i>${TIPOS[r.t].n}</span></td><td>${esc(r.p)}</td><td>${esc(r.l)}</td><td>${esc(r.dep)}</td><td class="n ${v < 0 ? 'neg' : ''}">${sgn(v)}</td><td>${r.u}</td><td style="font-family:var(--mono);font-size:12px">${esc(r.doc)}</td><td style="max-width:260px;overflow:hidden;text-overflow:ellipsis">${esc(r.cli)}</td></tr>`; }).join('') + '</tbody></table>';
     $('pager').innerHTML = total > PAGE ? `<span>${S.page*PAGE+1}–${Math.min(total,(S.page+1)*PAGE)} de ${total}</span><button type="button" id="pv" ${S.page===0?'disabled':''}>Anterior</button><button type="button" id="nx" ${S.page>=pages-1?'disabled':''}>Próxima</button>` : '';
     if ($('pv')) { $('pv').onclick = () => { S.page--; renderTable(); }; $('nx').onclick = () => { S.page++; renderTable(); }; }
@@ -374,7 +395,7 @@ function renderTable(){
     let rows = CUR.est.filter(r => !q || (r.p + ' ' + r.l + ' ' + r.pos + ' ' + r.td + ' ' + r.dep).toLowerCase().includes(q));
     const [k,d] = S.sort.est; sortBy(rows, k, d); total = rows.length;
     note = 'Posições negativas (doca DCK) são entregas em andamento já baixadas do depósito.';
-    html = `<table><thead><tr>${th('est','p','Produto')}${th('est','l','Lote')}${th('est','td','Tipo depósito')}${th('est','pos','Posição')}${th('est','dep','Depósito')}${th('est','q','Quantidade',1)}<th>UM</th>${th('est','venc','Vencimento')}${th('est','ult','Último movimento')}</tr></thead><tbody>` +
+    html = `<table><thead><tr>${th('est','p','SKU')}${th('est','l','Lote')}${th('est','td','Tipo depósito')}${th('est','pos','Posição')}${th('est','dep','Depósito')}${th('est','q','Quantidade',1)}<th>UM</th>${th('est','venc','Vencimento')}${th('est','ult','Último movimento')}</tr></thead><tbody>` +
       rows.map(r => `<tr><td>${esc(r.p)}</td><td>${esc(r.l)}</td><td>${esc(r.td)}</td><td style="font-family:var(--mono);font-size:12px">${esc(r.pos)}</td><td>${esc(r.dep)}</td><td class="n ${r.q < 0 ? 'neg' : ''}">${fmt(r.q)}</td><td>${r.u}</td><td>${fdate(r.venc)}</td><td>${fdate(r.ult)}</td></tr>`).join('') +
       `</tbody><tfoot><tr><td colspan="5">Total (${S.um})</td><td class="n">${fmt(sum(rows,'q'))}</td><td colspan="3"></td></tr></tfoot></table>`;
     $('pager').innerHTML = '';
@@ -382,8 +403,8 @@ function renderTable(){
   if (!total) html = '<div class="empty">Nada encontrado com esses filtros.</div>';
   $('tbl').innerHTML = html; $('tabnote').textContent = note;
   $('n-cruz').textContent = CUR.rows.length; $('n-mov').textContent = CUR.view.length; $('n-est').textContent = CUR.est.length;
-  $('tbl').querySelectorAll('th.s').forEach(h => h.onclick = () => { const s = S.sort[S.tab]; if (s[0] === h.dataset.k) s[1] = -s[1]; else { s[0] = h.dataset.k; s[1] = ['q','rec','ent','sai','dev','est','dif'].includes(h.dataset.k) ? -1 : 1; } renderTable(); });
-  $('tbl').querySelectorAll('tr.click').forEach(tr => tr.onclick = () => { if (CUR.byLote) S.lote = tr.dataset.k; else { S.prod = tr.dataset.k; S.lote = ''; } S.page = 0; render(); });
+  $('tbl').querySelectorAll('th.s').forEach(h => h.onclick = () => { const s = S.sort[S.tab]; if (s[0] === h.dataset.k) s[1] = -s[1]; else { s[0] = h.dataset.k; s[1] = ['q','rec','ent','sai','dev','est','dif','resto'].includes(h.dataset.k) ? -1 : 1; } renderTable(); });
+  $('tbl').querySelectorAll('tr.click').forEach(tr => tr.onclick = () => { S.prod = tr.dataset.p; S.lote = tr.dataset.l; S.um = UMOF[S.prod]; S.page = 0; render(); });
 }
 function sum(a,k){ return a.reduce((s,o) => s + o[k], 0); }
 
